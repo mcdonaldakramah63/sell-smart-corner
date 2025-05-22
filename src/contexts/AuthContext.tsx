@@ -1,8 +1,9 @@
 
 import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 import { User } from '@/lib/types';
-import { users } from '@/lib/mockData';
 import { useToast } from "@/components/ui/use-toast";
+import { supabase } from '@/integrations/supabase/client';
+import { Session, AuthError } from '@supabase/supabase-js';
 
 interface AuthContextProps {
   user: User | null;
@@ -11,72 +12,139 @@ interface AuthContextProps {
   error: string | null;
   login: (email: string, password: string) => Promise<void>;
   register: (name: string, email: string, password: string) => Promise<void>;
-  logout: () => void;
+  logout: () => Promise<void>;
+  session: Session | null;
 }
 
 const AuthContext = createContext<AuthContextProps | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
+  const [session, setSession] = useState<Session | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
 
-  useEffect(() => {
-    // Check if user is stored in localStorage (simulating persistent auth)
-    const storedUser = localStorage.getItem('marketplace_user');
-    if (storedUser) {
-      try {
-        const parsedUser = JSON.parse(storedUser);
-        setUser(parsedUser);
-        setIsAuthenticated(true);
-      } catch (error) {
-        console.error('Error parsing stored user:', error);
-        localStorage.removeItem('marketplace_user');
+  // Clear auth state helper
+  const cleanupAuthState = () => {
+    // Remove standard auth tokens
+    localStorage.removeItem('supabase.auth.token');
+    // Remove all Supabase auth keys from localStorage
+    Object.keys(localStorage).forEach((key) => {
+      if (key.startsWith('supabase.auth.') || key.includes('sb-')) {
+        localStorage.removeItem(key);
       }
-    }
-    setLoading(false);
+    });
+    // Remove from sessionStorage if in use
+    Object.keys(sessionStorage || {}).forEach((key) => {
+      if (key.startsWith('supabase.auth.') || key.includes('sb-')) {
+        sessionStorage.removeItem(key);
+      }
+    });
+  };
+
+  useEffect(() => {
+    // Set up auth state listener FIRST
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        console.log('Auth state changed:', event);
+        setSession(session);
+        
+        // Update state based on session
+        if (session?.user) {
+          const { id, email, user_metadata } = session.user;
+          const userData: User = {
+            id,
+            name: user_metadata?.name || email?.split('@')[0] || 'User',
+            email: email || '',
+            createdAt: session.user.created_at || new Date().toISOString(),
+            role: 'user',
+          };
+          setUser(userData);
+          setIsAuthenticated(true);
+        } else {
+          setUser(null);
+          setIsAuthenticated(false);
+        }
+      }
+    );
+
+    // THEN check for existing session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      setLoading(false);
+      
+      if (session?.user) {
+        const { id, email, user_metadata } = session.user;
+        const userData: User = {
+          id,
+          name: user_metadata?.name || email?.split('@')[0] || 'User',
+          email: email || '',
+          createdAt: session.user.created_at || new Date().toISOString(),
+          role: 'user',
+        };
+        setUser(userData);
+        setIsAuthenticated(true);
+      }
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
   }, []);
 
+  const handleAuthError = (error: AuthError | null) => {
+    if (error) {
+      let errorMessage = error.message;
+      // Make error messages more user-friendly
+      if (error.message.includes('Email not confirmed')) {
+        errorMessage = 'Please verify your email address before logging in.';
+      } else if (error.message.includes('Invalid login credentials')) {
+        errorMessage = 'Invalid email or password.';
+      }
+      setError(errorMessage);
+      return errorMessage;
+    }
+    return null;
+  };
+
   const login = async (email: string, password: string) => {
-    setLoading(true);
-    setError(null);
-    
     try {
-      // Simulate API call delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      setLoading(true);
+      setError(null);
       
-      // In a real app, this would be an API call to validate credentials
-      const foundUser = users.find(u => u.email === email);
+      // Clean up auth state
+      cleanupAuthState();
       
-      if (foundUser) {
-        // In a real app, we'd verify password here
-        if (password.length > 0) { // Mock validation
-          setUser(foundUser);
-          setIsAuthenticated(true);
-          localStorage.setItem('marketplace_user', JSON.stringify(foundUser));
-          toast({
-            title: "Logged in successfully",
-            description: `Welcome back, ${foundUser.name}!`,
-          });
-        } else {
-          setError('Invalid password');
-          toast({
-            title: "Login failed",
-            description: "Invalid password",
-            variant: "destructive",
-          });
-        }
-      } else {
-        setError('User not found');
+      // Try to sign out first to prevent auth issues
+      try {
+        await supabase.auth.signOut({ scope: 'global' });
+      } catch (err) {
+        // Continue even if this fails
+      }
+      
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password
+      });
+      
+      const errorMessage = handleAuthError(error);
+      
+      if (errorMessage) {
         toast({
           title: "Login failed",
-          description: "User not found",
+          description: errorMessage,
           variant: "destructive",
+        });
+      } else if (data.user) {
+        toast({
+          title: "Logged in successfully",
+          description: `Welcome back!`,
         });
       }
     } catch (error) {
+      console.error('Login error:', error);
       setError('An unexpected error occurred');
       toast({
         title: "Login failed",
@@ -89,51 +157,46 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   };
 
   const register = async (name: string, email: string, password: string) => {
-    setLoading(true);
-    setError(null);
-    
     try {
-      // Simulate API call delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      setLoading(true);
+      setError(null);
       
-      // In a real app, this would be an API call to register the user
-      const existingUser = users.find(u => u.email === email);
+      // Clean up auth state
+      cleanupAuthState();
       
-      if (existingUser) {
-        setError('Email already in use');
+      // Try to sign out first to prevent auth issues
+      try {
+        await supabase.auth.signOut({ scope: 'global' });
+      } catch (err) {
+        // Continue even if this fails
+      }
+      
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            name,
+          },
+        }
+      });
+      
+      const errorMessage = handleAuthError(error);
+      
+      if (errorMessage) {
         toast({
           title: "Registration failed",
-          description: "Email already in use",
-          variant: "destructive",
-        });
-      } else if (password.length < 6) {
-        setError('Password must be at least 6 characters');
-        toast({
-          title: "Registration failed",
-          description: "Password must be at least 6 characters",
+          description: errorMessage,
           variant: "destructive",
         });
       } else {
-        // Create a new mock user
-        const newUser: User = {
-          id: `user_${Date.now()}`,
-          name,
-          email,
-          createdAt: new Date().toISOString(),
-          role: 'user',
-        };
-        
-        // In a real app, this would update the database
-        // For now, we'll just act as if the user was created successfully
-        setUser(newUser);
-        setIsAuthenticated(true);
-        localStorage.setItem('marketplace_user', JSON.stringify(newUser));
         toast({
           title: "Registration successful",
-          description: `Welcome, ${name}!`,
+          description: data.session ? "Account created!" : "Please check your email to verify your account.",
         });
       }
     } catch (error) {
+      console.error('Register error:', error);
       setError('An unexpected error occurred');
       toast({
         title: "Registration failed",
@@ -145,14 +208,38 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
   };
 
-  const logout = () => {
-    setUser(null);
-    setIsAuthenticated(false);
-    localStorage.removeItem('marketplace_user');
-    toast({
-      title: "Logged out",
-      description: "You have been logged out successfully",
-    });
+  const logout = async () => {
+    try {
+      setLoading(true);
+      
+      // Clean up auth state first
+      cleanupAuthState();
+      
+      // Attempt to sign out
+      await supabase.auth.signOut({ scope: 'global' });
+      
+      // Update state
+      setUser(null);
+      setSession(null);
+      setIsAuthenticated(false);
+      
+      toast({
+        title: "Logged out",
+        description: "You have been logged out successfully",
+      });
+      
+      // Force page reload for a clean state
+      window.location.href = '/auth/login';
+    } catch (error) {
+      console.error('Logout error:', error);
+      toast({
+        title: "Logout failed",
+        description: "An error occurred during logout",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -163,7 +250,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       error, 
       login, 
       register, 
-      logout 
+      logout,
+      session
     }}>
       {children}
     </AuthContext.Provider>

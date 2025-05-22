@@ -1,11 +1,13 @@
 
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Loader2 } from "lucide-react";
 
 const RegisterForm = () => {
   const [name, setName] = useState('');
@@ -15,6 +17,7 @@ const RegisterForm = () => {
   const [agreeTerms, setAgreeTerms] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
   const { register, loading, error } = useAuth();
+  const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -22,6 +25,11 @@ const RegisterForm = () => {
     
     if (password !== confirmPassword) {
       setFormError("Passwords don't match");
+      return;
+    }
+    
+    if (password.length < 6) {
+      setFormError("Password must be at least 6 characters");
       return;
     }
     
@@ -99,13 +107,27 @@ const RegisterForm = () => {
               className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
             >
               I agree to the{" "}
-              <a href="#" className="text-marketplace-accent hover:underline">
+              <Button 
+                variant="link" 
+                className="p-0 h-auto text-marketplace-accent"
+                onClick={(e) => {
+                  e.preventDefault();
+                  // Navigate to terms page when created
+                }}
+              >
                 terms of service
-              </a>{" "}
+              </Button>{" "}
               and{" "}
-              <a href="#" className="text-marketplace-accent hover:underline">
+              <Button 
+                variant="link" 
+                className="p-0 h-auto text-marketplace-accent"
+                onClick={(e) => {
+                  e.preventDefault();
+                  // Navigate to privacy page when created
+                }}
+              >
                 privacy policy
-              </a>
+              </Button>
             </label>
           </div>
           
@@ -114,16 +136,25 @@ const RegisterForm = () => {
           )}
           
           <Button type="submit" className="w-full bg-marketplace-primary hover:bg-opacity-90" disabled={loading}>
-            {loading ? 'Creating account...' : 'Register'}
+            {loading ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Creating account...
+              </>
+            ) : 'Register'}
           </Button>
         </form>
       </CardContent>
       <CardFooter className="flex justify-center">
         <p className="text-sm text-muted-foreground">
           Already have an account?{" "}
-          <a href="#login" className="text-marketplace-accent hover:underline">
+          <Button
+            variant="link"
+            className="p-0 h-auto text-marketplace-accent"
+            onClick={() => navigate('/auth/login')}
+          >
             Login
-          </a>
+          </Button>
         </p>
       </CardFooter>
     </Card>
