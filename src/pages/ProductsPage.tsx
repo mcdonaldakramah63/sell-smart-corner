@@ -156,13 +156,13 @@ const ProductsPage = () => {
                   <Label htmlFor="condition">Condition</Label>
                   <Select 
                     value={condition || ''} 
-                    onValueChange={(value) => setCondition(value || null)}
+                    onValueChange={(value) => setCondition(value === 'any' ? null : value)}
                   >
                     <SelectTrigger id="condition" className="mt-1">
                       <SelectValue placeholder="Any condition" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">Any condition</SelectItem>
+                      <SelectItem value="any">Any condition</SelectItem>
                       <SelectItem value="new">New</SelectItem>
                       <SelectItem value="like-new">Like New</SelectItem>
                       <SelectItem value="good">Good</SelectItem>
