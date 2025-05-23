@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 import { User } from '@/lib/types';
 import { useToast } from "@/components/ui/use-toast";
@@ -14,6 +13,9 @@ interface AuthContextProps {
   register: (name: string, email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
   session: Session | null;
+  loginWithGoogle: () => Promise<void>;
+  loginWithGithub: () => Promise<void>;
+  updateProfile: (profileData: Partial<User>) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextProps | undefined>(undefined);
@@ -242,6 +244,123 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  const loginWithGoogle = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      // Clean up auth state
+      cleanupAuthState();
+      
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback`
+        }
+      });
+      
+      const errorMessage = handleAuthError(error);
+      
+      if (errorMessage) {
+        toast({
+          title: "Google login failed",
+          description: errorMessage,
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error('Google login error:', error);
+      setError('An unexpected error occurred');
+      toast({
+        title: "Google login failed",
+        description: "An unexpected error occurred",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+  
+  const loginWithGithub = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      // Clean up auth state
+      cleanupAuthState();
+      
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: 'github',
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback`
+        }
+      });
+      
+      const errorMessage = handleAuthError(error);
+      
+      if (errorMessage) {
+        toast({
+          title: "GitHub login failed",
+          description: errorMessage,
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error('GitHub login error:', error);
+      setError('An unexpected error occurred');
+      toast({
+        title: "GitHub login failed",
+        description: "An unexpected error occurred",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const updateProfile = async (profileData: Partial<User>) => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      if (!user?.id) {
+        throw new Error('User not authenticated');
+      }
+      
+      const { error } = await supabase
+        .from('profiles')
+        .update({
+          ...profileData,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', user.id);
+      
+      if (error) {
+        throw error;
+      }
+      
+      // Update local user state
+      setUser(prev => prev ? { ...prev, ...profileData } : null);
+      
+      toast({
+        title: "Profile updated",
+        description: "Your profile has been updated successfully",
+      });
+      
+      return;
+    } catch (error) {
+      console.error('Update profile error:', error);
+      setError('Failed to update profile');
+      toast({
+        title: "Update failed",
+        description: "Failed to update your profile",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <AuthContext.Provider value={{ 
       user, 
@@ -251,7 +370,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       login, 
       register, 
       logout,
-      session
+      session,
+      loginWithGoogle,
+      loginWithGithub,
+      updateProfile
     }}>
       {children}
     </AuthContext.Provider>

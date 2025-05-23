@@ -23,6 +23,7 @@ export interface Product {
   };
   createdAt: string;
   location: string;
+  is_sold?: boolean;
 }
 
 export interface Message {

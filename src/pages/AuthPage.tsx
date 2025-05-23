@@ -6,6 +6,8 @@ import LoginForm from '@/components/auth/LoginForm';
 import RegisterForm from '@/components/auth/RegisterForm';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuth } from '@/contexts/AuthContext';
+import SocialLoginButtons from '@/components/auth/SocialLoginButtons';
+import { Separator } from '@/components/ui/separator';
 
 interface AuthPageProps {
   initialTab?: 'login' | 'register';
@@ -45,6 +47,18 @@ const AuthPage = ({ initialTab = 'login' }: AuthPageProps) => {
               <RegisterForm />
             </TabsContent>
           </Tabs>
+          
+          <div className="mt-8">
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <span className="w-full border-t"></span>
+              </div>
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-background px-2 text-muted-foreground">Or continue with</span>
+              </div>
+            </div>
+            <SocialLoginButtons />
+          </div>
         </div>
       </div>
     </Layout>

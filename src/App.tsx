@@ -11,6 +11,13 @@ import AuthPage from "./pages/AuthPage";
 import ProductsPage from "./pages/ProductsPage";
 import ResetPasswordPage from "./pages/ResetPasswordPage";
 import UpdatePasswordPage from "./pages/UpdatePasswordPage";
+import AuthCallbackPage from "./pages/AuthCallbackPage";
+import DashboardPage from "./pages/DashboardPage";
+import ProfilePage from "./pages/ProfilePage";
+import ProductDetailPage from "./pages/ProductDetailPage";
+import CreateProductPage from "./pages/CreateProductPage";
+import MessagesPage from "./pages/MessagesPage";
+import ConversationPage from "./pages/ConversationPage";
 
 const queryClient = new QueryClient();
 
@@ -34,11 +41,20 @@ const AppRoutes = () => {
     <Routes>
       <Route path="/" element={<Index />} />
       <Route path="/products" element={<ProductsPage />} />
+      <Route path="/product/:id" element={<ProductDetailPage />} />
       <Route path="/auth/login" element={<AuthPage initialTab="login" />} />
       <Route path="/auth/register" element={<AuthPage initialTab="register" />} />
       <Route path="/auth/reset-password" element={<ResetPasswordPage />} />
       <Route path="/auth/update-password" element={<UpdatePasswordPage />} />
-      {/* Protected routes will go here */}
+      <Route path="/auth/callback" element={<AuthCallbackPage />} />
+      
+      {/* Protected routes */}
+      <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
+      <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
+      <Route path="/create-product" element={<ProtectedRoute><CreateProductPage /></ProtectedRoute>} />
+      <Route path="/messages" element={<ProtectedRoute><MessagesPage /></ProtectedRoute>} />
+      <Route path="/conversation/:id" element={<ProtectedRoute><ConversationPage /></ProtectedRoute>} />
+
       {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
       <Route path="*" element={<NotFound />} />
     </Routes>
