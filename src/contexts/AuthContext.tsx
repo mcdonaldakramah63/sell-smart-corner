@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 import { User } from '@/lib/types';
 import { useToast } from "@/components/ui/use-toast";
@@ -15,6 +16,7 @@ interface AuthContextProps {
   session: Session | null;
   loginWithGoogle: () => Promise<void>;
   loginWithGithub: () => Promise<void>;
+  loginWithMicrosoft: () => Promise<void>;
   updateProfile: (profileData: Partial<User>) => Promise<void>;
 }
 
@@ -318,6 +320,43 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  const loginWithMicrosoft = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      // Clean up auth state
+      cleanupAuthState();
+      
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: 'azure',
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback`
+        }
+      });
+      
+      const errorMessage = handleAuthError(error);
+      
+      if (errorMessage) {
+        toast({
+          title: "Microsoft login failed",
+          description: errorMessage,
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error('Microsoft login error:', error);
+      setError('An unexpected error occurred');
+      toast({
+        title: "Microsoft login failed",
+        description: "An unexpected error occurred",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const updateProfile = async (profileData: Partial<User>) => {
     try {
       setLoading(true);
@@ -373,6 +412,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       session,
       loginWithGoogle,
       loginWithGithub,
+      loginWithMicrosoft,
       updateProfile
     }}>
       {children}
