@@ -23,16 +23,21 @@ export default function DashboardPage() {
     const fetchDashboardData = async () => {
       setLoading(true);
       try {
-        // Fetch user's products
+        // Fetch user's products with category information
         const { data: productData, error: productError } = await supabase
           .from('products')
-          .select('*, category:categories(name)')
+          .select(`
+            *,
+            categories (
+              name
+            )
+          `)
           .eq('seller_id', user?.id)
           .order('created_at', { ascending: false });
         
         if (productError) throw productError;
         
-        // Fetch product images
+        // Fetch product images for each product
         const productsWithImages = await Promise.all(
           (productData || []).map(async (product) => {
             const { data: imageData } = await supabase
@@ -51,8 +56,8 @@ export default function DashboardPage() {
                 avatar: user?.avatar || ''
               },
               createdAt: product.created_at,
-              category: product.category?.name || 'Uncategorized',
-              condition: product.condition
+              category: product.categories?.name || 'Uncategorized',
+              condition: product.condition || 'good'
             };
           })
         );
@@ -69,13 +74,13 @@ export default function DashboardPage() {
         
         setProducts(productsWithImages);
         setNotifications(
-          notificationData.map(notif => ({
+          (notificationData || []).map(notif => ({
             id: notif.id,
             userId: notif.user_id,
             type: notif.type,
             content: notif.content,
             createdAt: notif.created_at,
-            read: notif.read,
+            read: notif.read || false,
             actionUrl: notif.action_url
           }))
         );

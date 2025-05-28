@@ -46,11 +46,12 @@ export default function MessagesPage() {
         const { data: userConversations, error: conversationsError } = await supabase
           .from('conversation_participants')
           .select(`
-            conversation:conversations (
+            conversation_id,
+            conversations (
               id,
               product_id,
               updated_at,
-              products:products (
+              products (
                 id,
                 title
               )
@@ -67,13 +68,15 @@ export default function MessagesPage() {
         
         // Process conversation data
         const conversationPreviews = await Promise.all(
-          userConversations.map(async ({ conversation }) => {
+          userConversations.map(async ({ conversations: conversation }) => {
+            if (!conversation) return null;
+            
             // Get the other participant
             const { data: participants } = await supabase
               .from('conversation_participants')
               .select(`
                 user_id,
-                profiles:profiles (
+                profiles (
                   full_name,
                   username,
                   avatar_url
@@ -102,8 +105,8 @@ export default function MessagesPage() {
             
             const otherUser = participants ? {
               id: participants.user_id,
-              name: participants.profiles.full_name || participants.profiles.username,
-              avatar: participants.profiles.avatar_url
+              name: participants.profiles?.full_name || participants.profiles?.username || 'Unknown User',
+              avatar: participants.profiles?.avatar_url
             } : {
               id: '',
               name: 'Unknown User',
@@ -113,15 +116,15 @@ export default function MessagesPage() {
             const lastMessage = lastMessageData ? {
               content: lastMessageData.content,
               timestamp: lastMessageData.created_at,
-              read: lastMessageData.read,
+              read: lastMessageData.read || false,
               isFromUser: lastMessageData.sender_id === user.id
             } : undefined;
             
             return {
               id: conversation.id,
               product: {
-                id: conversation.products.id,
-                title: conversation.products.title,
+                id: conversation.products?.id || '',
+                title: conversation.products?.title || 'Unknown Product',
                 image: productImageData?.image_url
               },
               otherUser,
@@ -130,15 +133,16 @@ export default function MessagesPage() {
           })
         );
         
-        // Sort by most recent message
-        conversationPreviews.sort((a, b) => {
+        // Filter out null values and sort by most recent message
+        const validConversations = conversationPreviews.filter(Boolean) as ConversationPreview[];
+        validConversations.sort((a, b) => {
           if (!a.lastMessage && !b.lastMessage) return 0;
           if (!a.lastMessage) return 1;
           if (!b.lastMessage) return -1;
           return new Date(b.lastMessage.timestamp).getTime() - new Date(a.lastMessage.timestamp).getTime();
         });
         
-        setConversations(conversationPreviews);
+        setConversations(validConversations);
       } catch (error) {
         console.error('Error fetching conversations:', error);
       } finally {

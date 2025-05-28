@@ -32,10 +32,23 @@ export default function ProductDetailPage() {
       try {
         setLoading(true);
         
-        // Fetch product details
+        // Fetch product details with category and seller info
         const { data: productData, error: productError } = await supabase
           .from('products')
-          .select('*, category:categories(name, id, slug)')
+          .select(`
+            *,
+            categories (
+              name,
+              id,
+              slug
+            ),
+            profiles!products_seller_id_fkey (
+              id,
+              full_name,
+              username,
+              avatar_url
+            )
+          `)
           .eq('id', id)
           .single();
         
@@ -50,19 +63,12 @@ export default function ProductDetailPage() {
         
         if (imageError) throw imageError;
         
-        // Fetch seller profile
-        const { data: sellerData, error: sellerError } = await supabase
-          .from('profiles')
-          .select('id, full_name, username, avatar_url')
-          .eq('id', productData.seller_id)
-          .single();
-        
-        if (sellerError) throw sellerError;
+        const sellerInfo = productData.profiles;
         
         setSellerProfile({
-          id: sellerData.id,
-          name: sellerData.full_name || sellerData.username,
-          avatar: sellerData.avatar_url
+          id: sellerInfo.id,
+          name: sellerInfo.full_name || sellerInfo.username || 'Unknown User',
+          avatar: sellerInfo.avatar_url
         });
         
         setProduct({
@@ -71,15 +77,15 @@ export default function ProductDetailPage() {
           description: productData.description,
           price: productData.price,
           images: imageData.map(img => img.image_url),
-          category: productData.category?.name || 'Uncategorized',
-          condition: productData.condition,
+          category: productData.categories?.name || 'Uncategorized',
+          condition: productData.condition || 'good',
           seller: {
-            id: sellerData.id,
-            name: sellerData.full_name || sellerData.username,
-            avatar: sellerData.avatar_url
+            id: sellerInfo.id,
+            name: sellerInfo.full_name || sellerInfo.username || 'Unknown User',
+            avatar: sellerInfo.avatar_url
           },
           createdAt: productData.created_at,
-          location: productData.location
+          location: productData.location || ''
         });
         
         setImages(imageData.map(img => img.image_url));
@@ -120,9 +126,14 @@ export default function ProductDetailPage() {
       // Check if a conversation already exists
       const { data: existingConvo, error: convoError } = await supabase
         .from('conversations')
-        .select('id, conversation_participants!inner(*)')
+        .select(`
+          id,
+          conversation_participants!inner (
+            user_id
+          )
+        `)
         .eq('product_id', id)
-        .filter('conversation_participants.user_id', 'eq', user?.id);
+        .eq('conversation_participants.user_id', user?.id);
       
       if (convoError) throw convoError;
       
