@@ -57,7 +57,7 @@ export default function DashboardPage() {
               },
               createdAt: product.created_at,
               category: product.categories?.name || 'Uncategorized',
-              condition: product.condition || 'good'
+              condition: (product.condition || 'good') as Product['condition']
             };
           })
         );
@@ -77,7 +77,7 @@ export default function DashboardPage() {
           (notificationData || []).map(notif => ({
             id: notif.id,
             userId: notif.user_id,
-            type: notif.type,
+            type: (notif.type || 'system') as Notification['type'],
             content: notif.content,
             createdAt: notif.created_at,
             read: notif.read || false,

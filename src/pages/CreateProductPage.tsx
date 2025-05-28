@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Layout from '@/components/layout/Layout';
 import { useAuth } from '@/contexts/AuthContext';
@@ -18,7 +18,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { ImagePlus, Trash2, Loader2 } from 'lucide-react';
-import { v4 as uuidv4 } from '@/lib/utils'; // Use the uuid from utils
+import { v4 as uuidv4 } from 'uuid';
 
 type Category = {
   id: string;
@@ -43,7 +43,7 @@ export default function CreateProductPage() {
   const [fetchingCategories, setFetchingCategories] = useState(true);
   
   // Fetch categories when component mounts
-  useState(() => {
+  useEffect(() => {
     const fetchCategories = async () => {
       try {
         const { data, error } = await supabase
@@ -53,7 +53,7 @@ export default function CreateProductPage() {
         
         if (error) throw error;
         
-        setCategories(data);
+        setCategories(data || []);
       } catch (error) {
         console.error('Error fetching categories:', error);
         toast({
@@ -124,13 +124,14 @@ export default function CreateProductPage() {
     try {
       setLoading(true);
       
-      // Create product
+      // Create product with both user_id and seller_id
       const { data: product, error: productError } = await supabase
         .from('products')
         .insert({
           title,
           description,
           price: parseFloat(price),
+          user_id: user.id,
           seller_id: user.id,
           category_id: categoryId,
           condition,

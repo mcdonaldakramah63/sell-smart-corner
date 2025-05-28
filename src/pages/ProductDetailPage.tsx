@@ -2,45 +2,38 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import Layout from '@/components/layout/Layout';
-import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
-import { Product } from '@/lib/types';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
+import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { MessageSquare, Heart, Share2, AlertTriangle } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Heart, MessageCircle, MapPin, Calendar, Package } from 'lucide-react';
+import { Product } from '@/lib/types';
 import ImageGallery from '@/components/products/ImageGallery';
 
 export default function ProductDetailPage() {
   const { id } = useParams<{ id: string }>();
-  const { user, isAuthenticated } = useAuth();
+  const { user } = useAuth();
   const { toast } = useToast();
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
-  const [images, setImages] = useState<string[]>([]);
-  const [sellerProfile, setSellerProfile] = useState<{
-    id: string;
-    name: string;
-    avatar?: string;
-  } | null>(null);
+  const [liked, setLiked] = useState(false);
 
   useEffect(() => {
-    const fetchProductDetails = async () => {
+    const fetchProduct = async () => {
       if (!id) return;
       
+      setLoading(true);
       try {
-        setLoading(true);
-        
-        // Fetch product details with category and seller info
+        // Fetch product with category and seller information
         const { data: productData, error: productError } = await supabase
           .from('products')
           .select(`
             *,
             categories (
-              name,
-              id,
-              slug
+              name
             ),
             profiles!products_seller_id_fkey (
               id,
@@ -57,40 +50,34 @@ export default function ProductDetailPage() {
         // Fetch product images
         const { data: imageData, error: imageError } = await supabase
           .from('product_images')
-          .select('image_url')
+          .select('image_url, is_primary')
           .eq('product_id', id)
-          .order('is_primary', { ascending: false });
+          .order('is_primary', { ascending: false })
+          .order('created_at', { ascending: true });
         
         if (imageError) throw imageError;
         
-        const sellerInfo = productData.profiles;
-        
-        setSellerProfile({
-          id: sellerInfo.id,
-          name: sellerInfo.full_name || sellerInfo.username || 'Unknown User',
-          avatar: sellerInfo.avatar_url
-        });
-        
-        setProduct({
+        const formattedProduct: Product = {
           id: productData.id,
           title: productData.title,
-          description: productData.description,
+          description: productData.description || '',
           price: productData.price,
-          images: imageData.map(img => img.image_url),
+          images: imageData?.map(img => img.image_url) || [],
           category: productData.categories?.name || 'Uncategorized',
-          condition: productData.condition || 'good',
+          condition: (productData.condition || 'good') as Product['condition'],
           seller: {
-            id: sellerInfo.id,
-            name: sellerInfo.full_name || sellerInfo.username || 'Unknown User',
-            avatar: sellerInfo.avatar_url
+            id: productData.profiles?.id || '',
+            name: productData.profiles?.full_name || productData.profiles?.username || 'Unknown Seller',
+            avatar: productData.profiles?.avatar_url || undefined
           },
           createdAt: productData.created_at,
-          location: productData.location || ''
-        });
+          location: productData.location || '',
+          is_sold: productData.is_sold || false
+        };
         
-        setImages(imageData.map(img => img.image_url));
+        setProduct(formattedProduct);
       } catch (error) {
-        console.error('Error fetching product details:', error);
+        console.error('Error fetching product:', error);
         toast({
           title: 'Error',
           description: 'Failed to load product details',
@@ -100,86 +87,29 @@ export default function ProductDetailPage() {
         setLoading(false);
       }
     };
-    
-    fetchProductDetails();
+
+    fetchProduct();
   }, [id, toast]);
 
-  const startConversation = async () => {
-    if (!isAuthenticated) {
+  const handleLike = () => {
+    setLiked(!liked);
+    toast({
+      title: liked ? 'Removed from favorites' : 'Added to favorites',
+      description: liked ? 'Product removed from your favorites' : 'Product added to your favorites'
+    });
+  };
+
+  const handleMessage = () => {
+    if (!user) {
       toast({
         title: 'Login required',
-        description: 'Please log in to contact the seller',
+        description: 'Please log in to message the seller',
         variant: 'destructive'
       });
       return;
     }
-    
-    if (user?.id === product?.seller.id) {
-      toast({
-        description: 'This is your own listing',
-        variant: 'destructive'
-      });
-      return;
-    }
-    
-    try {
-      // Check if a conversation already exists
-      const { data: existingConvo, error: convoError } = await supabase
-        .from('conversations')
-        .select(`
-          id,
-          conversation_participants!inner (
-            user_id
-          )
-        `)
-        .eq('product_id', id)
-        .eq('conversation_participants.user_id', user?.id);
-      
-      if (convoError) throw convoError;
-      
-      let conversationId;
-      
-      if (existingConvo && existingConvo.length > 0) {
-        conversationId = existingConvo[0].id;
-      } else {
-        // Create new conversation
-        const { data: newConvo, error: createError } = await supabase
-          .from('conversations')
-          .insert({
-            product_id: id
-          })
-          .select()
-          .single();
-        
-        if (createError) throw createError;
-        
-        conversationId = newConvo.id;
-        
-        // Add conversation participants
-        await supabase.from('conversation_participants').insert([
-          { conversation_id: conversationId, user_id: user?.id },
-          { conversation_id: conversationId, user_id: product?.seller.id }
-        ]);
-        
-        // Create notification for seller
-        await supabase.from('notifications').insert({
-          user_id: product?.seller.id,
-          type: 'message',
-          content: `Someone is interested in your "${product?.title}" listing`,
-          action_url: `/conversation/${conversationId}`
-        });
-      }
-      
-      // Navigate to conversation
-      window.location.href = `/conversation/${conversationId}`;
-    } catch (error) {
-      console.error('Error creating conversation:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to start conversation',
-        variant: 'destructive'
-      });
-    }
+    // Navigate to messages with product context
+    window.location.href = `/messages?product=${id}`;
   };
 
   if (loading) {
@@ -200,7 +130,9 @@ export default function ProductDetailPage() {
         <div className="container mx-auto px-4 py-8">
           <div className="text-center">
             <h1 className="text-2xl font-bold mb-4">Product not found</h1>
-            <p className="mb-6">The product you are looking for doesn't exist or has been removed.</p>
+            <p className="text-muted-foreground mb-4">
+              The product you're looking for doesn't exist or has been removed.
+            </p>
             <Button asChild>
               <Link to="/products">Browse Products</Link>
             </Button>
@@ -215,81 +147,95 @@ export default function ProductDetailPage() {
       <div className="container mx-auto px-4 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Product Images */}
-          <div className="bg-white rounded-lg overflow-hidden">
-            <ImageGallery images={images} />
+          <div>
+            <ImageGallery images={product.images} />
           </div>
           
           {/* Product Details */}
-          <div>
-            <h1 className="text-3xl font-bold mb-2">{product.title}</h1>
-            <p className="text-2xl font-semibold text-primary mb-4">${parseFloat(product.price.toString()).toFixed(2)}</p>
-            
-            <div className="flex flex-wrap gap-2 mb-6">
-              <Badge>{product.condition}</Badge>
-              <Badge variant="outline">{product.category}</Badge>
-              {product.location && (
-                <Badge variant="secondary">{product.location}</Badge>
-              )}
-            </div>
-            
-            <div className="mb-6">
-              <h2 className="font-semibold mb-2">Description</h2>
-              <p className="text-muted-foreground whitespace-pre-line">{product.description}</p>
-            </div>
-            
-            <Card className="mb-6">
-              <CardContent className="p-4">
-                <div className="flex items-center gap-4">
-                  <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
-                    {product.seller.avatar ? (
-                      <img 
-                        src={product.seller.avatar} 
-                        alt={product.seller.name} 
-                        className="w-10 h-10 rounded-full object-cover"
-                      />
-                    ) : (
-                      <span className="text-lg font-semibold">
-                        {product.seller.name.charAt(0).toUpperCase()}
-                      </span>
-                    )}
+          <div className="space-y-6">
+            <div>
+              <div className="flex items-start justify-between mb-2">
+                <h1 className="text-3xl font-bold">{product.title}</h1>
+                {product.is_sold && (
+                  <Badge variant="secondary">Sold</Badge>
+                )}
+              </div>
+              <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                <div className="flex items-center gap-1">
+                  <Package size={16} />
+                  <span>{product.category}</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <Calendar size={16} />
+                  <span>{new Date(product.createdAt).toLocaleDateString()}</span>
+                </div>
+                {product.location && (
+                  <div className="flex items-center gap-1">
+                    <MapPin size={16} />
+                    <span>{product.location}</span>
                   </div>
+                )}
+              </div>
+            </div>
+            
+            <div className="flex items-center justify-between">
+              <div>
+                <span className="text-3xl font-bold text-primary">
+                  ${product.price.toFixed(2)}
+                </span>
+                <Badge variant="outline" className="ml-2">
+                  {product.condition}
+                </Badge>
+              </div>
+              <div className="flex gap-2">
+                <Button size="icon" variant="outline" onClick={handleLike}>
+                  <Heart 
+                    size={20} 
+                    className={liked ? "fill-red-500 text-red-500" : ""}
+                  />
+                </Button>
+                <Button onClick={handleMessage} disabled={product.is_sold}>
+                  <MessageCircle size={20} className="mr-2" />
+                  Message Seller
+                </Button>
+              </div>
+            </div>
+            
+            {/* Seller Information */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">Seller Information</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-center space-x-3">
+                  <Avatar>
+                    {product.seller.avatar ? (
+                      <AvatarImage src={product.seller.avatar} alt={product.seller.name} />
+                    ) : (
+                      <AvatarFallback>{product.seller.name[0]}</AvatarFallback>
+                    )}
+                  </Avatar>
                   <div>
                     <p className="font-medium">{product.seller.name}</p>
                     <p className="text-sm text-muted-foreground">
-                      Listed {new Date(product.createdAt).toLocaleDateString()}
+                      Member since {new Date(product.createdAt).getFullYear()}
                     </p>
                   </div>
                 </div>
               </CardContent>
             </Card>
             
-            <div className="flex flex-wrap gap-4">
-              <Button 
-                onClick={startConversation} 
-                className="flex-1"
-                disabled={user?.id === product.seller.id}
-              >
-                <MessageSquare className="mr-2 h-4 w-4" />
-                {user?.id === product.seller.id ? 'Your Listing' : 'Contact Seller'}
-              </Button>
-              
-              <Button variant="outline" className="px-4">
-                <Heart className="h-4 w-4" />
-                <span className="sr-only">Save</span>
-              </Button>
-              
-              <Button variant="outline" className="px-4">
-                <Share2 className="h-4 w-4" />
-                <span className="sr-only">Share</span>
-              </Button>
-              
-              <Button variant="outline" className="px-4" asChild>
-                <Link to="#" className="flex items-center">
-                  <AlertTriangle className="h-4 w-4" />
-                  <span className="sr-only">Report</span>
-                </Link>
-              </Button>
-            </div>
+            {/* Product Description */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">Description</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-muted-foreground whitespace-pre-wrap">
+                  {product.description}
+                </p>
+              </CardContent>
+            </Card>
           </div>
         </div>
       </div>
