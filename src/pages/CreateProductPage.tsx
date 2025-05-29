@@ -101,7 +101,7 @@ export default function CreateProductPage() {
       // Generate a unique ID for the product
       const productId = crypto.randomUUID();
       
-      // Create product
+      // Create product - using category as string value, not as category_id
       const { error: productError } = await supabase
         .from('products')
         .insert({
@@ -109,14 +109,17 @@ export default function CreateProductPage() {
           title: form.title,
           description: form.description || null,
           price: parseFloat(form.price),
-          category_id: form.category,
+          category_id: null, // Set to null since we don't have category UUIDs
           condition: form.condition,
           location: form.location || null,
           user_id: user.id,
           seller_id: user.id
         });
 
-      if (productError) throw productError;
+      if (productError) {
+        console.error('Product creation error:', productError);
+        throw productError;
+      }
 
       // Upload images if any
       if (images.length > 0) {
@@ -155,7 +158,7 @@ export default function CreateProductPage() {
         description: 'Your listing is now live'
       });
 
-      navigate(`/product/${productId}`);
+      navigate(`/products`);
     } catch (error) {
       console.error('Error creating product:', error);
       toast({

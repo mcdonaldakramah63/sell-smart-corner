@@ -11,7 +11,6 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Loader2, User, Upload } from 'lucide-react';
-import { v4 as uuidv4 } from '@/lib/utils';
 
 export default function ProfilePage() {
   const { user, updateProfile } = useAuth();
@@ -28,23 +27,27 @@ export default function ProfilePage() {
   const [loading, setLoading] = useState(false);
   const [fetchingProfile, setFetchingProfile] = useState(true);
   
-  // Fetch full profile data
+  // Fetch profile data or create if it doesn't exist
   useEffect(() => {
-    const fetchProfile = async () => {
+    const fetchOrCreateProfile = async () => {
       if (!user?.id) return;
       
       try {
         setFetchingProfile(true);
         
+        // Try to fetch existing profile
         const { data, error } = await supabase
           .from('profiles')
           .select('*')
           .eq('id', user.id)
-          .single();
+          .maybeSingle();
         
-        if (error) throw error;
+        if (error && error.code !== 'PGRST116') {
+          throw error;
+        }
         
         if (data) {
+          // Profile exists, populate fields
           setFullName(data.full_name || '');
           setUsername(data.username || '');
           setBio(data.bio || '');
@@ -52,21 +55,39 @@ export default function ProfilePage() {
           setPhone(data.phone || '');
           setWebsite(data.website || '');
           setAvatarUrl(data.avatar_url || null);
+        } else {
+          // Profile doesn't exist, create one
+          const { error: insertError } = await supabase
+            .from('profiles')
+            .insert({
+              id: user.id,
+              full_name: user.name || '',
+              username: user.email?.split('@')[0] || '',
+              created_at: new Date().toISOString(),
+              updated_at: new Date().toISOString()
+            });
+          
+          if (insertError) {
+            console.error('Error creating profile:', insertError);
+          } else {
+            // Set default values
+            setFullName(user.name || '');
+            setUsername(user.email?.split('@')[0] || '');
+          }
         }
       } catch (error) {
-        console.error('Error fetching profile:', error);
+        console.error('Error fetching/creating profile:', error);
         toast({
-          title: 'Error',
-          description: 'Failed to load profile data',
-          variant: 'destructive'
+          title: 'Profile Setup',
+          description: 'Setting up your profile for the first time',
         });
       } finally {
         setFetchingProfile(false);
       }
     };
     
-    fetchProfile();
-  }, [user?.id, toast]);
+    fetchOrCreateProfile();
+  }, [user?.id, toast, user?.name, user?.email]);
   
   const handleAvatarChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -101,7 +122,7 @@ export default function ProfilePage() {
     
     try {
       const fileExt = avatar.name.split('.').pop();
-      const fileName = `${user.id}/${uuidv4()}.${fileExt}`;
+      const fileName = `${user.id}/${crypto.randomUUID()}.${fileExt}`;
       const filePath = `${fileName}`;
       
       const { error: uploadError } = await supabase.storage
@@ -116,7 +137,9 @@ export default function ProfilePage() {
         .getPublicUrl(filePath);
       
       // Revoke object URL to avoid memory leaks
-      URL.revokeObjectURL(avatarUrl!);
+      if (avatarUrl && avatarUrl.startsWith('blob:')) {
+        URL.revokeObjectURL(avatarUrl);
+      }
       
       return data.publicUrl;
     } catch (error) {
@@ -146,15 +169,11 @@ export default function ProfilePage() {
         updatedAvatarUrl = await uploadAvatar();
       }
       
-      const profileData = {
-        name: fullName || user.name,
-        avatar: updatedAvatarUrl,
-      };
-      
       // Update profile in Supabase
       const { error } = await supabase
         .from('profiles')
-        .update({
+        .upsert({
+          id: user.id,
           full_name: fullName,
           username,
           bio,
@@ -163,12 +182,16 @@ export default function ProfilePage() {
           website,
           avatar_url: updatedAvatarUrl,
           updated_at: new Date().toISOString()
-        })
-        .eq('id', user.id);
+        });
       
       if (error) throw error;
       
       // Update local auth context
+      const profileData = {
+        name: fullName || user.name,
+        avatar: updatedAvatarUrl,
+      };
+      
       await updateProfile(profileData);
       
       toast({
