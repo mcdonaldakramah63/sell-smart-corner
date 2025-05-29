@@ -6,6 +6,9 @@ import { Button } from "@/components/ui/button";
 import { Heart, MessageCircle } from "lucide-react";
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
 
 interface ProductCardProps {
   product: Product;
@@ -13,16 +16,85 @@ interface ProductCardProps {
 
 const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   const [liked, setLiked] = useState(false);
+  const [isCreatingConversation, setIsCreatingConversation] = useState(false);
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const { toast } = useToast();
   
   const handleLike = (e: React.MouseEvent) => {
     e.stopPropagation();
     setLiked(!liked);
   };
   
-  const handleMessage = (e: React.MouseEvent) => {
+  const handleMessage = async (e: React.MouseEvent) => {
     e.stopPropagation();
-    navigate(`/messages?product=${product.id}`);
+    
+    if (!user) {
+      toast({
+        title: 'Login required',
+        description: 'Please log in to message the seller',
+        variant: 'destructive'
+      });
+      return;
+    }
+
+    if (user.id === product.seller.id) {
+      toast({
+        title: 'Cannot message yourself',
+        description: 'You cannot start a conversation with yourself',
+        variant: 'destructive'
+      });
+      return;
+    }
+
+    try {
+      setIsCreatingConversation(true);
+
+      // Check if conversation already exists
+      const { data: existingConversation } = await supabase
+        .from('conversations')
+        .select('id')
+        .eq('product_id', product.id)
+        .single();
+
+      let conversationId = existingConversation?.id;
+
+      if (!conversationId) {
+        // Create new conversation
+        const { data: newConversation, error: conversationError } = await supabase
+          .from('conversations')
+          .insert({
+            product_id: product.id
+          })
+          .select('id')
+          .single();
+
+        if (conversationError) throw conversationError;
+        conversationId = newConversation.id;
+
+        // Add participants
+        const { error: participantsError } = await supabase
+          .from('conversation_participants')
+          .insert([
+            { conversation_id: conversationId, user_id: user.id },
+            { conversation_id: conversationId, user_id: product.seller.id }
+          ]);
+
+        if (participantsError) throw participantsError;
+      }
+
+      // Navigate to conversation
+      navigate(`/conversation/${conversationId}`);
+    } catch (error) {
+      console.error('Error creating conversation:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to start conversation. Please try again.',
+        variant: 'destructive'
+      });
+    } finally {
+      setIsCreatingConversation(false);
+    }
   };
   
   const handleClick = () => {
@@ -84,8 +156,17 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
               className={liked ? "fill-red-500 text-red-500" : ""}
             />
           </Button>
-          <Button size="icon" variant="ghost" onClick={handleMessage}>
-            <MessageCircle size={18} />
+          <Button 
+            size="icon" 
+            variant="ghost" 
+            onClick={handleMessage}
+            disabled={isCreatingConversation}
+          >
+            {isCreatingConversation ? (
+              <div className="h-4 w-4 border-t-2 border-r-2 border-gray-600 rounded-full animate-spin" />
+            ) : (
+              <MessageCircle size={18} />
+            )}
           </Button>
         </div>
       </CardFooter>

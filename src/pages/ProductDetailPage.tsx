@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import Layout from '@/components/layout/Layout';
@@ -12,14 +11,17 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Heart, MessageCircle, MapPin, Calendar, Package } from 'lucide-react';
 import { Product } from '@/lib/types';
 import ImageGallery from '@/components/products/ImageGallery';
+import { useNavigate } from 'react-router-dom';
 
 export default function ProductDetailPage() {
   const { id } = useParams<{ id: string }>();
   const { user } = useAuth();
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
   const [liked, setLiked] = useState(false);
+  const [isCreatingConversation, setIsCreatingConversation] = useState(false);
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -99,7 +101,7 @@ export default function ProductDetailPage() {
     });
   };
 
-  const handleMessage = () => {
+  const handleMessage = async () => {
     if (!user) {
       toast({
         title: 'Login required',
@@ -108,8 +110,66 @@ export default function ProductDetailPage() {
       });
       return;
     }
-    // Navigate to messages with product context
-    window.location.href = `/messages?product=${id}`;
+
+    if (!product) return;
+
+    if (user.id === product.seller.id) {
+      toast({
+        title: 'Cannot message yourself',
+        description: 'You cannot start a conversation with yourself',
+        variant: 'destructive'
+      });
+      return;
+    }
+
+    try {
+      setIsCreatingConversation(true);
+
+      // Check if conversation already exists
+      const { data: existingConversation } = await supabase
+        .from('conversations')
+        .select('id')
+        .eq('product_id', product.id)
+        .single();
+
+      let conversationId = existingConversation?.id;
+
+      if (!conversationId) {
+        // Create new conversation
+        const { data: newConversation, error: conversationError } = await supabase
+          .from('conversations')
+          .insert({
+            product_id: product.id
+          })
+          .select('id')
+          .single();
+
+        if (conversationError) throw conversationError;
+        conversationId = newConversation.id;
+
+        // Add participants
+        const { error: participantsError } = await supabase
+          .from('conversation_participants')
+          .insert([
+            { conversation_id: conversationId, user_id: user.id },
+            { conversation_id: conversationId, user_id: product.seller.id }
+          ]);
+
+        if (participantsError) throw participantsError;
+      }
+
+      // Navigate to conversation
+      navigate(`/conversation/${conversationId}`);
+    } catch (error) {
+      console.error('Error creating conversation:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to start conversation. Please try again.',
+        variant: 'destructive'
+      });
+    } finally {
+      setIsCreatingConversation(false);
+    }
   };
 
   if (loading) {
@@ -194,9 +254,16 @@ export default function ProductDetailPage() {
                     className={liked ? "fill-red-500 text-red-500" : ""}
                   />
                 </Button>
-                <Button onClick={handleMessage} disabled={product.is_sold}>
-                  <MessageCircle size={20} className="mr-2" />
-                  Message Seller
+                <Button 
+                  onClick={handleMessage} 
+                  disabled={product.is_sold || isCreatingConversation || user?.id === product.seller.id}
+                >
+                  {isCreatingConversation ? (
+                    <div className="h-4 w-4 border-t-2 border-r-2 border-white rounded-full animate-spin mr-2" />
+                  ) : (
+                    <MessageCircle size={20} className="mr-2" />
+                  )}
+                  {user?.id === product.seller.id ? 'Your Listing' : 'Message Seller'}
                 </Button>
               </div>
             </div>
