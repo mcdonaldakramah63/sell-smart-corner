@@ -9,10 +9,10 @@ import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
-import { Settings, User, Bell, Shield, HelpCircle } from 'lucide-react';
+import { Settings, User, Bell, Shield, HelpCircle, LogOut } from 'lucide-react';
 
 export default function SettingsPage() {
-  const { user, signOut } = useAuth();
+  const { user, logout } = useAuth();
   const { toast } = useToast();
   const [emailNotifications, setEmailNotifications] = useState(true);
   const [pushNotifications, setPushNotifications] = useState(true);
@@ -20,7 +20,7 @@ export default function SettingsPage() {
 
   const handleSignOut = async () => {
     try {
-      await signOut();
+      await logout();
       toast({
         title: 'Signed out successfully',
         description: 'You have been signed out of your account'
@@ -36,219 +36,251 @@ export default function SettingsPage() {
 
   return (
     <Layout>
-      <div className="container mx-auto px-4 py-8">
-        <div className="flex items-center gap-3 mb-8">
-          <Settings className="h-8 w-8" />
-          <h1 className="text-3xl font-bold">Settings</h1>
-        </div>
-        
-        <div className="grid gap-6 max-w-4xl">
-          {/* Account Settings */}
-          <Card>
-            <CardHeader>
-              <div className="flex items-center gap-2">
-                <User className="h-5 w-5" />
-                <CardTitle>Account Settings</CardTitle>
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
+        <div className="container mx-auto px-4 py-8">
+          <div className="mb-8">
+            <div className="flex items-center gap-3 mb-2">
+              <div className="p-2 bg-gradient-to-r from-blue-500 to-purple-500 rounded-lg">
+                <Settings className="h-6 w-6 text-white" />
               </div>
-              <CardDescription>
-                Manage your account information and preferences
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="font-medium">Profile Information</p>
-                  <p className="text-sm text-muted-foreground">
-                    Update your personal details and profile picture
-                  </p>
+              <h1 className="text-3xl font-bold bg-gradient-to-r from-slate-800 to-slate-600 bg-clip-text text-transparent">
+                Settings
+              </h1>
+            </div>
+            <p className="text-slate-600">Manage your account preferences and settings</p>
+          </div>
+          
+          <div className="grid gap-6 max-w-4xl">
+            {/* Account Settings */}
+            <Card className="shadow-lg border-slate-200 bg-white">
+              <CardHeader className="bg-gradient-to-r from-slate-50 to-blue-50 rounded-t-lg">
+                <div className="flex items-center gap-3">
+                  <div className="p-1.5 bg-gradient-to-r from-blue-500 to-purple-500 rounded-md">
+                    <User className="h-4 w-4 text-white" />
+                  </div>
+                  <CardTitle className="text-slate-800">Account Settings</CardTitle>
                 </div>
-                <Button asChild variant="outline">
-                  <Link to="/profile">Edit Profile</Link>
-                </Button>
-              </div>
-              
-              <Separator />
-              
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="font-medium">Email</p>
-                  <p className="text-sm text-muted-foreground">
-                    {user?.email || 'No email set'}
-                  </p>
+                <CardDescription>
+                  Manage your account information and preferences
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6 pt-6">
+                <div className="flex items-center justify-between p-4 bg-slate-50 rounded-lg">
+                  <div>
+                    <p className="font-medium text-slate-800">Profile Information</p>
+                    <p className="text-sm text-slate-600">
+                      Update your personal details and profile picture
+                    </p>
+                  </div>
+                  <Button asChild variant="outline" className="hover:bg-blue-50 border-blue-200">
+                    <Link to="/profile">Edit Profile</Link>
+                  </Button>
                 </div>
-                <Button variant="outline" disabled>
-                  Change Email
-                </Button>
-              </div>
-              
-              <Separator />
-              
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="font-medium">Password</p>
-                  <p className="text-sm text-muted-foreground">
-                    Last updated: Never
-                  </p>
+                
+                <Separator />
+                
+                <div className="flex items-center justify-between p-4 bg-slate-50 rounded-lg">
+                  <div>
+                    <p className="font-medium text-slate-800">Email</p>
+                    <p className="text-sm text-slate-600">
+                      {user?.email || 'No email set'}
+                    </p>
+                  </div>
+                  <Button variant="outline" disabled className="opacity-50">
+                    Change Email
+                  </Button>
                 </div>
-                <Button variant="outline" disabled>
-                  Change Password
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+                
+                <Separator />
+                
+                <div className="flex items-center justify-between p-4 bg-slate-50 rounded-lg">
+                  <div>
+                    <p className="font-medium text-slate-800">Password</p>
+                    <p className="text-sm text-slate-600">
+                      Last updated: Never
+                    </p>
+                  </div>
+                  <Button variant="outline" disabled className="opacity-50">
+                    Change Password
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
 
-          {/* Notification Settings */}
-          <Card>
-            <CardHeader>
-              <div className="flex items-center gap-2">
-                <Bell className="h-5 w-5" />
-                <CardTitle>Notification Preferences</CardTitle>
-              </div>
-              <CardDescription>
-                Choose how you want to be notified about marketplace activity
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <Label htmlFor="email-notifications">Email Notifications</Label>
-                  <p className="text-sm text-muted-foreground">
-                    Receive email notifications for messages and updates
-                  </p>
+            {/* Notification Settings */}
+            <Card className="shadow-lg border-slate-200 bg-white">
+              <CardHeader className="bg-gradient-to-r from-slate-50 to-blue-50 rounded-t-lg">
+                <div className="flex items-center gap-3">
+                  <div className="p-1.5 bg-gradient-to-r from-green-500 to-blue-500 rounded-md">
+                    <Bell className="h-4 w-4 text-white" />
+                  </div>
+                  <CardTitle className="text-slate-800">Notification Preferences</CardTitle>
                 </div>
-                <Switch
-                  id="email-notifications"
-                  checked={emailNotifications}
-                  onCheckedChange={setEmailNotifications}
-                />
-              </div>
-              
-              <div className="flex items-center justify-between">
-                <div>
-                  <Label htmlFor="push-notifications">Push Notifications</Label>
-                  <p className="text-sm text-muted-foreground">
-                    Receive browser notifications for real-time updates
-                  </p>
+                <CardDescription>
+                  Choose how you want to be notified about marketplace activity
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6 pt-6">
+                <div className="flex items-center justify-between p-4 bg-slate-50 rounded-lg">
+                  <div>
+                    <Label htmlFor="email-notifications" className="font-medium text-slate-800">
+                      Email Notifications
+                    </Label>
+                    <p className="text-sm text-slate-600">
+                      Receive email notifications for messages and updates
+                    </p>
+                  </div>
+                  <Switch
+                    id="email-notifications"
+                    checked={emailNotifications}
+                    onCheckedChange={setEmailNotifications}
+                  />
                 </div>
-                <Switch
-                  id="push-notifications"
-                  checked={pushNotifications}
-                  onCheckedChange={setPushNotifications}
-                />
-              </div>
-              
-              <div className="flex items-center justify-between">
-                <div>
-                  <Label htmlFor="marketing-emails">Marketing Emails</Label>
-                  <p className="text-sm text-muted-foreground">
-                    Receive emails about new features and promotions
-                  </p>
+                
+                <div className="flex items-center justify-between p-4 bg-slate-50 rounded-lg">
+                  <div>
+                    <Label htmlFor="push-notifications" className="font-medium text-slate-800">
+                      Push Notifications
+                    </Label>
+                    <p className="text-sm text-slate-600">
+                      Receive browser notifications for real-time updates
+                    </p>
+                  </div>
+                  <Switch
+                    id="push-notifications"
+                    checked={pushNotifications}
+                    onCheckedChange={setPushNotifications}
+                  />
                 </div>
-                <Switch
-                  id="marketing-emails"
-                  checked={marketingEmails}
-                  onCheckedChange={setMarketingEmails}
-                />
-              </div>
-            </CardContent>
-          </Card>
+                
+                <div className="flex items-center justify-between p-4 bg-slate-50 rounded-lg">
+                  <div>
+                    <Label htmlFor="marketing-emails" className="font-medium text-slate-800">
+                      Marketing Emails
+                    </Label>
+                    <p className="text-sm text-slate-600">
+                      Receive emails about new features and promotions
+                    </p>
+                  </div>
+                  <Switch
+                    id="marketing-emails"
+                    checked={marketingEmails}
+                    onCheckedChange={setMarketingEmails}
+                  />
+                </div>
+              </CardContent>
+            </Card>
 
-          {/* Privacy & Security */}
-          <Card>
-            <CardHeader>
-              <div className="flex items-center gap-2">
-                <Shield className="h-5 w-5" />
-                <CardTitle>Privacy & Security</CardTitle>
-              </div>
-              <CardDescription>
-                Manage your privacy settings and account security
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="font-medium">Download Data</p>
-                  <p className="text-sm text-muted-foreground">
-                    Download a copy of your personal data
-                  </p>
+            {/* Privacy & Security */}
+            <Card className="shadow-lg border-slate-200 bg-white">
+              <CardHeader className="bg-gradient-to-r from-slate-50 to-blue-50 rounded-t-lg">
+                <div className="flex items-center gap-3">
+                  <div className="p-1.5 bg-gradient-to-r from-purple-500 to-pink-500 rounded-md">
+                    <Shield className="h-4 w-4 text-white" />
+                  </div>
+                  <CardTitle className="text-slate-800">Privacy & Security</CardTitle>
                 </div>
-                <Button variant="outline" disabled>
-                  Request Download
-                </Button>
-              </div>
-              
-              <Separator />
-              
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="font-medium">Delete Account</p>
-                  <p className="text-sm text-muted-foreground">
-                    Permanently delete your account and all data
-                  </p>
+                <CardDescription>
+                  Manage your privacy settings and account security
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6 pt-6">
+                <div className="flex items-center justify-between p-4 bg-slate-50 rounded-lg">
+                  <div>
+                    <p className="font-medium text-slate-800">Download Data</p>
+                    <p className="text-sm text-slate-600">
+                      Download a copy of your personal data
+                    </p>
+                  </div>
+                  <Button variant="outline" disabled className="opacity-50">
+                    Request Download
+                  </Button>
                 </div>
-                <Button variant="destructive" disabled>
-                  Delete Account
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+                
+                <Separator />
+                
+                <div className="flex items-center justify-between p-4 bg-red-50 rounded-lg border border-red-200">
+                  <div>
+                    <p className="font-medium text-red-800">Delete Account</p>
+                    <p className="text-sm text-red-600">
+                      Permanently delete your account and all data
+                    </p>
+                  </div>
+                  <Button variant="destructive" disabled className="opacity-50">
+                    Delete Account
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
 
-          {/* Help & Support */}
-          <Card>
-            <CardHeader>
-              <div className="flex items-center gap-2">
-                <HelpCircle className="h-5 w-5" />
-                <CardTitle>Help & Support</CardTitle>
-              </div>
-              <CardDescription>
-                Get help and support for using the marketplace
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="font-medium">Help Center</p>
-                  <p className="text-sm text-muted-foreground">
-                    Browse our help articles and guides
-                  </p>
+            {/* Help & Support */}
+            <Card className="shadow-lg border-slate-200 bg-white">
+              <CardHeader className="bg-gradient-to-r from-slate-50 to-blue-50 rounded-t-lg">
+                <div className="flex items-center gap-3">
+                  <div className="p-1.5 bg-gradient-to-r from-orange-500 to-red-500 rounded-md">
+                    <HelpCircle className="h-4 w-4 text-white" />
+                  </div>
+                  <CardTitle className="text-slate-800">Help & Support</CardTitle>
                 </div>
-                <Button variant="outline" disabled>
-                  Visit Help Center
-                </Button>
-              </div>
-              
-              <Separator />
-              
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="font-medium">Contact Support</p>
-                  <p className="text-sm text-muted-foreground">
-                    Get in touch with our support team
-                  </p>
+                <CardDescription>
+                  Get help and support for using the marketplace
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6 pt-6">
+                <div className="flex items-center justify-between p-4 bg-slate-50 rounded-lg">
+                  <div>
+                    <p className="font-medium text-slate-800">Help Center</p>
+                    <p className="text-sm text-slate-600">
+                      Browse our help articles and guides
+                    </p>
+                  </div>
+                  <Button variant="outline" disabled className="opacity-50">
+                    Visit Help Center
+                  </Button>
                 </div>
-                <Button variant="outline" disabled>
-                  Contact Us
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+                
+                <Separator />
+                
+                <div className="flex items-center justify-between p-4 bg-slate-50 rounded-lg">
+                  <div>
+                    <p className="font-medium text-slate-800">Contact Support</p>
+                    <p className="text-sm text-slate-600">
+                      Get in touch with our support team
+                    </p>
+                  </div>
+                  <Button variant="outline" disabled className="opacity-50">
+                    Contact Us
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
 
-          {/* Sign Out */}
-          <Card>
-            <CardContent className="pt-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="font-medium">Sign Out</p>
-                  <p className="text-sm text-muted-foreground">
-                    Sign out of your account on this device
-                  </p>
+            {/* Sign Out */}
+            <Card className="shadow-lg border-slate-200 bg-white">
+              <CardContent className="pt-6">
+                <div className="flex items-center justify-between p-4 bg-red-50 rounded-lg border border-red-200">
+                  <div className="flex items-center gap-3">
+                    <div className="p-1.5 bg-red-500 rounded-md">
+                      <LogOut className="h-4 w-4 text-white" />
+                    </div>
+                    <div>
+                      <p className="font-medium text-red-800">Sign Out</p>
+                      <p className="text-sm text-red-600">
+                        Sign out of your account on this device
+                      </p>
+                    </div>
+                  </div>
+                  <Button 
+                    onClick={handleSignOut} 
+                    variant="outline" 
+                    className="border-red-300 text-red-700 hover:bg-red-50"
+                  >
+                    Sign Out
+                  </Button>
                 </div>
-                <Button onClick={handleSignOut} variant="outline">
-                  Sign Out
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          </div>
         </div>
       </div>
     </Layout>

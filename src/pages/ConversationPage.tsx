@@ -99,22 +99,22 @@ export default function ConversationPage() {
           .eq('is_primary', true)
           .single();
         
-        // Get other participant
-        const { data: otherParticipant, error: participantsError } = await supabase
+        // Get other participant - simplified query without join
+        const { data: otherParticipantData, error: participantsError } = await supabase
           .from('conversation_participants')
-          .select(`
-            user_id,
-            profiles:profiles (
-              full_name,
-              username,
-              avatar_url
-            )
-          `)
+          .select('user_id')
           .eq('conversation_id', id)
           .neq('user_id', user.id)
           .single();
         
         if (participantsError) throw participantsError;
+        
+        // Get profile data separately
+        const { data: profileData } = await supabase
+          .from('profiles')
+          .select('full_name, username, avatar_url')
+          .eq('id', otherParticipantData.user_id)
+          .single();
         
         setProduct({
           id: conversation.products.id,
@@ -124,9 +124,9 @@ export default function ConversationPage() {
         });
         
         setOtherUser({
-          id: otherParticipant.user_id,
-          name: otherParticipant.profiles.full_name || otherParticipant.profiles.username,
-          avatar: otherParticipant.profiles.avatar_url
+          id: otherParticipantData.user_id,
+          name: profileData?.full_name || profileData?.username || 'Unknown User',
+          avatar: profileData?.avatar_url
         });
         
         // Get messages
@@ -259,107 +259,122 @@ export default function ConversationPage() {
 
   return (
     <Layout>
-      <div className="container mx-auto px-4 py-8 flex flex-col h-[calc(100vh-theme(spacing.16))]">
-        {/* Header */}
-        <div className="flex items-center mb-4">
-          <Button variant="ghost" size="sm" className="mr-2" asChild>
-            <Link to="/messages">
-              <ArrowLeft className="h-4 w-4 mr-1" />
-              Back
-            </Link>
-          </Button>
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
+        <div className="container mx-auto px-4 py-8 flex flex-col h-[calc(100vh-theme(spacing.16))]">
+          {/* Header */}
+          <div className="flex items-center mb-6 p-4 bg-white rounded-lg shadow-sm border">
+            <Button variant="ghost" size="sm" className="mr-3 hover:bg-slate-100" asChild>
+              <Link to="/messages">
+                <ArrowLeft className="h-4 w-4 mr-2" />
+                Back to Messages
+              </Link>
+            </Button>
+            
+            {otherUser && (
+              <div className="flex items-center">
+                <Avatar className="h-10 w-10 mr-3 ring-2 ring-slate-200">
+                  {otherUser.avatar ? (
+                    <AvatarImage src={otherUser.avatar} />
+                  ) : (
+                    <AvatarFallback className="bg-gradient-to-r from-blue-500 to-purple-500 text-white">
+                      {otherUser.name[0]}
+                    </AvatarFallback>
+                  )}
+                </Avatar>
+                <span className="font-semibold text-slate-800">{otherUser.name}</span>
+              </div>
+            )}
+          </div>
           
-          {otherUser && (
-            <div className="flex items-center">
-              <Avatar className="h-8 w-8 mr-2">
-                {otherUser.avatar ? (
-                  <AvatarImage src={otherUser.avatar} />
-                ) : (
-                  <AvatarFallback>{otherUser.name[0]}</AvatarFallback>
-                )}
-              </Avatar>
-              <span className="font-medium">{otherUser.name}</span>
+          {/* Product info card */}
+          {product && (
+            <Card className="p-4 mb-6 flex items-center bg-gradient-to-r from-white to-slate-50 border shadow-sm">
+              <div className="w-16 h-16 rounded-lg overflow-hidden shrink-0 mr-4 shadow-sm">
+                <img
+                  src={product.image || '/placeholder.svg'}
+                  alt={product.title}
+                  className="w-full h-full object-cover"
+                />
+              </div>
+              <div className="min-w-0 flex-1">
+                <h3 className="font-semibold line-clamp-1 text-slate-800">{product.title}</h3>
+                <p className="text-lg font-bold text-green-600">${parseFloat(product.price.toString()).toFixed(2)}</p>
+              </div>
+              <Button size="sm" variant="outline" className="ml-auto shrink-0 hover:bg-blue-50 border-blue-200" asChild>
+                <Link to={`/product/${product.id}`}>View Product</Link>
+              </Button>
+            </Card>
+          )}
+          
+          {loading ? (
+            <div className="flex-1 flex justify-center items-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
             </div>
+          ) : (
+            <>
+              {/* Messages */}
+              <div className="flex-1 overflow-y-auto pb-4 space-y-4 bg-white rounded-lg p-4 shadow-sm border">
+                {messages.length === 0 ? (
+                  <div className="h-full flex flex-col items-center justify-center text-center">
+                    <div className="p-8 rounded-full bg-gradient-to-r from-blue-50 to-purple-50 mb-4">
+                      <Send className="h-12 w-12 text-blue-500" />
+                    </div>
+                    <h3 className="text-xl font-semibold text-slate-700 mb-2">Start the conversation</h3>
+                    <p className="text-slate-500">Send a message to get things started</p>
+                  </div>
+                ) : (
+                  messages.map(message => {
+                    const isFromUser = message.sender_id === user?.id;
+                    
+                    return (
+                      <div
+                        key={message.id}
+                        className={`flex ${isFromUser ? 'justify-end' : 'justify-start'}`}
+                      >
+                        <div className={`max-w-[75%] ${
+                          isFromUser 
+                            ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white' 
+                            : 'bg-gradient-to-r from-slate-100 to-slate-200 text-slate-800'
+                        } rounded-2xl px-4 py-3 shadow-sm`}>
+                          <p className="leading-relaxed">{message.content}</p>
+                          <p className={`text-xs mt-2 ${
+                            isFromUser ? 'text-blue-100' : 'text-slate-500'
+                          }`}>
+                            {format(new Date(message.created_at), 'h:mm a')}
+                          </p>
+                        </div>
+                      </div>
+                    );
+                  })
+                )}
+                <div ref={messagesEndRef} />
+              </div>
+              
+              {/* Message input */}
+              <form onSubmit={sendMessage} className="mt-6 flex gap-3 bg-white p-4 rounded-lg shadow-sm border">
+                <Input
+                  value={newMessage}
+                  onChange={(e) => setNewMessage(e.target.value)}
+                  placeholder="Type your message..."
+                  disabled={sending}
+                  className="flex-1 border-slate-200 focus:border-blue-500 focus:ring-blue-500"
+                />
+                <Button 
+                  type="submit" 
+                  disabled={!newMessage.trim() || sending}
+                  className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 px-6"
+                >
+                  {sending ? (
+                    <div className="h-4 w-4 border-t-2 border-r-2 border-white rounded-full animate-spin" />
+                  ) : (
+                    <Send className="h-4 w-4" />
+                  )}
+                  <span className="sr-only">Send</span>
+                </Button>
+              </form>
+            </>
           )}
         </div>
-        
-        {/* Product info card */}
-        {product && (
-          <Card className="p-3 mb-4 flex items-center">
-            <div className="w-12 h-12 rounded overflow-hidden shrink-0 mr-3">
-              <img
-                src={product.image || '/placeholder.svg'}
-                alt={product.title}
-                className="w-full h-full object-cover"
-              />
-            </div>
-            <div className="min-w-0">
-              <h3 className="font-medium line-clamp-1">{product.title}</h3>
-              <p className="text-sm font-semibold">${parseFloat(product.price.toString()).toFixed(2)}</p>
-            </div>
-            <Button size="sm" variant="outline" className="ml-auto shrink-0" asChild>
-              <Link to={`/product/${product.id}`}>View</Link>
-            </Button>
-          </Card>
-        )}
-        
-        {loading ? (
-          <div className="flex-1 flex justify-center items-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-          </div>
-        ) : (
-          <>
-            {/* Messages */}
-            <div className="flex-1 overflow-y-auto pb-4 space-y-3">
-              {messages.length === 0 ? (
-                <div className="h-full flex flex-col items-center justify-center text-center">
-                  <p className="text-muted-foreground">No messages yet</p>
-                  <p className="text-sm text-muted-foreground">
-                    Send a message to start the conversation
-                  </p>
-                </div>
-              ) : (
-                messages.map(message => {
-                  const isFromUser = message.sender_id === user?.id;
-                  
-                  return (
-                    <div
-                      key={message.id}
-                      className={`flex ${isFromUser ? 'justify-end' : 'justify-start'}`}
-                    >
-                      <div className={`max-w-[75%] ${isFromUser ? 'bg-primary text-white' : 'bg-muted'} rounded-lg px-4 py-2`}>
-                        <p>{message.content}</p>
-                        <p className={`text-xs mt-1 ${isFromUser ? 'text-primary-foreground/80' : 'text-muted-foreground'}`}>
-                          {format(new Date(message.created_at), 'h:mm a')}
-                        </p>
-                      </div>
-                    </div>
-                  );
-                })
-              )}
-              <div ref={messagesEndRef} />
-            </div>
-            
-            {/* Message input */}
-            <form onSubmit={sendMessage} className="mt-4 flex gap-2">
-              <Input
-                value={newMessage}
-                onChange={(e) => setNewMessage(e.target.value)}
-                placeholder="Type a message..."
-                disabled={sending}
-                className="flex-1"
-              />
-              <Button type="submit" disabled={!newMessage.trim() || sending}>
-                {sending ? (
-                  <div className="h-4 w-4 border-t-2 border-r-2 border-white rounded-full animate-spin" />
-                ) : (
-                  <Send className="h-4 w-4" />
-                )}
-                <span className="sr-only">Send</span>
-              </Button>
-            </form>
-          </>
-        )}
       </div>
     </Layout>
   );

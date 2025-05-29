@@ -8,7 +8,7 @@ import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { format } from 'date-fns';
-import { MessageSquare } from 'lucide-react';
+import { MessageSquare, Send } from 'lucide-react';
 
 interface ConversationPreview {
   id: string;
@@ -71,19 +71,19 @@ export default function MessagesPage() {
           userConversations.map(async ({ conversations: conversation }) => {
             if (!conversation) return null;
             
-            // Get the other participant
-            const { data: participants } = await supabase
+            // Get the other participant - simplified query
+            const { data: participantData } = await supabase
               .from('conversation_participants')
-              .select(`
-                user_id,
-                profiles (
-                  full_name,
-                  username,
-                  avatar_url
-                )
-              `)
+              .select('user_id')
               .eq('conversation_id', conversation.id)
               .neq('user_id', user.id)
+              .single();
+            
+            // Get profile data separately
+            const { data: profileData } = await supabase
+              .from('profiles')
+              .select('full_name, username, avatar_url')
+              .eq('id', participantData?.user_id)
               .single();
             
             // Get the most recent message
@@ -103,10 +103,10 @@ export default function MessagesPage() {
               .eq('is_primary', true)
               .single();
             
-            const otherUser = participants ? {
-              id: participants.user_id,
-              name: participants.profiles?.full_name || participants.profiles?.username || 'Unknown User',
-              avatar: participants.profiles?.avatar_url
+            const otherUser = participantData ? {
+              id: participantData.user_id,
+              name: profileData?.full_name || profileData?.username || 'Unknown User',
+              avatar: profileData?.avatar_url
             } : {
               id: '',
               name: 'Unknown User',
@@ -155,92 +155,115 @@ export default function MessagesPage() {
 
   return (
     <Layout>
-      <div className="container mx-auto px-4 py-8">
-        <h1 className="text-3xl font-bold mb-8">Messages</h1>
-        
-        {loading ? (
-          <div className="flex justify-center py-12">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
+        <div className="container mx-auto px-4 py-8">
+          <div className="mb-8">
+            <div className="flex items-center gap-3 mb-2">
+              <div className="p-2 bg-gradient-to-r from-blue-500 to-purple-500 rounded-lg">
+                <MessageSquare className="h-6 w-6 text-white" />
+              </div>
+              <h1 className="text-3xl font-bold bg-gradient-to-r from-slate-800 to-slate-600 bg-clip-text text-transparent">
+                Messages
+              </h1>
+            </div>
+            <p className="text-slate-600">Stay connected with buyers and sellers</p>
           </div>
-        ) : conversations.length > 0 ? (
-          <div className="space-y-4">
-            {conversations.map((conversation) => (
-              <Link key={conversation.id} to={`/conversation/${conversation.id}`}>
-                <Card className="hover:bg-accent/30 transition-colors cursor-pointer">
-                  <div className="p-4 flex gap-4">
-                    {/* Product image */}
-                    <div className="hidden sm:block w-16 h-16 relative rounded overflow-hidden shrink-0">
-                      <img
-                        src={conversation.product.image || '/placeholder.svg'}
-                        alt={conversation.product.title}
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
-                    
-                    {/* Message preview */}
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-start justify-between">
-                        <h3 className="font-medium line-clamp-1 flex-1">
-                          {conversation.product.title}
-                        </h3>
+          
+          {loading ? (
+            <div className="flex justify-center py-12">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+            </div>
+          ) : conversations.length > 0 ? (
+            <div className="space-y-4">
+              {conversations.map((conversation) => (
+                <Link key={conversation.id} to={`/conversation/${conversation.id}`}>
+                  <Card className="hover:shadow-lg transition-all duration-200 cursor-pointer bg-white border-slate-200 hover:border-blue-200">
+                    <div className="p-6 flex gap-4">
+                      {/* Product image */}
+                      <div className="hidden sm:block w-16 h-16 relative rounded-lg overflow-hidden shrink-0 shadow-sm">
+                        <img
+                          src={conversation.product.image || '/placeholder.svg'}
+                          alt={conversation.product.title}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                      
+                      {/* Message preview */}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-start justify-between">
+                          <h3 className="font-semibold line-clamp-1 flex-1 text-slate-800">
+                            {conversation.product.title}
+                          </h3>
+                          
+                          {conversation.lastMessage && (
+                            <span className="text-xs text-slate-500 whitespace-nowrap ml-4">
+                              {format(new Date(conversation.lastMessage.timestamp), 'MMM d, h:mm a')}
+                            </span>
+                          )}
+                        </div>
                         
-                        {conversation.lastMessage && (
-                          <span className="text-xs text-muted-foreground whitespace-nowrap">
-                            {format(new Date(conversation.lastMessage.timestamp), 'MMM d, h:mm a')}
+                        <div className="flex items-center gap-3 mt-2">
+                          <Avatar className="h-8 w-8 ring-2 ring-slate-100">
+                            {conversation.otherUser.avatar ? (
+                              <AvatarImage src={conversation.otherUser.avatar} />
+                            ) : (
+                              <AvatarFallback className="bg-gradient-to-r from-blue-500 to-purple-500 text-white text-sm">
+                                {conversation.otherUser.name[0]}
+                              </AvatarFallback>
+                            )}
+                          </Avatar>
+                          <span className="text-sm font-medium text-slate-700 line-clamp-1">
+                            {conversation.otherUser.name}
                           </span>
+                        </div>
+                        
+                        {conversation.lastMessage ? (
+                          <p className={`text-sm mt-3 line-clamp-2 ${
+                            !conversation.lastMessage.read && !conversation.lastMessage.isFromUser 
+                              ? 'font-medium text-slate-800' 
+                              : 'text-slate-600'
+                          }`}>
+                            {conversation.lastMessage.isFromUser ? (
+                              <span className="text-blue-600 font-medium">You: </span>
+                            ) : null}
+                            {conversation.lastMessage.content}
+                          </p>
+                        ) : (
+                          <p className="text-sm mt-3 text-slate-500 italic">
+                            No messages yet - start the conversation
+                          </p>
+                        )}
+                        
+                        {conversation.lastMessage && !conversation.lastMessage.read && !conversation.lastMessage.isFromUser && (
+                          <Badge variant="default" className="mt-3 bg-gradient-to-r from-blue-500 to-blue-600">
+                            New message
+                          </Badge>
                         )}
                       </div>
-                      
-                      <div className="flex items-center gap-2 mt-1">
-                        <Avatar className="h-6 w-6">
-                          {conversation.otherUser.avatar ? (
-                            <AvatarImage src={conversation.otherUser.avatar} />
-                          ) : (
-                            <AvatarFallback>{conversation.otherUser.name[0]}</AvatarFallback>
-                          )}
-                        </Avatar>
-                        <span className="text-sm line-clamp-1">{conversation.otherUser.name}</span>
-                      </div>
-                      
-                      {conversation.lastMessage ? (
-                        <p className={`text-sm mt-1 line-clamp-1 ${
-                          !conversation.lastMessage.read && !conversation.lastMessage.isFromUser 
-                            ? 'font-medium' 
-                            : 'text-muted-foreground'
-                        }`}>
-                          {conversation.lastMessage.isFromUser ? 'You: ' : ''}
-                          {conversation.lastMessage.content}
-                        </p>
-                      ) : (
-                        <p className="text-sm mt-1 text-muted-foreground italic">
-                          No messages yet
-                        </p>
-                      )}
-                      
-                      {conversation.lastMessage && !conversation.lastMessage.read && !conversation.lastMessage.isFromUser && (
-                        <Badge variant="default" className="mt-2">New</Badge>
-                      )}
                     </div>
-                  </div>
-                </Card>
+                  </Card>
+                </Link>
+              ))}
+            </div>
+          ) : (
+            <div className="flex flex-col items-center justify-center py-16 text-center">
+              <div className="p-8 bg-gradient-to-r from-blue-50 to-purple-50 rounded-full mb-6">
+                <MessageSquare className="h-16 w-16 text-blue-500" />
+              </div>
+              <h2 className="text-2xl font-bold text-slate-800 mb-3">No messages yet</h2>
+              <p className="text-slate-600 max-w-md mb-8 leading-relaxed">
+                When you contact sellers or receive messages about your listings, they'll appear here.
+              </p>
+              <Link 
+                to="/products" 
+                className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white px-6 py-3 rounded-lg font-medium transition-all duration-200 shadow-lg hover:shadow-xl"
+              >
+                <Send className="h-4 w-4" />
+                Browse Products
               </Link>
-            ))}
-          </div>
-        ) : (
-          <div className="flex flex-col items-center justify-center py-12 text-center">
-            <MessageSquare className="h-20 w-20 text-muted-foreground mb-4" />
-            <h2 className="text-xl font-semibold mb-2">No messages yet</h2>
-            <p className="text-muted-foreground max-w-md mb-8">
-              When you contact sellers or receive messages about your listings, they'll appear here.
-            </p>
-            <Link 
-              to="/products" 
-              className="bg-primary hover:bg-primary/90 text-white px-4 py-2 rounded"
-            >
-              Browse Products
-            </Link>
-          </div>
-        )}
+            </div>
+          )}
+        </div>
       </div>
     </Layout>
   );

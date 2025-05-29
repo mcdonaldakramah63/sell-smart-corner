@@ -1,359 +1,405 @@
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import Layout from '@/components/layout/Layout';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import Layout from '@/components/layout/Layout';
 import { Button } from '@/components/ui/button';
-import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Card, CardContent } from '@/components/ui/card';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { ImagePlus, Trash2, Loader2 } from 'lucide-react';
-import { v4 as uuidv4 } from 'uuid';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Label } from '@/components/ui/label';
+import { PlusCircle, Upload, X, Package, DollarSign, MapPin, Tag } from 'lucide-react';
 
-type Category = {
-  id: string;
-  name: string;
-};
+interface ProductForm {
+  title: string;
+  description: string;
+  price: string;
+  category: string;
+  condition: string;
+  location: string;
+}
 
 export default function CreateProductPage() {
-  const navigate = useNavigate();
   const { user } = useAuth();
+  const navigate = useNavigate();
   const { toast } = useToast();
   
-  const [title, setTitle] = useState('');
-  const [description, setDescription] = useState('');
-  const [price, setPrice] = useState('');
-  const [condition, setCondition] = useState('');
-  const [categoryId, setCategoryId] = useState('');
-  const [location, setLocation] = useState('');
-  const [images, setImages] = useState<File[]>([]);
-  const [imageUrls, setImageUrls] = useState<string[]>([]);
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [fetchingCategories, setFetchingCategories] = useState(true);
+  const [form, setForm] = useState<ProductForm>({
+    title: '',
+    description: '',
+    price: '',
+    category: '',
+    condition: '',
+    location: ''
+  });
   
-  // Fetch categories when component mounts
-  useEffect(() => {
-    const fetchCategories = async () => {
-      try {
-        const { data, error } = await supabase
-          .from('categories')
-          .select('id, name')
-          .order('name');
-        
-        if (error) throw error;
-        
-        setCategories(data || []);
-      } catch (error) {
-        console.error('Error fetching categories:', error);
-        toast({
-          title: 'Error',
-          description: 'Failed to load categories',
-          variant: 'destructive'
-        });
-      } finally {
-        setFetchingCategories(false);
-      }
-    };
-    
-    fetchCategories();
-  }, [toast]);
+  const [images, setImages] = useState<File[]>([]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [previewUrls, setPreviewUrls] = useState<string[]>([]);
 
-  const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const files = event.target.files;
-    if (!files || files.length === 0) return;
-    
-    const newFiles = Array.from(files);
-    setImages(prev => [...prev, ...newFiles]);
-    
-    // Create temporary preview URLs
-    newFiles.forEach(file => {
-      const url = URL.createObjectURL(file);
-      setImageUrls(prev => [...prev, url]);
-    });
+  const handleInputChange = (field: keyof ProductForm, value: string) => {
+    setForm(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    if (files.length + images.length > 5) {
+      toast({
+        title: 'Too many images',
+        description: 'You can upload a maximum of 5 images',
+        variant: 'destructive'
+      });
+      return;
+    }
+
+    const newImages = [...images, ...files];
+    setImages(newImages);
+
+    // Create preview URLs
+    const newPreviewUrls = files.map(file => URL.createObjectURL(file));
+    setPreviewUrls(prev => [...prev, ...newPreviewUrls]);
   };
 
   const removeImage = (index: number) => {
-    // Revoke object URL to avoid memory leaks
-    URL.revokeObjectURL(imageUrls[index]);
+    const newImages = images.filter((_, i) => i !== index);
+    const newPreviewUrls = previewUrls.filter((_, i) => i !== index);
     
-    setImages(prev => {
-      const updated = [...prev];
-      updated.splice(index, 1);
-      return updated;
-    });
+    // Clean up object URL
+    URL.revokeObjectURL(previewUrls[index]);
     
-    setImageUrls(prev => {
-      const updated = [...prev];
-      updated.splice(index, 1);
-      return updated;
-    });
+    setImages(newImages);
+    setPreviewUrls(newPreviewUrls);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!user?.id) {
+    if (!user) {
       toast({
         title: 'Authentication required',
-        description: 'Please log in to create a product listing',
+        description: 'Please log in to create a listing',
         variant: 'destructive'
       });
       return;
     }
-    
-    if (images.length === 0) {
+
+    if (!form.title || !form.price || !form.category || !form.condition) {
       toast({
-        title: 'Images required',
-        description: 'Please upload at least one image',
+        title: 'Missing information',
+        description: 'Please fill in all required fields',
         variant: 'destructive'
       });
       return;
     }
-    
+
+    setIsSubmitting(true);
+
     try {
-      setLoading(true);
+      // Generate a unique ID for the product
+      const productId = crypto.randomUUID();
       
-      // Create product with both user_id and seller_id
-      const { data: product, error: productError } = await supabase
+      // Create product
+      const { error: productError } = await supabase
         .from('products')
         .insert({
-          title,
-          description,
-          price: parseFloat(price),
+          id: productId,
+          title: form.title,
+          description: form.description || null,
+          price: parseFloat(form.price),
+          category_id: form.category,
+          condition: form.condition,
+          location: form.location || null,
           user_id: user.id,
-          seller_id: user.id,
-          category_id: categoryId,
-          condition,
-          location
-        })
-        .select()
-        .single();
-      
-      if (productError) throw productError;
-      
-      // Upload images
-      const imagePromises = images.map(async (file, index) => {
-        const fileExt = file.name.split('.').pop();
-        const fileName = `${user.id}/${uuidv4()}.${fileExt}`;
-        const filePath = `${fileName}`;
-        
-        const { error: uploadError } = await supabase.storage
-          .from('product-images')
-          .upload(filePath, file);
-        
-        if (uploadError) throw uploadError;
-        
-        // Get public URL
-        const { data } = supabase.storage
-          .from('product-images')
-          .getPublicUrl(filePath);
-        
-        // Store image reference in database
-        await supabase.from('product_images').insert({
-          product_id: product.id,
-          image_url: data.publicUrl,
-          is_primary: index === 0 // First image is primary
+          seller_id: user.id
         });
-        
-        return data.publicUrl;
-      });
-      
-      await Promise.all(imagePromises);
-      
+
+      if (productError) throw productError;
+
+      // Upload images if any
+      if (images.length > 0) {
+        for (let i = 0; i < images.length; i++) {
+          const file = images[i];
+          const fileExt = file.name.split('.').pop();
+          const fileName = `${productId}/${crypto.randomUUID()}.${fileExt}`;
+
+          const { error: uploadError } = await supabase.storage
+            .from('product-images')
+            .upload(fileName, file);
+
+          if (uploadError) {
+            console.error('Error uploading image:', uploadError);
+            continue;
+          }
+
+          // Get public URL
+          const { data: { publicUrl } } = supabase.storage
+            .from('product-images')
+            .getPublicUrl(fileName);
+
+          // Save image record
+          await supabase
+            .from('product_images')
+            .insert({
+              product_id: productId,
+              image_url: publicUrl,
+              is_primary: i === 0
+            });
+        }
+      }
+
       toast({
-        title: 'Success',
-        description: 'Your product has been listed',
+        title: 'Product created successfully!',
+        description: 'Your listing is now live'
       });
-      
-      navigate(`/product/${product.id}`);
+
+      navigate(`/product/${productId}`);
     } catch (error) {
       console.error('Error creating product:', error);
       toast({
         title: 'Error',
-        description: 'Failed to create product listing',
+        description: 'Failed to create product. Please try again.',
         variant: 'destructive'
       });
     } finally {
-      setLoading(false);
+      setIsSubmitting(false);
     }
   };
 
   return (
     <Layout>
-      <div className="container mx-auto px-4 py-8">
-        <h1 className="text-3xl font-bold mb-6">Create New Listing</h1>
-        
-        <form onSubmit={handleSubmit} className="space-y-8 max-w-3xl">
-          {/* Product Details */}
-          <div className="space-y-4">
-            <h2 className="text-xl font-semibold">Product Details</h2>
-            
-            <div>
-              <Label htmlFor="title">Title</Label>
-              <Input
-                id="title"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                placeholder="What are you selling?"
-                required
-                className="mt-1"
-              />
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
+        <div className="container mx-auto px-4 py-8">
+          <div className="mb-8">
+            <div className="flex items-center gap-3 mb-2">
+              <div className="p-2 bg-gradient-to-r from-green-500 to-blue-500 rounded-lg">
+                <PlusCircle className="h-6 w-6 text-white" />
+              </div>
+              <h1 className="text-3xl font-bold bg-gradient-to-r from-slate-800 to-slate-600 bg-clip-text text-transparent">
+                Create Listing
+              </h1>
             </div>
-            
-            <div>
-              <Label htmlFor="description">Description</Label>
-              <Textarea
-                id="description"
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                placeholder="Describe your item in detail"
-                required
-                className="mt-1"
-                rows={5}
-              />
-            </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="price">Price ($)</Label>
-                <Input
-                  id="price"
-                  type="number"
-                  step="0.01"
-                  min="0"
-                  value={price}
-                  onChange={(e) => setPrice(e.target.value)}
-                  placeholder="0.00"
-                  required
-                  className="mt-1"
-                />
-              </div>
-              
-              <div>
-                <Label htmlFor="condition">Condition</Label>
-                <Select value={condition} onValueChange={setCondition} required>
-                  <SelectTrigger id="condition" className="mt-1">
-                    <SelectValue placeholder="Select condition" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="new">New</SelectItem>
-                    <SelectItem value="like-new">Like New</SelectItem>
-                    <SelectItem value="good">Good</SelectItem>
-                    <SelectItem value="fair">Fair</SelectItem>
-                    <SelectItem value="poor">Poor</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              
-              <div>
-                <Label htmlFor="category">Category</Label>
-                <Select value={categoryId} onValueChange={setCategoryId} required disabled={fetchingCategories}>
-                  <SelectTrigger id="category" className="mt-1">
-                    <SelectValue placeholder={fetchingCategories ? "Loading categories..." : "Select category"} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {categories.map(category => (
-                      <SelectItem key={category.id} value={category.id}>
-                        {category.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              
-              <div>
-                <Label htmlFor="location">Location</Label>
-                <Input
-                  id="location"
-                  value={location}
-                  onChange={(e) => setLocation(e.target.value)}
-                  placeholder="Where is the item located?"
-                  className="mt-1"
-                />
-              </div>
-            </div>
+            <p className="text-slate-600">List your item for sale on the marketplace</p>
           </div>
-          
-          {/* Product Images */}
-          <div className="space-y-4">
-            <h2 className="text-xl font-semibold">Product Images</h2>
-            <p className="text-sm text-muted-foreground">
-              Upload at least one image. The first image will be the cover image.
-            </p>
-            
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 mt-4">
-              {imageUrls.map((url, index) => (
-                <Card key={index} className="relative group">
-                  <CardContent className="p-0">
-                    <img
-                      src={url}
-                      alt={`Product image ${index + 1}`}
-                      className="w-full h-32 object-cover rounded-md"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => removeImage(index)}
-                      className="absolute top-2 right-2 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </button>
-                    {index === 0 && (
-                      <span className="absolute top-0 left-0 bg-primary text-white px-2 py-1 text-xs rounded-br">
-                        Cover
-                      </span>
-                    )}
-                  </CardContent>
-                </Card>
-              ))}
-              
-              {/* Image upload button */}
-              <Card className="border-dashed">
-                <CardContent className="p-0">
-                  <Label
-                    htmlFor="images"
-                    className="flex flex-col items-center justify-center w-full h-32 cursor-pointer"
-                  >
-                    <ImagePlus className="h-8 w-8 text-muted-foreground" />
-                    <span className="mt-2 text-sm text-muted-foreground">
-                      Add Image
-                    </span>
+
+          <form onSubmit={handleSubmit} className="max-w-4xl space-y-8">
+            {/* Product Details */}
+            <Card className="shadow-lg border-slate-200 bg-white">
+              <CardHeader className="bg-gradient-to-r from-slate-50 to-blue-50 rounded-t-lg">
+                <div className="flex items-center gap-3">
+                  <div className="p-1.5 bg-gradient-to-r from-blue-500 to-purple-500 rounded-md">
+                    <Package className="h-4 w-4 text-white" />
+                  </div>
+                  <CardTitle className="text-slate-800">Product Information</CardTitle>
+                </div>
+                <CardDescription>
+                  Provide details about your item to attract buyers
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6 pt-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-2">
+                    <Label htmlFor="title" className="text-slate-700 font-medium">
+                      Product Title *
+                    </Label>
                     <Input
-                      id="images"
-                      type="file"
-                      accept="image/*"
-                      multiple
-                      onChange={handleImageChange}
-                      className="sr-only"
+                      id="title"
+                      placeholder="Enter a descriptive title"
+                      value={form.title}
+                      onChange={(e) => handleInputChange('title', e.target.value)}
+                      className="border-slate-200 focus:border-blue-500 focus:ring-blue-500"
                     />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="price" className="text-slate-700 font-medium flex items-center gap-1">
+                      <DollarSign className="h-4 w-4" />
+                      Price *
+                    </Label>
+                    <Input
+                      id="price"
+                      type="number"
+                      step="0.01"
+                      placeholder="0.00"
+                      value={form.price}
+                      onChange={(e) => handleInputChange('price', e.target.value)}
+                      className="border-slate-200 focus:border-blue-500 focus:ring-blue-500"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="description" className="text-slate-700 font-medium">
+                    Description
                   </Label>
-                </CardContent>
-              </Card>
+                  <Textarea
+                    id="description"
+                    placeholder="Describe your item's condition, features, and any relevant details..."
+                    value={form.description}
+                    onChange={(e) => handleInputChange('description', e.target.value)}
+                    rows={4}
+                    className="border-slate-200 focus:border-blue-500 focus:ring-blue-500"
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <div className="space-y-2">
+                    <Label className="text-slate-700 font-medium flex items-center gap-1">
+                      <Tag className="h-4 w-4" />
+                      Category *
+                    </Label>
+                    <Select value={form.category} onValueChange={(value) => handleInputChange('category', value)}>
+                      <SelectTrigger className="border-slate-200 focus:border-blue-500 focus:ring-blue-500">
+                        <SelectValue placeholder="Select category" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="electronics">Electronics</SelectItem>
+                        <SelectItem value="clothing">Clothing</SelectItem>
+                        <SelectItem value="home">Home & Garden</SelectItem>
+                        <SelectItem value="sports">Sports & Recreation</SelectItem>
+                        <SelectItem value="books">Books & Media</SelectItem>
+                        <SelectItem value="automotive">Automotive</SelectItem>
+                        <SelectItem value="other">Other</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label className="text-slate-700 font-medium">
+                      Condition *
+                    </Label>
+                    <Select value={form.condition} onValueChange={(value) => handleInputChange('condition', value)}>
+                      <SelectTrigger className="border-slate-200 focus:border-blue-500 focus:ring-blue-500">
+                        <SelectValue placeholder="Select condition" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="new">New</SelectItem>
+                        <SelectItem value="like-new">Like New</SelectItem>
+                        <SelectItem value="good">Good</SelectItem>
+                        <SelectItem value="fair">Fair</SelectItem>
+                        <SelectItem value="poor">Poor</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="location" className="text-slate-700 font-medium flex items-center gap-1">
+                      <MapPin className="h-4 w-4" />
+                      Location
+                    </Label>
+                    <Input
+                      id="location"
+                      placeholder="City, State"
+                      value={form.location}
+                      onChange={(e) => handleInputChange('location', e.target.value)}
+                      className="border-slate-200 focus:border-blue-500 focus:ring-blue-500"
+                    />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Image Upload */}
+            <Card className="shadow-lg border-slate-200 bg-white">
+              <CardHeader className="bg-gradient-to-r from-slate-50 to-blue-50 rounded-t-lg">
+                <div className="flex items-center gap-3">
+                  <div className="p-1.5 bg-gradient-to-r from-purple-500 to-pink-500 rounded-md">
+                    <Upload className="h-4 w-4 text-white" />
+                  </div>
+                  <CardTitle className="text-slate-800">Product Images</CardTitle>
+                </div>
+                <CardDescription>
+                  Upload up to 5 images to showcase your item (first image will be the main photo)
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="pt-6">
+                <div className="space-y-4">
+                  {images.length < 5 && (
+                    <div className="border-2 border-dashed border-slate-300 rounded-lg p-8 text-center hover:border-blue-400 transition-colors">
+                      <input
+                        type="file"
+                        accept="image/*"
+                        multiple
+                        onChange={handleImageSelect}
+                        className="hidden"
+                        id="image-upload"
+                      />
+                      <label
+                        htmlFor="image-upload"
+                        className="cursor-pointer flex flex-col items-center gap-3"
+                      >
+                        <div className="p-3 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full">
+                          <Upload className="h-6 w-6 text-white" />
+                        </div>
+                        <div>
+                          <p className="text-slate-700 font-medium">Click to upload images</p>
+                          <p className="text-sm text-slate-500">PNG, JPG up to 10MB each</p>
+                        </div>
+                      </label>
+                    </div>
+                  )}
+
+                  {previewUrls.length > 0 && (
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+                      {previewUrls.map((url, index) => (
+                        <div key={index} className="relative group">
+                          <img
+                            src={url}
+                            alt={`Preview ${index + 1}`}
+                            className="w-full h-32 object-cover rounded-lg border shadow-sm"
+                          />
+                          {index === 0 && (
+                            <div className="absolute top-2 left-2 bg-green-500 text-white px-2 py-1 rounded text-xs font-medium">
+                              Main
+                            </div>
+                          )}
+                          <button
+                            type="button"
+                            onClick={() => removeImage(index)}
+                            className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-600"
+                          >
+                            <X className="h-3 w-3" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Submit Button */}
+            <div className="flex justify-end gap-4">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => navigate('/dashboard')}
+                className="px-8"
+              >
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                disabled={isSubmitting}
+                className="px-8 bg-gradient-to-r from-green-500 to-blue-500 hover:from-green-600 hover:to-blue-600 text-white"
+              >
+                {isSubmitting ? (
+                  <div className="flex items-center gap-2">
+                    <div className="h-4 w-4 border-t-2 border-r-2 border-white rounded-full animate-spin" />
+                    Creating...
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-2">
+                    <PlusCircle className="h-4 w-4" />
+                    Create Listing
+                  </div>
+                )}
+              </Button>
             </div>
-          </div>
-          
-          {/* Submit button */}
-          <div className="flex justify-end pt-4">
-            <Button 
-              type="submit" 
-              disabled={loading}
-              className="w-full md:w-auto"
-            >
-              {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              {loading ? 'Creating listing...' : 'Create Listing'}
-            </Button>
-          </div>
-        </form>
+          </form>
+        </div>
       </div>
     </Layout>
   );
