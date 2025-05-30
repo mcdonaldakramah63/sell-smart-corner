@@ -124,44 +124,88 @@ export default function ProductDetailPage() {
 
     try {
       setIsCreatingConversation(true);
+      console.log('Starting conversation creation for product:', product.id);
 
-      // Check if conversation already exists
-      const { data: existingConversation } = await supabase
+      // Check if conversation already exists between these two users for this product
+      const { data: existingConversations, error: searchError } = await supabase
         .from('conversations')
-        .select('id')
-        .eq('product_id', product.id)
-        .single();
+        .select(`
+          id,
+          conversation_participants!inner(user_id)
+        `)
+        .eq('product_id', product.id);
 
-      let conversationId = existingConversation?.id;
-
-      if (!conversationId) {
-        // Create new conversation
-        const { data: newConversation, error: conversationError } = await supabase
-          .from('conversations')
-          .insert({
-            product_id: product.id
-          })
-          .select('id')
-          .single();
-
-        if (conversationError) throw conversationError;
-        conversationId = newConversation.id;
-
-        // Add participants
-        const { error: participantsError } = await supabase
-          .from('conversation_participants')
-          .insert([
-            { conversation_id: conversationId, user_id: user.id },
-            { conversation_id: conversationId, user_id: product.seller.id }
-          ]);
-
-        if (participantsError) throw participantsError;
+      if (searchError) {
+        console.error('Error searching for existing conversations:', searchError);
+        throw searchError;
       }
 
+      console.log('Existing conversations found:', existingConversations);
+
+      // Find a conversation that has both users as participants
+      let existingConversationId = null;
+      if (existingConversations && existingConversations.length > 0) {
+        for (const conv of existingConversations) {
+          // Get all participants for this conversation
+          const { data: participants, error: participantsError } = await supabase
+            .from('conversation_participants')
+            .select('user_id')
+            .eq('conversation_id', conv.id);
+
+          if (participantsError) continue;
+
+          const participantIds = participants?.map(p => p.user_id) || [];
+          
+          // Check if both current user and seller are participants
+          if (participantIds.includes(user.id) && participantIds.includes(product.seller.id)) {
+            existingConversationId = conv.id;
+            break;
+          }
+        }
+      }
+
+      if (existingConversationId) {
+        console.log('Found existing conversation:', existingConversationId);
+        navigate(`/conversation/${existingConversationId}`);
+        return;
+      }
+
+      console.log('Creating new conversation...');
+      // Create new conversation
+      const { data: newConversation, error: conversationError } = await supabase
+        .from('conversations')
+        .insert({
+          product_id: product.id
+        })
+        .select('id')
+        .single();
+
+      if (conversationError) {
+        console.error('Error creating conversation:', conversationError);
+        throw conversationError;
+      }
+
+      console.log('New conversation created:', newConversation.id);
+
+      // Add participants
+      const { error: participantsError } = await supabase
+        .from('conversation_participants')
+        .insert([
+          { conversation_id: newConversation.id, user_id: user.id },
+          { conversation_id: newConversation.id, user_id: product.seller.id }
+        ]);
+
+      if (participantsError) {
+        console.error('Error adding participants:', participantsError);
+        throw participantsError;
+      }
+
+      console.log('Participants added successfully');
+
       // Navigate to conversation
-      navigate(`/conversation/${conversationId}`);
+      navigate(`/conversation/${newConversation.id}`);
     } catch (error) {
-      console.error('Error creating conversation:', error);
+      console.error('Error in handleMessage:', error);
       toast({
         title: 'Error',
         description: 'Failed to start conversation. Please try again.',
