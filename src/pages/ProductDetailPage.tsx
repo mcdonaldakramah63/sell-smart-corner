@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import Layout from '@/components/layout/Layout';
@@ -102,7 +103,12 @@ export default function ProductDetailPage() {
   };
 
   const handleMessage = async () => {
+    console.log('=== MESSAGE SELLER CLICKED (DETAIL PAGE) ===');
+    console.log('User:', user);
+    console.log('Product:', product);
+    
     if (!user) {
+      console.log('No user found, redirecting to auth');
       toast({
         title: 'Login required',
         description: 'Please log in to message the seller',
@@ -111,9 +117,13 @@ export default function ProductDetailPage() {
       return;
     }
 
-    if (!product) return;
+    if (!product) {
+      console.log('No product found');
+      return;
+    }
 
     if (user.id === product.seller.id) {
+      console.log('User trying to message themselves');
       toast({
         title: 'Cannot message yourself',
         description: 'You cannot start a conversation with yourself',
@@ -124,54 +134,51 @@ export default function ProductDetailPage() {
 
     try {
       setIsCreatingConversation(true);
-      console.log('Starting conversation creation for product:', product.id);
+      console.log('Starting conversation creation process...');
 
-      // Check if conversation already exists between these two users for this product
+      // Step 1: Check if conversation already exists
+      console.log('Step 1: Checking for existing conversations');
       const { data: existingConversations, error: searchError } = await supabase
         .from('conversations')
-        .select(`
-          id,
-          conversation_participants!inner(user_id)
-        `)
+        .select('id')
         .eq('product_id', product.id);
 
       if (searchError) {
-        console.error('Error searching for existing conversations:', searchError);
-        throw searchError;
+        console.error('Error searching conversations:', searchError);
+        throw new Error(`Failed to search conversations: ${searchError.message}`);
       }
 
-      console.log('Existing conversations found:', existingConversations);
+      console.log('Found conversations for product:', existingConversations);
 
-      // Find a conversation that has both users as participants
-      let existingConversationId = null;
+      // Step 2: Check if user is already in any of these conversations
       if (existingConversations && existingConversations.length > 0) {
+        console.log('Step 2: Checking existing participants');
+        
         for (const conv of existingConversations) {
-          // Get all participants for this conversation
           const { data: participants, error: participantsError } = await supabase
             .from('conversation_participants')
             .select('user_id')
             .eq('conversation_id', conv.id);
 
-          if (participantsError) continue;
+          if (participantsError) {
+            console.error('Error fetching participants:', participantsError);
+            continue;
+          }
 
+          console.log(`Participants for conversation ${conv.id}:`, participants);
+          
           const participantIds = participants?.map(p => p.user_id) || [];
           
-          // Check if both current user and seller are participants
           if (participantIds.includes(user.id) && participantIds.includes(product.seller.id)) {
-            existingConversationId = conv.id;
-            break;
+            console.log('Found existing conversation:', conv.id);
+            navigate(`/conversation/${conv.id}`);
+            return;
           }
         }
       }
 
-      if (existingConversationId) {
-        console.log('Found existing conversation:', existingConversationId);
-        navigate(`/conversation/${existingConversationId}`);
-        return;
-      }
-
-      console.log('Creating new conversation...');
-      // Create new conversation
+      // Step 3: Create new conversation
+      console.log('Step 3: Creating new conversation');
       const { data: newConversation, error: conversationError } = await supabase
         .from('conversations')
         .insert({
@@ -182,33 +189,41 @@ export default function ProductDetailPage() {
 
       if (conversationError) {
         console.error('Error creating conversation:', conversationError);
-        throw conversationError;
+        throw new Error(`Failed to create conversation: ${conversationError.message}`);
       }
 
-      console.log('New conversation created:', newConversation.id);
+      console.log('New conversation created:', newConversation);
 
-      // Add participants
+      // Step 4: Add participants
+      console.log('Step 4: Adding participants');
+      const participantsToAdd = [
+        { conversation_id: newConversation.id, user_id: user.id },
+        { conversation_id: newConversation.id, user_id: product.seller.id }
+      ];
+      
+      console.log('Adding participants:', participantsToAdd);
+      
       const { error: participantsError } = await supabase
         .from('conversation_participants')
-        .insert([
-          { conversation_id: newConversation.id, user_id: user.id },
-          { conversation_id: newConversation.id, user_id: product.seller.id }
-        ]);
+        .insert(participantsToAdd);
 
       if (participantsError) {
         console.error('Error adding participants:', participantsError);
-        throw participantsError;
+        throw new Error(`Failed to add participants: ${participantsError.message}`);
       }
 
       console.log('Participants added successfully');
-
-      // Navigate to conversation
+      console.log('Navigating to conversation:', newConversation.id);
+      
+      // Step 5: Navigate to conversation
       navigate(`/conversation/${newConversation.id}`);
+      
     } catch (error) {
-      console.error('Error in handleMessage:', error);
+      console.error('=== CONVERSATION CREATION ERROR (DETAIL PAGE) ===');
+      console.error('Error details:', error);
       toast({
         title: 'Error',
-        description: 'Failed to start conversation. Please try again.',
+        description: error instanceof Error ? error.message : 'Failed to start conversation. Please try again.',
         variant: 'destructive'
       });
     } finally {
@@ -336,7 +351,6 @@ export default function ProductDetailPage() {
               </CardContent>
             </Card>
             
-            {/* Product Description */}
             <Card>
               <CardHeader>
                 <CardTitle className="text-lg">Description</CardTitle>
