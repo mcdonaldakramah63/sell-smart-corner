@@ -11,16 +11,11 @@ export const createOrFindConversation = async (
   console.log('Current User ID:', currentUserId);
   console.log('Seller ID:', product.seller.id);
 
-  // Step 1: Check if conversation already exists between current user and seller for this product
+  // Step 1: Check if conversation already exists for this product
   console.log('Step 1: Checking for existing conversations');
   const { data: existingConversations, error: searchError } = await supabase
     .from('conversations')
-    .select(`
-      id,
-      conversation_participants!inner (
-        user_id
-      )
-    `)
+    .select('id')
     .eq('product_id', product.id);
 
   if (searchError) {
@@ -32,13 +27,12 @@ export const createOrFindConversation = async (
 
   // Step 2: Check if current user is already in any of these conversations with the seller
   if (existingConversations && existingConversations.length > 0) {
-    console.log('Step 2: Checking existing participants');
+    console.log('Step 2: Checking existing participants using security definer function');
     
     for (const conv of existingConversations) {
+      // Use the security definer function to safely get participants
       const { data: participants, error: participantsError } = await supabase
-        .from('conversation_participants')
-        .select('user_id')
-        .eq('conversation_id', conv.id);
+        .rpc('get_conversation_participants', { conversation_uuid: conv.id });
 
       if (participantsError) {
         console.error('Error fetching participants:', participantsError);

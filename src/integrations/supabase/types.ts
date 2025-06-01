@@ -292,6 +292,12 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_conversation_participants: {
+        Args: { conversation_uuid: string }
+        Returns: {
+          user_id: string
+        }[]
+      }
       is_conversation_participant: {
         Args: { conversation_uuid: string; user_uuid: string }
         Returns: boolean
