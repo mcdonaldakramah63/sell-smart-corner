@@ -56,16 +56,20 @@ export default function ConversationPage() {
       try {
         setLoading(true);
         
-        // Check if user is part of this conversation
-        const { data: isParticipant, error: participantError } = await supabase
-          .from('conversation_participants')
-          .select('user_id')
-          .eq('conversation_id', id)
-          .eq('user_id', user.id);
+        // Check if user is part of this conversation using security definer function
+        console.log('Checking if user is participant using security definer function');
+        const { data: participants, error: participantError } = await supabase
+          .rpc('get_conversation_participants', { conversation_uuid: id });
         
-        if (participantError) throw participantError;
+        if (participantError) {
+          console.error('Error checking participants:', participantError);
+          throw participantError;
+        }
         
-        if (!isParticipant || isParticipant.length === 0) {
+        const participantIds = participants?.map(p => p.user_id) || [];
+        const isParticipant = participantIds.includes(user.id);
+        
+        if (!isParticipant) {
           toast({
             title: 'Access denied',
             description: 'You do not have access to this conversation',
@@ -99,21 +103,18 @@ export default function ConversationPage() {
           .eq('is_primary', true)
           .single();
         
-        // Get other participant - simplified query without join
-        const { data: otherParticipantData, error: participantsError } = await supabase
-          .from('conversation_participants')
-          .select('user_id')
-          .eq('conversation_id', id)
-          .neq('user_id', user.id)
-          .single();
+        // Get other participant (not current user)
+        const otherParticipantId = participantIds.find(pid => pid !== user.id);
         
-        if (participantsError) throw participantsError;
+        if (!otherParticipantId) {
+          throw new Error('Could not find other participant');
+        }
         
-        // Get profile data separately
+        // Get profile data for other participant
         const { data: profileData } = await supabase
           .from('profiles')
           .select('full_name, username, avatar_url')
-          .eq('id', otherParticipantData.user_id)
+          .eq('id', otherParticipantId)
           .single();
         
         setProduct({
@@ -124,7 +125,7 @@ export default function ConversationPage() {
         });
         
         setOtherUser({
-          id: otherParticipantData.user_id,
+          id: otherParticipantId,
           name: profileData?.full_name || profileData?.username || 'Unknown User',
           avatar: profileData?.avatar_url
         });
@@ -234,14 +235,16 @@ export default function ConversationPage() {
         .eq('id', id);
       
       // Create notification for recipient
-      await supabase
-        .from('notifications')
-        .insert({
-          user_id: otherUser?.id,
-          type: 'message',
-          content: `New message about "${product?.title}"`,
-          action_url: `/conversation/${id}`
-        });
+      if (otherUser?.id) {
+        await supabase
+          .from('notifications')
+          .insert({
+            user_id: otherUser.id,
+            type: 'message',
+            content: `New message about "${product?.title}"`,
+            action_url: `/conversation/${id}`
+          });
+      }
       
       // Clear input
       setNewMessage('');
