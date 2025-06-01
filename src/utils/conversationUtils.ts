@@ -11,11 +11,16 @@ export const createOrFindConversation = async (
   console.log('Current User ID:', currentUserId);
   console.log('Seller ID:', product.seller.id);
 
-  // Step 1: Check if conversation already exists
+  // Step 1: Check if conversation already exists between current user and seller for this product
   console.log('Step 1: Checking for existing conversations');
   const { data: existingConversations, error: searchError } = await supabase
     .from('conversations')
-    .select('id')
+    .select(`
+      id,
+      conversation_participants!inner (
+        user_id
+      )
+    `)
     .eq('product_id', product.id);
 
   if (searchError) {
@@ -25,7 +30,7 @@ export const createOrFindConversation = async (
 
   console.log('Found conversations for product:', existingConversations);
 
-  // Step 2: Check if user is already in any of these conversations
+  // Step 2: Check if current user is already in any of these conversations with the seller
   if (existingConversations && existingConversations.length > 0) {
     console.log('Step 2: Checking existing participants');
     
@@ -51,8 +56,18 @@ export const createOrFindConversation = async (
     }
   }
 
-  // Step 3: Create new conversation
+  // Step 3: Create new conversation with explicit user context
   console.log('Step 3: Creating new conversation');
+  
+  // Get current user session to ensure we're authenticated
+  const { data: { user } } = await supabase.auth.getUser();
+  
+  if (!user) {
+    throw new Error('User not authenticated');
+  }
+
+  console.log('Current authenticated user:', user.id);
+
   const { data: newConversation, error: conversationError } = await supabase
     .from('conversations')
     .insert({
