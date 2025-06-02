@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import Layout from '@/components/layout/Layout';
@@ -42,48 +41,61 @@ export default function MessagesPage() {
       try {
         setLoading(true);
         
-        // Get conversations the user is part of
-        const { data: userConversations, error: conversationsError } = await supabase
-          .from('conversation_participants')
+        // Get all conversations where the user is a participant using the security definer function
+        const { data: allConversations, error: conversationsError } = await supabase
+          .from('conversations')
           .select(`
-            conversation_id,
-            conversations (
+            id,
+            product_id,
+            updated_at,
+            products (
               id,
-              product_id,
-              updated_at,
-              products (
-                id,
-                title
-              )
+              title
             )
-          `)
-          .eq('user_id', user.id);
+          `);
         
         if (conversationsError) throw conversationsError;
         
-        if (!userConversations.length) {
+        if (!allConversations.length) {
           setConversations([]);
           return;
         }
         
+        // Filter conversations where the user is a participant using the security definer function
+        const userConversations = [];
+        
+        for (const conversation of allConversations) {
+          // Check if user is participant in this conversation
+          const { data: participants, error: participantsError } = await supabase
+            .rpc('get_conversation_participants', { conversation_uuid: conversation.id });
+          
+          if (participantsError) {
+            console.error('Error checking participants:', participantsError);
+            continue;
+          }
+          
+          const participantIds = participants?.map(p => p.user_id) || [];
+          
+          if (participantIds.includes(user.id)) {
+            userConversations.push(conversation);
+          }
+        }
+        
         // Process conversation data
         const conversationPreviews = await Promise.all(
-          userConversations.map(async ({ conversations: conversation }) => {
-            if (!conversation) return null;
+          userConversations.map(async (conversation) => {
+            // Get the other participant using the security definer function
+            const { data: participants } = await supabase
+              .rpc('get_conversation_participants', { conversation_uuid: conversation.id });
             
-            // Get the other participant - simplified query
-            const { data: participantData } = await supabase
-              .from('conversation_participants')
-              .select('user_id')
-              .eq('conversation_id', conversation.id)
-              .neq('user_id', user.id)
-              .single();
+            const participantIds = participants?.map(p => p.user_id) || [];
+            const otherParticipantId = participantIds.find(pid => pid !== user.id);
             
-            // Get profile data separately
+            // Get profile data for the other participant
             const { data: profileData } = await supabase
               .from('profiles')
               .select('full_name, username, avatar_url')
-              .eq('id', participantData?.user_id)
+              .eq('id', otherParticipantId)
               .single();
             
             // Get the most recent message
@@ -103,8 +115,8 @@ export default function MessagesPage() {
               .eq('is_primary', true)
               .single();
             
-            const otherUser = participantData ? {
-              id: participantData.user_id,
+            const otherUser = otherParticipantId ? {
+              id: otherParticipantId,
               name: profileData?.full_name || profileData?.username || 'Unknown User',
               avatar: profileData?.avatar_url
             } : {
@@ -133,16 +145,15 @@ export default function MessagesPage() {
           })
         );
         
-        // Filter out null values and sort by most recent message
-        const validConversations = conversationPreviews.filter(Boolean) as ConversationPreview[];
-        validConversations.sort((a, b) => {
+        // Sort by most recent message
+        conversationPreviews.sort((a, b) => {
           if (!a.lastMessage && !b.lastMessage) return 0;
           if (!a.lastMessage) return 1;
           if (!b.lastMessage) return -1;
           return new Date(b.lastMessage.timestamp).getTime() - new Date(a.lastMessage.timestamp).getTime();
         });
         
-        setConversations(validConversations);
+        setConversations(conversationPreviews);
       } catch (error) {
         console.error('Error fetching conversations:', error);
       } finally {
