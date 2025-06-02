@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -24,7 +23,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
-import { notifications } from '@/lib/mockData';
+import { supabase } from '@/integrations/supabase/client';
 import { useIsMobile } from '@/hooks/use-mobile';
 
 const Header = () => {
@@ -34,12 +33,54 @@ const Header = () => {
   const [unreadNotifications, setUnreadNotifications] = useState(0);
 
   useEffect(() => {
-    // Count unread notifications
-    if (user) {
-      const unread = notifications.filter(n => n.userId === user.id && !n.read).length;
-      setUnreadNotifications(unread);
-    }
-  }, [user]);
+    const fetchUnreadNotifications = async () => {
+      if (!user?.id) {
+        setUnreadNotifications(0);
+        return;
+      }
+
+      try {
+        const { data, error } = await supabase
+          .from('notifications')
+          .select('id')
+          .eq('user_id', user.id)
+          .eq('read', false);
+
+        if (error) {
+          console.error('Error fetching notifications:', error);
+          return;
+        }
+
+        setUnreadNotifications(data?.length || 0);
+      } catch (error) {
+        console.error('Error counting unread notifications:', error);
+      }
+    };
+
+    fetchUnreadNotifications();
+
+    // Set up real-time subscription for notifications
+    const channel = supabase
+      .channel('notifications-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'notifications',
+          filter: `user_id=eq.${user?.id}`
+        },
+        () => {
+          // Refetch count when notifications change
+          fetchUnreadNotifications();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user?.id]);
 
   const handleLogin = () => {
     navigate('/auth/login');
@@ -88,7 +129,7 @@ const Header = () => {
                   <MessageSquare className="h-4 w-4" />
                   <span>Messages</span>
                 </Link>
-                <Link to="/notifications" className="flex items-center space-x-2 p-2 rounded-md hover:bg-muted">
+                <Link to="/notifications-page" className="flex items-center space-x-2 p-2 rounded-md hover:bg-muted">
                   <Bell className="h-4 w-4" />
                   <span>Notifications</span>
                   {unreadNotifications > 0 && (
@@ -155,7 +196,7 @@ const Header = () => {
             <>
               {!isMobile && (
                 <>
-                  <Button variant="ghost" size="icon" className="relative" onClick={() => navigate('/notifications')}>
+                  <Button variant="ghost" size="icon" className="relative" onClick={() => navigate('/notifications-page')}>
                     <Bell size={20} />
                     {unreadNotifications > 0 && (
                       <Badge className="h-5 w-5 text-xs rounded-full p-0 flex items-center justify-center absolute -top-1 -right-1 bg-marketplace-accent">
@@ -183,7 +224,7 @@ const Header = () => {
                     <User className="mr-2 h-4 w-4" />
                     Profile
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => navigate('/settings')}>
+                  <DropdownMenuItem onClick={() => navigate('/settings-page')}>
                     <Settings className="mr-2 h-4 w-4" />
                     Settings
                   </DropdownMenuItem>
