@@ -41,7 +41,7 @@ export default function MessagesPage() {
       try {
         setLoading(true);
         
-        // Get all conversations where the user is a participant using the security definer function
+        // Get all conversations with their products
         const { data: allConversations, error: conversationsError } = await supabase
           .from('conversations')
           .select(`
@@ -61,11 +61,11 @@ export default function MessagesPage() {
           return;
         }
         
-        // Filter conversations where the user is a participant using the security definer function
+        // Filter conversations where the user is a participant
         const userConversations = [];
         
         for (const conversation of allConversations) {
-          // Check if user is participant in this conversation
+          // Check if user is participant in this conversation using the security definer function
           const { data: participants, error: participantsError } = await supabase
             .rpc('get_conversation_participants', { conversation_uuid: conversation.id });
           
@@ -96,7 +96,7 @@ export default function MessagesPage() {
               .from('profiles')
               .select('full_name, username, avatar_url')
               .eq('id', otherParticipantId)
-              .single();
+              .maybeSingle();
             
             // Get the most recent message
             const { data: lastMessageData } = await supabase
@@ -105,7 +105,7 @@ export default function MessagesPage() {
               .eq('conversation_id', conversation.id)
               .order('created_at', { ascending: false })
               .limit(1)
-              .single();
+              .maybeSingle();
             
             // Get product image
             const { data: productImageData } = await supabase
@@ -113,7 +113,7 @@ export default function MessagesPage() {
               .select('image_url')
               .eq('product_id', conversation.product_id)
               .eq('is_primary', true)
-              .single();
+              .maybeSingle();
             
             const otherUser = otherParticipantId ? {
               id: otherParticipantId,

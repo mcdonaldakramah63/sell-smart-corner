@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useRef } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import Layout from '@/components/layout/Layout';
@@ -91,9 +90,18 @@ export default function ConversationPage() {
             )
           `)
           .eq('id', id)
-          .single();
+          .maybeSingle();
         
         if (conversationError) throw conversationError;
+        if (!conversation) {
+          toast({
+            title: 'Not found',
+            description: 'Conversation not found',
+            variant: 'destructive'
+          });
+          navigate('/messages');
+          return;
+        }
         
         // Get product image
         const { data: productImage } = await supabase
@@ -101,7 +109,7 @@ export default function ConversationPage() {
           .select('image_url')
           .eq('product_id', conversation.product_id)
           .eq('is_primary', true)
-          .single();
+          .maybeSingle();
         
         // Get other participant (not current user)
         const otherParticipantId = participantIds.find(pid => pid !== user.id);
@@ -115,7 +123,7 @@ export default function ConversationPage() {
           .from('profiles')
           .select('full_name, username, avatar_url')
           .eq('id', otherParticipantId)
-          .single();
+          .maybeSingle();
         
         setProduct({
           id: conversation.products.id,
@@ -139,10 +147,10 @@ export default function ConversationPage() {
         
         if (messagesError) throw messagesError;
         
-        setMessages(messagesData);
+        setMessages(messagesData || []);
         
         // Mark unread messages as read
-        const unreadMessages = messagesData.filter(
+        const unreadMessages = (messagesData || []).filter(
           msg => !msg.read && msg.sender_id !== user.id
         );
         
