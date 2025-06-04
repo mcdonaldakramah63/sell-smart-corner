@@ -33,7 +33,7 @@ export const MobileMenu = ({ unreadNotifications, onLogin, onRegister }: MobileM
       <SheetContent side="left" className="w-[250px] sm:w-[300px]">
         <div className="flex flex-col h-full">
           <div className="flex items-center justify-between py-4">
-            <Link to="/" className="font-bold text-xl text-marketplace-primary">Marketplace</Link>
+            <Link to="/" className="font-bold text-xl text-marketplace-primary">Used Market</Link>
             <X className="h-4 w-4" />
           </div>
           

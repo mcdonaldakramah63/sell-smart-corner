@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Layout from '@/components/layout/Layout';
@@ -67,7 +66,7 @@ const Index = () => {
             </div>
             <h3 className="text-xl font-semibold mb-2">Create an Account</h3>
             <p className="text-muted-foreground">
-              Sign up for free and join our trusted marketplace community.
+              Sign up for free and join our trusted Used Market community.
             </p>
           </div>
           
@@ -97,7 +96,7 @@ const Index = () => {
         <div className="container mx-auto px-4 text-center">
           <h2 className="text-3xl font-bold mb-4">Ready to Start?</h2>
           <p className="text-xl mb-8 max-w-2xl mx-auto">
-            Join thousands of users buying and selling on our platform every day.
+            Join thousands of users buying and selling on Used Market every day.
           </p>
           <Button asChild size="lg" className="bg-white text-marketplace-primary hover:bg-white/90">
             <a href="/auth/register">Create Your Account</a>

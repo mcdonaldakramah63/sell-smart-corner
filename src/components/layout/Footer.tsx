@@ -7,7 +7,7 @@ const Footer = () => {
       <div className="container mx-auto px-4">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           <div>
-            <h3 className="text-lg font-bold mb-4">Marketplace</h3>
+            <h3 className="text-lg font-bold mb-4">Used Market</h3>
             <p className="text-gray-300 text-sm">
               Buy and sell items easily with our secure marketplace platform.
             </p>
@@ -79,7 +79,7 @@ const Footer = () => {
         
         <div className="border-t border-gray-700 mt-8 pt-6 flex flex-col md:flex-row justify-between items-center">
           <p className="text-sm text-gray-400">
-            © {new Date().getFullYear()} Marketplace. All rights reserved.
+            © {new Date().getFullYear()} Used Market. All rights reserved.
           </p>
           <div className="flex space-x-4 mt-4 md:mt-0">
             <a href="#" className="text-gray-300 hover:text-white">

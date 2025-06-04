@@ -113,7 +113,7 @@ export default function NotificationList({ notifications }: NotificationListProp
           </CardContent>
           <CardFooter>
             <Button asChild variant="outline" className="w-full">
-              <Link to="/">Browse Marketplace</Link>
+              <Link to="/">Browse Used Market</Link>
             </Button>
           </CardFooter>
         </Card>

@@ -82,7 +82,7 @@ const Header = () => {
         
         {/* Logo */}
         <Link to="/" className="font-bold text-xl text-marketplace-primary">
-          Marketplace
+          Used Market
         </Link>
         
         {/* Desktop Navigation */}
