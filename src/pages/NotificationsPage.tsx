@@ -7,7 +7,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Bell, Check, Trash2 } from 'lucide-react';
+import { Bell, Check, Trash2, Dot } from 'lucide-react';
 import { Notification } from '@/lib/types';
 
 export default function NotificationsPage() {
@@ -68,8 +68,18 @@ export default function NotificationsPage() {
           notif.id === id ? { ...notif, read: true } : notif
         )
       );
+
+      toast({
+        title: 'Notification marked as read',
+        description: 'The notification has been marked as read'
+      });
     } catch (error) {
       console.error('Error marking notification as read:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to mark notification as read',
+        variant: 'destructive'
+      });
     }
   };
 
@@ -117,6 +127,11 @@ export default function NotificationsPage() {
       });
     } catch (error) {
       console.error('Error marking all as read:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to mark all notifications as read',
+        variant: 'destructive'
+      });
     }
   };
 
@@ -143,18 +158,33 @@ export default function NotificationsPage() {
         ) : notifications.length > 0 ? (
           <div className="space-y-4">
             {notifications.map((notification) => (
-              <Card key={notification.id} className={`${!notification.read ? 'border-primary/50 bg-primary/5' : ''}`}>
+              <Card 
+                key={notification.id} 
+                className={`transition-all duration-200 ${
+                  !notification.read 
+                    ? 'border-primary/50 bg-primary/5 shadow-md' 
+                    : 'bg-muted/50 opacity-75'
+                }`}
+              >
                 <CardHeader className="pb-3">
                   <div className="flex items-start justify-between">
-                    <div className="flex items-center gap-2">
-                      <Badge variant={notification.read ? 'secondary' : 'default'}>
-                        {notification.type}
-                      </Badge>
+                    <div className="flex items-center gap-3">
                       {!notification.read && (
-                        <Badge variant="outline" className="text-xs">
-                          New
-                        </Badge>
+                        <Dot className="h-6 w-6 text-primary animate-pulse" />
                       )}
+                      <div className="flex items-center gap-2">
+                        <Badge 
+                          variant={notification.read ? 'secondary' : 'default'}
+                          className={notification.read ? 'opacity-60' : ''}
+                        >
+                          {notification.type}
+                        </Badge>
+                        {!notification.read && (
+                          <Badge variant="destructive" className="text-xs px-2">
+                            New
+                          </Badge>
+                        )}
+                      </div>
                     </div>
                     <div className="flex gap-1">
                       {!notification.read && (
@@ -162,6 +192,7 @@ export default function NotificationsPage() {
                           size="sm"
                           variant="ghost"
                           onClick={() => markAsRead(notification.id)}
+                          className="hover:bg-primary/10"
                         >
                           <Check className="h-4 w-4" />
                         </Button>
@@ -170,6 +201,7 @@ export default function NotificationsPage() {
                         size="sm"
                         variant="ghost"
                         onClick={() => deleteNotification(notification.id)}
+                        className="hover:bg-destructive/10 hover:text-destructive"
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>
@@ -177,12 +209,14 @@ export default function NotificationsPage() {
                   </div>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-sm">{notification.content}</p>
+                  <p className={`text-sm ${notification.read ? 'text-muted-foreground' : 'text-foreground font-medium'}`}>
+                    {notification.content}
+                  </p>
                   <p className="text-xs text-muted-foreground mt-2">
                     {new Date(notification.createdAt).toLocaleString()}
                   </p>
                   {notification.actionUrl && (
-                    <Button asChild size="sm" className="mt-3">
+                    <Button asChild size="sm" className="mt-3" variant={notification.read ? 'outline' : 'default'}>
                       <a href={notification.actionUrl}>View</a>
                     </Button>
                   )}
