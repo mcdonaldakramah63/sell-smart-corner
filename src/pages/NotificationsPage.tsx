@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import Layout from '@/components/layout/Layout';
 import { useAuth } from '@/contexts/AuthContext';
@@ -81,6 +80,13 @@ export default function NotificationsPage() {
         variant: 'destructive'
       });
     }
+  };
+
+  const handleViewAction = async (id: string, actionUrl: string) => {
+    // Mark as read when viewing
+    await markAsRead(id);
+    // Navigate to the action URL
+    window.open(actionUrl, '_blank');
   };
 
   const deleteNotification = async (id: string) => {
@@ -216,8 +222,13 @@ export default function NotificationsPage() {
                     {new Date(notification.createdAt).toLocaleString()}
                   </p>
                   {notification.actionUrl && (
-                    <Button asChild size="sm" className="mt-3" variant={notification.read ? 'outline' : 'default'}>
-                      <a href={notification.actionUrl}>View</a>
+                    <Button 
+                      size="sm" 
+                      className="mt-3" 
+                      variant={notification.read ? 'outline' : 'default'}
+                      onClick={() => handleViewAction(notification.id, notification.actionUrl!)}
+                    >
+                      View
                     </Button>
                   )}
                 </CardContent>
