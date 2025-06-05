@@ -159,6 +159,16 @@ export default function ConversationPage() {
             )
           );
         }
+
+        // Mark message notifications as read for this conversation
+        await supabase
+          .from('notifications')
+          .update({ read: true })
+          .eq('user_id', user.id)
+          .eq('type', 'message')
+          .like('action_url', `%/conversation/${id}%`)
+          .eq('read', false);
+        
       } catch (error) {
         console.error('Error fetching conversation:', error);
         toast({
