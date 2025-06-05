@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import Layout from '@/components/layout/Layout';
 import { useAuth } from '@/contexts/AuthContext';
@@ -18,6 +17,7 @@ export default function ProfilePage() {
   
   const [fullName, setFullName] = useState('');
   const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [bio, setBio] = useState('');
   const [location, setLocation] = useState('');
   const [phone, setPhone] = useState('');
@@ -50,6 +50,7 @@ export default function ProfilePage() {
           // Profile exists, populate fields
           setFullName(data.full_name || '');
           setUsername(data.username || '');
+          setEmail(data.email || user.email || '');
           setBio(data.bio || '');
           setLocation(data.location || '');
           setPhone(data.phone || '');
@@ -63,6 +64,7 @@ export default function ProfilePage() {
               id: user.id,
               full_name: user.name || '',
               username: user.email?.split('@')[0] || '',
+              email: user.email || '',
               created_at: new Date().toISOString(),
               updated_at: new Date().toISOString()
             });
@@ -73,6 +75,7 @@ export default function ProfilePage() {
             // Set default values
             setFullName(user.name || '');
             setUsername(user.email?.split('@')[0] || '');
+            setEmail(user.email || '');
           }
         }
       } catch (error) {
@@ -176,6 +179,7 @@ export default function ProfilePage() {
           id: user.id,
           full_name: fullName,
           username,
+          email,
           bio,
           location,
           phone,
@@ -316,6 +320,21 @@ export default function ProfilePage() {
                         className="mt-1"
                       />
                     </div>
+
+                    <div className="md:col-span-2">
+                      <Label htmlFor="email">Email Address</Label>
+                      <Input
+                        id="email"
+                        type="email"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        placeholder="your.email@example.com"
+                        className="mt-1"
+                      />
+                      <p className="text-xs text-muted-foreground mt-1">
+                        This email will be visible to other users for contact purposes
+                      </p>
+                    </div>
                     
                     <div className="md:col-span-2">
                       <Label htmlFor="bio">Bio</Label>
@@ -349,6 +368,9 @@ export default function ProfilePage() {
                         placeholder="Your phone number"
                         className="mt-1"
                       />
+                      <p className="text-xs text-muted-foreground mt-1">
+                        This will be visible to other users for contact purposes
+                      </p>
                     </div>
                     
                     <div className="md:col-span-2">

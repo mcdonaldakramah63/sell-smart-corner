@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import Layout from '@/components/layout/Layout';
@@ -7,12 +8,27 @@ import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Heart, MessageCircle, MapPin, Calendar, Package } from 'lucide-react';
 import { Product } from '@/lib/types';
 import ImageGallery from '@/components/products/ImageGallery';
 import { useNavigate } from 'react-router-dom';
 import { createOrFindConversation } from '@/utils/conversationUtils';
+import { ReviewForm } from '@/components/reviews/ReviewForm';
+import { ReviewList } from '@/components/reviews/ReviewList';
+import { SellerContactInfo } from '@/components/seller/SellerContactInfo';
+
+interface SellerProfile {
+  id: string;
+  full_name: string | null;
+  username: string | null;
+  avatar_url: string | null;
+  bio: string | null;
+  location: string | null;
+  phone: string | null;
+  email: string | null;
+  website: string | null;
+  created_at: string;
+}
 
 export default function ProductDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -20,9 +36,11 @@ export default function ProductDetailPage() {
   const { toast } = useToast();
   const navigate = useNavigate();
   const [product, setProduct] = useState<Product | null>(null);
+  const [sellerProfile, setSellerProfile] = useState<SellerProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [liked, setLiked] = useState(false);
   const [isCreatingConversation, setIsCreatingConversation] = useState(false);
+  const [reviewRefreshTrigger, setReviewRefreshTrigger] = useState(0);
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -42,7 +60,13 @@ export default function ProductDetailPage() {
               id,
               full_name,
               username,
-              avatar_url
+              avatar_url,
+              bio,
+              location,
+              phone,
+              email,
+              website,
+              created_at
             )
           `)
           .eq('id', id)
@@ -79,6 +103,7 @@ export default function ProductDetailPage() {
         };
         
         setProduct(formattedProduct);
+        setSellerProfile(productData.profiles);
       } catch (error) {
         console.error('Error fetching product:', error);
         toast({
@@ -149,6 +174,10 @@ export default function ProductDetailPage() {
     }
   };
 
+  const handleReviewSubmitted = () => {
+    setReviewRefreshTrigger(prev => prev + 1);
+  };
+
   if (loading) {
     return (
       <Layout>
@@ -179,106 +208,110 @@ export default function ProductDetailPage() {
     );
   }
 
+  const canReview = user && user.id !== product.seller.id && !product.is_sold;
+
   return (
     <Layout>
       <div className="container mx-auto px-4 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* Product Images */}
-          <div>
-            <ImageGallery images={product.images} />
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Product Images and Details */}
+          <div className="lg:col-span-2 space-y-8">
+            <div>
+              <ImageGallery images={product.images} />
+            </div>
+            
+            {/* Product Details */}
+            <div className="space-y-6">
+              <div>
+                <div className="flex items-start justify-between mb-2">
+                  <h1 className="text-3xl font-bold">{product.title}</h1>
+                  {product.is_sold && (
+                    <Badge variant="secondary">Sold</Badge>
+                  )}
+                </div>
+                <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                  <div className="flex items-center gap-1">
+                    <Package size={16} />
+                    <span>{product.category}</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <Calendar size={16} />
+                    <span>{new Date(product.createdAt).toLocaleDateString()}</span>
+                  </div>
+                  {product.location && (
+                    <div className="flex items-center gap-1">
+                      <MapPin size={16} />
+                      <span>{product.location}</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+              
+              <div className="flex items-center justify-between">
+                <div>
+                  <span className="text-3xl font-bold text-primary">
+                    ${product.price.toFixed(2)}
+                  </span>
+                  <Badge variant="outline" className="ml-2">
+                    {product.condition}
+                  </Badge>
+                </div>
+                <div className="flex gap-2">
+                  <Button size="icon" variant="outline" onClick={handleLike}>
+                    <Heart 
+                      size={20} 
+                      className={liked ? "fill-red-500 text-red-500" : ""}
+                    />
+                  </Button>
+                  <Button 
+                    onClick={handleMessage} 
+                    disabled={product.is_sold || isCreatingConversation || user?.id === product.seller.id}
+                  >
+                    {isCreatingConversation ? (
+                      <div className="h-4 w-4 border-t-2 border-r-2 border-white rounded-full animate-spin mr-2" />
+                    ) : (
+                      <MessageCircle size={20} className="mr-2" />
+                    )}
+                    {user?.id === product.seller.id ? 'Your Listing' : 'Message Seller'}
+                  </Button>
+                </div>
+              </div>
+              
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg">Description</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-muted-foreground whitespace-pre-wrap">
+                    {product.description}
+                  </p>
+                </CardContent>
+              </Card>
+
+              {/* Reviews Section */}
+              <div className="space-y-6">
+                <h2 className="text-2xl font-bold">Reviews</h2>
+                
+                {canReview && (
+                  <ReviewForm 
+                    productId={product.id} 
+                    onReviewSubmitted={handleReviewSubmitted}
+                  />
+                )}
+                
+                <ReviewList 
+                  productId={product.id} 
+                  refreshTrigger={reviewRefreshTrigger}
+                />
+              </div>
+            </div>
           </div>
           
-          {/* Product Details */}
+          {/* Seller Information Sidebar */}
           <div className="space-y-6">
-            <div>
-              <div className="flex items-start justify-between mb-2">
-                <h1 className="text-3xl font-bold">{product.title}</h1>
-                {product.is_sold && (
-                  <Badge variant="secondary">Sold</Badge>
-                )}
-              </div>
-              <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                <div className="flex items-center gap-1">
-                  <Package size={16} />
-                  <span>{product.category}</span>
-                </div>
-                <div className="flex items-center gap-1">
-                  <Calendar size={16} />
-                  <span>{new Date(product.createdAt).toLocaleDateString()}</span>
-                </div>
-                {product.location && (
-                  <div className="flex items-center gap-1">
-                    <MapPin size={16} />
-                    <span>{product.location}</span>
-                  </div>
-                )}
-              </div>
-            </div>
-            
-            <div className="flex items-center justify-between">
-              <div>
-                <span className="text-3xl font-bold text-primary">
-                  ${product.price.toFixed(2)}
-                </span>
-                <Badge variant="outline" className="ml-2">
-                  {product.condition}
-                </Badge>
-              </div>
-              <div className="flex gap-2">
-                <Button size="icon" variant="outline" onClick={handleLike}>
-                  <Heart 
-                    size={20} 
-                    className={liked ? "fill-red-500 text-red-500" : ""}
-                  />
-                </Button>
-                <Button 
-                  onClick={handleMessage} 
-                  disabled={product.is_sold || isCreatingConversation || user?.id === product.seller.id}
-                >
-                  {isCreatingConversation ? (
-                    <div className="h-4 w-4 border-t-2 border-r-2 border-white rounded-full animate-spin mr-2" />
-                  ) : (
-                    <MessageCircle size={20} className="mr-2" />
-                  )}
-                  {user?.id === product.seller.id ? 'Your Listing' : 'Message Seller'}
-                </Button>
-              </div>
-            </div>
-            
-            {/* Seller Information */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg">Seller Information</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="flex items-center space-x-3">
-                  <Avatar>
-                    {product.seller.avatar ? (
-                      <AvatarImage src={product.seller.avatar} alt={product.seller.name} />
-                    ) : (
-                      <AvatarFallback>{product.seller.name[0]}</AvatarFallback>
-                    )}
-                  </Avatar>
-                  <div>
-                    <p className="font-medium">{product.seller.name}</p>
-                    <p className="text-sm text-muted-foreground">
-                      Member since {new Date(product.createdAt).getFullYear()}
-                    </p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-            
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg">Description</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-muted-foreground whitespace-pre-wrap">
-                  {product.description}
-                </p>
-              </CardContent>
-            </Card>
+            {sellerProfile && (
+              <SellerContactInfo seller={sellerProfile} />
+            )}
           </div>
         </div>
       </div>
