@@ -81,43 +81,6 @@ export const sanitizeInput = (input: string): string => {
   return baseSanitizeInput(input, { maxLength: 255, allowHtml: false });
 };
 
-// Rate limiting helper (client-side basic protection)
-export const createRateLimiter = (maxAttempts: number, windowMs: number) => {
-  const attempts = new Map<string, { count: number; lastAttempt: number; blocked: boolean }>();
-  
-  return (identifier: string): boolean => {
-    const now = Date.now();
-    const userAttempts = attempts.get(identifier);
-    
-    if (!userAttempts) {
-      attempts.set(identifier, { count: 1, lastAttempt: now, blocked: false });
-      return true;
-    }
-    
-    // Reset window if enough time has passed
-    if (now - userAttempts.lastAttempt > windowMs) {
-      attempts.set(identifier, { count: 1, lastAttempt: now, blocked: false });
-      return true;
-    }
-    
-    // Check if blocked due to too many attempts
-    if (userAttempts.blocked) {
-      return false;
-    }
-    
-    // Check if within rate limit
-    if (userAttempts.count >= maxAttempts) {
-      userAttempts.blocked = true;
-      return false;
-    }
-    
-    // Increment count
-    userAttempts.count++;
-    userAttempts.lastAttempt = now;
-    return true;
-  };
-};
-
 // Secure session validation with additional checks
 export const validateSession = async () => {
   try {
