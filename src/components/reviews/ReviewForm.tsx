@@ -9,6 +9,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Star } from 'lucide-react';
+import { validateTextContent } from '@/utils/validation';
 
 interface ReviewFormProps {
   productId: string;
@@ -23,6 +24,30 @@ export const ReviewForm = ({ productId, onReviewSubmitted }: ReviewFormProps) =>
   const [title, setTitle] = useState('');
   const [comment, setComment] = useState('');
   const [loading, setLoading] = useState(false);
+  const [errors, setErrors] = useState<{ title?: string; comment?: string }>({});
+
+  const validateForm = () => {
+    const newErrors: { title?: string; comment?: string } = {};
+    
+    // Validate title if provided
+    if (title.trim()) {
+      const titleValidation = validateTextContent(title, { maxLength: 100 });
+      if (!titleValidation.isValid) {
+        newErrors.title = titleValidation.errors[0];
+      }
+    }
+    
+    // Validate comment if provided
+    if (comment.trim()) {
+      const commentValidation = validateTextContent(comment, { maxLength: 500 });
+      if (!commentValidation.isValid) {
+        newErrors.comment = commentValidation.errors[0];
+      }
+    }
+    
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -45,8 +70,16 @@ export const ReviewForm = ({ productId, onReviewSubmitted }: ReviewFormProps) =>
       return;
     }
 
+    if (!validateForm()) {
+      return;
+    }
+
     try {
       setLoading(true);
+      
+      // Sanitize inputs
+      const titleValidation = validateTextContent(title, { maxLength: 100 });
+      const commentValidation = validateTextContent(comment, { maxLength: 500 });
       
       const { error } = await supabase
         .from('product_reviews')
@@ -54,8 +87,8 @@ export const ReviewForm = ({ productId, onReviewSubmitted }: ReviewFormProps) =>
           product_id: productId,
           reviewer_id: user.id,
           rating,
-          title: title.trim() || null,
-          comment: comment.trim() || null
+          title: titleValidation.sanitized.trim() || null,
+          comment: commentValidation.sanitized.trim() || null
         });
 
       if (error) throw error;
@@ -69,6 +102,7 @@ export const ReviewForm = ({ productId, onReviewSubmitted }: ReviewFormProps) =>
       setRating(0);
       setTitle('');
       setComment('');
+      setErrors({});
       onReviewSubmitted();
     } catch (error) {
       console.error('Error submitting review:', error);
@@ -82,6 +116,32 @@ export const ReviewForm = ({ productId, onReviewSubmitted }: ReviewFormProps) =>
     }
   };
 
+  const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setTitle(value);
+    
+    // Clear error when user starts typing valid input
+    if (errors.title && value.trim()) {
+      const validation = validateTextContent(value, { maxLength: 100 });
+      if (validation.isValid) {
+        setErrors(prev => ({ ...prev, title: undefined }));
+      }
+    }
+  };
+
+  const handleCommentChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const value = e.target.value;
+    setComment(value);
+    
+    // Clear error when user starts typing valid input
+    if (errors.comment && value.trim()) {
+      const validation = validateTextContent(value, { maxLength: 500 });
+      if (validation.isValid) {
+        setErrors(prev => ({ ...prev, comment: undefined }));
+      }
+    }
+  };
+
   return (
     <Card>
       <CardHeader>
@@ -90,7 +150,7 @@ export const ReviewForm = ({ productId, onReviewSubmitted }: ReviewFormProps) =>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <Label>Rating</Label>
+            <Label>Rating *</Label>
             <div className="flex gap-1 mt-1">
               {[1, 2, 3, 4, 5].map((star) => (
                 <button
@@ -119,10 +179,17 @@ export const ReviewForm = ({ productId, onReviewSubmitted }: ReviewFormProps) =>
             <Input
               id="title"
               value={title}
-              onChange={(e) => setTitle(e.target.value)}
+              onChange={handleTitleChange}
               placeholder="Summary of your review"
               maxLength={100}
+              className={errors.title ? "border-red-500" : ""}
             />
+            {errors.title && (
+              <p className="text-red-500 text-sm mt-1">{errors.title}</p>
+            )}
+            <p className="text-xs text-muted-foreground mt-1">
+              {title.length}/100 characters
+            </p>
           </div>
 
           <div>
@@ -130,11 +197,18 @@ export const ReviewForm = ({ productId, onReviewSubmitted }: ReviewFormProps) =>
             <Textarea
               id="comment"
               value={comment}
-              onChange={(e) => setComment(e.target.value)}
+              onChange={handleCommentChange}
               placeholder="Tell others about your experience with this product"
               rows={4}
               maxLength={500}
+              className={errors.comment ? "border-red-500" : ""}
             />
+            {errors.comment && (
+              <p className="text-red-500 text-sm mt-1">{errors.comment}</p>
+            )}
+            <p className="text-xs text-muted-foreground mt-1">
+              {comment.length}/500 characters
+            </p>
           </div>
 
           <Button type="submit" disabled={loading || rating === 0}>

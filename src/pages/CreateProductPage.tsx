@@ -12,6 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { PlusCircle, Upload, X, Package, DollarSign, MapPin, Tag } from 'lucide-react';
+import { validateTextContent, validatePrice, validateFile } from '@/utils/validation';
 
 interface ProductForm {
   title: string;
@@ -39,27 +40,146 @@ export default function CreateProductPage() {
   const [images, setImages] = useState<File[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [previewUrls, setPreviewUrls] = useState<string[]>([]);
+  const [errors, setErrors] = useState<{
+    title?: string;
+    description?: string;
+    price?: string;
+    category?: string;
+    condition?: string;
+    location?: string;
+    images?: string;
+  }>({});
+
+  const validateForm = () => {
+    const newErrors: typeof errors = {};
+    
+    // Validate title (required)
+    const titleValidation = validateTextContent(form.title, { 
+      minLength: 3, 
+      maxLength: 100, 
+      required: true 
+    });
+    if (!titleValidation.isValid) {
+      newErrors.title = titleValidation.errors[0];
+    }
+    
+    // Validate description (optional)
+    if (form.description.trim()) {
+      const descValidation = validateTextContent(form.description, { maxLength: 2000 });
+      if (!descValidation.isValid) {
+        newErrors.description = descValidation.errors[0];
+      }
+    }
+    
+    // Validate price (required)
+    const priceValidation = validatePrice(form.price);
+    if (!priceValidation.isValid) {
+      newErrors.price = priceValidation.errors[0];
+    }
+    
+    // Validate category (required)
+    if (!form.category) {
+      newErrors.category = 'Please select a category';
+    }
+    
+    // Validate condition (required)
+    if (!form.condition) {
+      newErrors.condition = 'Please select a condition';
+    }
+    
+    // Validate location (optional)
+    if (form.location.trim()) {
+      const locationValidation = validateTextContent(form.location, { maxLength: 100 });
+      if (!locationValidation.isValid) {
+        newErrors.location = locationValidation.errors[0];
+      }
+    }
+    
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
   const handleInputChange = (field: keyof ProductForm, value: string) => {
     setForm(prev => ({ ...prev, [field]: value }));
+    
+    // Clear error when user starts typing valid input
+    if (errors[field]) {
+      let isValid = false;
+      
+      switch (field) {
+        case 'title':
+          const titleValidation = validateTextContent(value, { minLength: 3, maxLength: 100, required: true });
+          isValid = titleValidation.isValid;
+          break;
+        case 'description':
+          if (value.trim()) {
+            const descValidation = validateTextContent(value, { maxLength: 2000 });
+            isValid = descValidation.isValid;
+          } else {
+            isValid = true; // Optional field
+          }
+          break;
+        case 'price':
+          const priceValidation = validatePrice(value);
+          isValid = priceValidation.isValid;
+          break;
+        case 'location':
+          if (value.trim()) {
+            const locationValidation = validateTextContent(value, { maxLength: 100 });
+            isValid = locationValidation.isValid;
+          } else {
+            isValid = true; // Optional field
+          }
+          break;
+        case 'category':
+        case 'condition':
+          isValid = value.trim() !== '';
+          break;
+      }
+      
+      if (isValid) {
+        setErrors(prev => ({ ...prev, [field]: undefined }));
+      }
+    }
   };
 
   const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
+    
     if (files.length + images.length > 5) {
-      toast({
-        title: 'Too many images',
-        description: 'You can upload a maximum of 5 images',
-        variant: 'destructive'
-      });
+      setErrors(prev => ({ ...prev, images: 'You can upload a maximum of 5 images' }));
       return;
     }
 
-    const newImages = [...images, ...files];
+    // Validate each file
+    const validFiles: File[] = [];
+    const invalidFiles: string[] = [];
+    
+    files.forEach(file => {
+      const validation = validateFile(file, {
+        maxSize: 10 * 1024 * 1024, // 10MB
+        allowedTypes: ['image/jpeg', 'image/png', 'image/gif', 'image/webp'],
+        allowedExtensions: ['.jpg', '.jpeg', '.png', '.gif', '.webp']
+      });
+      
+      if (validation.isValid) {
+        validFiles.push(file);
+      } else {
+        invalidFiles.push(`${file.name}: ${validation.errors[0]}`);
+      }
+    });
+    
+    if (invalidFiles.length > 0) {
+      setErrors(prev => ({ ...prev, images: invalidFiles[0] }));
+      return;
+    }
+    
+    setErrors(prev => ({ ...prev, images: undefined }));
+    const newImages = [...images, ...validFiles];
     setImages(newImages);
 
     // Create preview URLs
-    const newPreviewUrls = files.map(file => URL.createObjectURL(file));
+    const newPreviewUrls = validFiles.map(file => URL.createObjectURL(file));
     setPreviewUrls(prev => [...prev, ...newPreviewUrls]);
   };
 
@@ -72,6 +192,7 @@ export default function CreateProductPage() {
     
     setImages(newImages);
     setPreviewUrls(newPreviewUrls);
+    setErrors(prev => ({ ...prev, images: undefined }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -86,10 +207,10 @@ export default function CreateProductPage() {
       return;
     }
 
-    if (!form.title || !form.price || !form.category || !form.condition) {
+    if (!validateForm()) {
       toast({
-        title: 'Missing information',
-        description: 'Please fill in all required fields',
+        title: 'Please fix the errors',
+        description: 'Check the form for validation errors',
         variant: 'destructive'
       });
       return;
@@ -101,17 +222,23 @@ export default function CreateProductPage() {
       // Generate a unique ID for the product
       const productId = crypto.randomUUID();
       
+      // Sanitize inputs
+      const titleValidation = validateTextContent(form.title, { minLength: 3, maxLength: 100, required: true });
+      const descValidation = validateTextContent(form.description, { maxLength: 2000 });
+      const priceValidation = validatePrice(form.price);
+      const locationValidation = validateTextContent(form.location, { maxLength: 100 });
+      
       // Create product - using category as string value, not as category_id
       const { error: productError } = await supabase
         .from('products')
         .insert({
           id: productId,
-          title: form.title,
-          description: form.description || null,
-          price: parseFloat(form.price),
+          title: titleValidation.sanitized,
+          description: descValidation.sanitized || null,
+          price: priceValidation.value!,
           category_id: null, // Set to null since we don't have category UUIDs
           condition: form.condition,
-          location: form.location || null,
+          location: locationValidation.sanitized || null,
           user_id: user.id,
           seller_id: user.id
         });
@@ -212,8 +339,16 @@ export default function CreateProductPage() {
                       placeholder="Enter a descriptive title"
                       value={form.title}
                       onChange={(e) => handleInputChange('title', e.target.value)}
-                      className="border-slate-200 focus:border-blue-500 focus:ring-blue-500"
+                      className={`border-slate-200 focus:border-blue-500 focus:ring-blue-500 ${errors.title ? 'border-red-500' : ''}`}
+                      maxLength={100}
+                      required
                     />
+                    {errors.title && (
+                      <p className="text-red-500 text-sm">{errors.title}</p>
+                    )}
+                    <p className="text-xs text-muted-foreground">
+                      {form.title.length}/100 characters
+                    </p>
                   </div>
 
                   <div className="space-y-2">
@@ -228,8 +363,12 @@ export default function CreateProductPage() {
                       placeholder="0.00"
                       value={form.price}
                       onChange={(e) => handleInputChange('price', e.target.value)}
-                      className="border-slate-200 focus:border-blue-500 focus:ring-blue-500"
+                      className={`border-slate-200 focus:border-blue-500 focus:ring-blue-500 ${errors.price ? 'border-red-500' : ''}`}
+                      required
                     />
+                    {errors.price && (
+                      <p className="text-red-500 text-sm">{errors.price}</p>
+                    )}
                   </div>
                 </div>
 
@@ -243,8 +382,15 @@ export default function CreateProductPage() {
                     value={form.description}
                     onChange={(e) => handleInputChange('description', e.target.value)}
                     rows={4}
-                    className="border-slate-200 focus:border-blue-500 focus:ring-blue-500"
+                    className={`border-slate-200 focus:border-blue-500 focus:ring-blue-500 ${errors.description ? 'border-red-500' : ''}`}
+                    maxLength={2000}
                   />
+                  {errors.description && (
+                    <p className="text-red-500 text-sm">{errors.description}</p>
+                  )}
+                  <p className="text-xs text-muted-foreground">
+                    {form.description.length}/2000 characters
+                  </p>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -253,8 +399,12 @@ export default function CreateProductPage() {
                       <Tag className="h-4 w-4" />
                       Category *
                     </Label>
-                    <Select value={form.category} onValueChange={(value) => handleInputChange('category', value)}>
-                      <SelectTrigger className="border-slate-200 focus:border-blue-500 focus:ring-blue-500">
+                    <Select 
+                      value={form.category} 
+                      onValueChange={(value) => handleInputChange('category', value)}
+                      required
+                    >
+                      <SelectTrigger className={`border-slate-200 focus:border-blue-500 focus:ring-blue-500 ${errors.category ? 'border-red-500' : ''}`}>
                         <SelectValue placeholder="Select category" />
                       </SelectTrigger>
                       <SelectContent>
@@ -267,14 +417,21 @@ export default function CreateProductPage() {
                         <SelectItem value="other">Other</SelectItem>
                       </SelectContent>
                     </Select>
+                    {errors.category && (
+                      <p className="text-red-500 text-sm">{errors.category}</p>
+                    )}
                   </div>
 
                   <div className="space-y-2">
                     <Label className="text-slate-700 font-medium">
                       Condition *
                     </Label>
-                    <Select value={form.condition} onValueChange={(value) => handleInputChange('condition', value)}>
-                      <SelectTrigger className="border-slate-200 focus:border-blue-500 focus:ring-blue-500">
+                    <Select 
+                      value={form.condition} 
+                      onValueChange={(value) => handleInputChange('condition', value)}
+                      required
+                    >
+                      <SelectTrigger className={`border-slate-200 focus:border-blue-500 focus:ring-blue-500 ${errors.condition ? 'border-red-500' : ''}`}>
                         <SelectValue placeholder="Select condition" />
                       </SelectTrigger>
                       <SelectContent>
@@ -285,6 +442,9 @@ export default function CreateProductPage() {
                         <SelectItem value="poor">Poor</SelectItem>
                       </SelectContent>
                     </Select>
+                    {errors.condition && (
+                      <p className="text-red-500 text-sm">{errors.condition}</p>
+                    )}
                   </div>
 
                   <div className="space-y-2">
@@ -297,8 +457,12 @@ export default function CreateProductPage() {
                       placeholder="City, State"
                       value={form.location}
                       onChange={(e) => handleInputChange('location', e.target.value)}
-                      className="border-slate-200 focus:border-blue-500 focus:ring-blue-500"
+                      className={`border-slate-200 focus:border-blue-500 focus:ring-blue-500 ${errors.location ? 'border-red-500' : ''}`}
+                      maxLength={100}
                     />
+                    {errors.location && (
+                      <p className="text-red-500 text-sm">{errors.location}</p>
+                    )}
                   </div>
                 </div>
               </CardContent>
@@ -338,10 +502,14 @@ export default function CreateProductPage() {
                         </div>
                         <div>
                           <p className="text-slate-700 font-medium">Click to upload images</p>
-                          <p className="text-sm text-slate-500">PNG, JPG up to 10MB each</p>
+                          <p className="text-sm text-slate-500">PNG, JPG, WebP up to 10MB each</p>
                         </div>
                       </label>
                     </div>
+                  )}
+
+                  {errors.images && (
+                    <p className="text-red-500 text-sm">{errors.images}</p>
                   )}
 
                   {previewUrls.length > 0 && (

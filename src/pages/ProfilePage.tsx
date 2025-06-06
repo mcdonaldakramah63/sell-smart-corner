@@ -10,6 +10,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Loader2, User, Upload } from 'lucide-react';
+import { validateProfileInput } from '@/utils/authUtils';
+import { validateEmail, validateFile } from '@/utils/validation';
 
 export default function ProfilePage() {
   const { user, updateProfile } = useAuth();
@@ -26,7 +28,17 @@ export default function ProfilePage() {
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [fetchingProfile, setFetchingProfile] = useState(true);
-  
+  const [errors, setErrors] = useState<{
+    fullName?: string;
+    username?: string;
+    email?: string;
+    bio?: string;
+    location?: string;
+    phone?: string;
+    website?: string;
+    avatar?: string;
+  }>({});
+
   // Fetch profile data or create if it doesn't exist
   useEffect(() => {
     const fetchOrCreateProfile = async () => {
@@ -92,30 +104,84 @@ export default function ProfilePage() {
     fetchOrCreateProfile();
   }, [user?.id, toast, user?.name, user?.email]);
   
+  const validateForm = () => {
+    const newErrors: typeof errors = {};
+    
+    // Validate full name
+    if (fullName.trim()) {
+      const validation = validateProfileInput('full_name', fullName);
+      if (!validation.isValid) {
+        newErrors.fullName = validation.errors[0];
+      }
+    }
+    
+    // Validate username
+    if (username.trim()) {
+      const validation = validateProfileInput('name', username);
+      if (!validation.isValid) {
+        newErrors.username = validation.errors[0];
+      }
+    }
+    
+    // Validate email
+    const emailValidation = validateEmail(email);
+    if (!emailValidation.isValid) {
+      newErrors.email = emailValidation.errors[0];
+    }
+    
+    // Validate bio
+    if (bio.trim()) {
+      const validation = validateProfileInput('bio', bio);
+      if (!validation.isValid) {
+        newErrors.bio = validation.errors[0];
+      }
+    }
+    
+    // Validate location
+    if (location.trim()) {
+      const validation = validateProfileInput('location', location);
+      if (!validation.isValid) {
+        newErrors.location = validation.errors[0];
+      }
+    }
+    
+    // Validate phone
+    if (phone.trim()) {
+      const validation = validateProfileInput('phone', phone);
+      if (!validation.isValid) {
+        newErrors.phone = validation.errors[0];
+      }
+    }
+    
+    // Validate website
+    if (website.trim()) {
+      const validation = validateProfileInput('website', website);
+      if (!validation.isValid) {
+        newErrors.website = validation.errors[0];
+      }
+    }
+    
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+  
   const handleAvatarChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
     
-    // Check file size (max 2MB)
-    if (file.size > 2 * 1024 * 1024) {
-      toast({
-        title: 'Error',
-        description: 'Avatar image must be less than 2MB',
-        variant: 'destructive'
-      });
+    // Validate file
+    const validation = validateFile(file, {
+      maxSize: 2 * 1024 * 1024, // 2MB
+      allowedTypes: ['image/jpeg', 'image/png', 'image/gif', 'image/webp'],
+      allowedExtensions: ['.jpg', '.jpeg', '.png', '.gif', '.webp']
+    });
+    
+    if (!validation.isValid) {
+      setErrors(prev => ({ ...prev, avatar: validation.errors[0] }));
       return;
     }
     
-    // Only allow image files
-    if (!file.type.startsWith('image/')) {
-      toast({
-        title: 'Error',
-        description: 'Only image files are allowed',
-        variant: 'destructive'
-      });
-      return;
-    }
-    
+    setErrors(prev => ({ ...prev, avatar: undefined }));
     setAvatar(file);
     setAvatarUrl(URL.createObjectURL(file));
   };
@@ -163,6 +229,10 @@ export default function ProfilePage() {
       return;
     }
     
+    if (!validateForm()) {
+      return;
+    }
+    
     try {
       setLoading(true);
       
@@ -172,18 +242,27 @@ export default function ProfilePage() {
         updatedAvatarUrl = await uploadAvatar();
       }
       
+      // Sanitize all inputs
+      const fullNameValidation = validateProfileInput('full_name', fullName);
+      const usernameValidation = validateProfileInput('name', username);
+      const emailValidation = validateEmail(email);
+      const bioValidation = validateProfileInput('bio', bio);
+      const locationValidation = validateProfileInput('location', location);
+      const phoneValidation = validateProfileInput('phone', phone);
+      const websiteValidation = validateProfileInput('website', website);
+      
       // Update profile in Supabase
       const { error } = await supabase
         .from('profiles')
         .upsert({
           id: user.id,
-          full_name: fullName,
-          username,
-          email,
-          bio,
-          location,
-          phone,
-          website,
+          full_name: fullNameValidation.sanitized || null,
+          username: usernameValidation.sanitized || null,
+          email: emailValidation.sanitized,
+          bio: bioValidation.sanitized || null,
+          location: locationValidation.sanitized || null,
+          phone: phoneValidation.sanitized || null,
+          website: websiteValidation.sanitized || null,
           avatar_url: updatedAvatarUrl,
           updated_at: new Date().toISOString()
         });
@@ -192,7 +271,7 @@ export default function ProfilePage() {
       
       // Update local auth context
       const profileData = {
-        name: fullName || user.name,
+        name: fullNameValidation.sanitized || user.name,
         avatar: updatedAvatarUrl,
       };
       
@@ -211,6 +290,51 @@ export default function ProfilePage() {
       });
     } finally {
       setLoading(false);
+    }
+  };
+  
+  const handleInputChange = (field: keyof typeof errors, value: string) => {
+    // Update the field value
+    switch (field) {
+      case 'fullName':
+        setFullName(value);
+        break;
+      case 'username':
+        setUsername(value);
+        break;
+      case 'email':
+        setEmail(value);
+        break;
+      case 'bio':
+        setBio(value);
+        break;
+      case 'location':
+        setLocation(value);
+        break;
+      case 'phone':
+        setPhone(value);
+        break;
+      case 'website':
+        setWebsite(value);
+        break;
+    }
+    
+    // Clear error if input becomes valid
+    if (errors[field] && value.trim()) {
+      let validation;
+      if (field === 'email') {
+        validation = validateEmail(value);
+      } else {
+        const fieldMap: { [key: string]: string } = {
+          fullName: 'full_name',
+          username: 'name'
+        };
+        validation = validateProfileInput(fieldMap[field] || field, value);
+      }
+      
+      if (validation.isValid) {
+        setErrors(prev => ({ ...prev, [field]: undefined }));
+      }
     }
   };
   
@@ -267,6 +391,9 @@ export default function ProfilePage() {
                     className="sr-only"
                   />
                 </div>
+                {errors.avatar && (
+                  <p className="text-red-500 text-sm mb-2">{errors.avatar}</p>
+                )}
                 <p className="text-sm text-muted-foreground mt-2 text-center">
                   Click the upload icon to change your profile picture
                 </p>
@@ -278,6 +405,7 @@ export default function ProfilePage() {
                   onClick={() => {
                     setAvatarUrl(null);
                     setAvatar(null);
+                    setErrors(prev => ({ ...prev, avatar: undefined }));
                   }}
                   disabled={!avatarUrl}
                 >
@@ -304,10 +432,14 @@ export default function ProfilePage() {
                       <Input
                         id="fullName"
                         value={fullName}
-                        onChange={(e) => setFullName(e.target.value)}
+                        onChange={(e) => handleInputChange('fullName', e.target.value)}
                         placeholder="Your full name"
-                        className="mt-1"
+                        className={`mt-1 ${errors.fullName ? 'border-red-500' : ''}`}
+                        maxLength={50}
                       />
+                      {errors.fullName && (
+                        <p className="text-red-500 text-sm mt-1">{errors.fullName}</p>
+                      )}
                     </div>
                     
                     <div>
@@ -315,22 +447,31 @@ export default function ProfilePage() {
                       <Input
                         id="username"
                         value={username}
-                        onChange={(e) => setUsername(e.target.value)}
+                        onChange={(e) => handleInputChange('username', e.target.value)}
                         placeholder="Choose a username"
-                        className="mt-1"
+                        className={`mt-1 ${errors.username ? 'border-red-500' : ''}`}
+                        maxLength={50}
                       />
+                      {errors.username && (
+                        <p className="text-red-500 text-sm mt-1">{errors.username}</p>
+                      )}
                     </div>
 
                     <div className="md:col-span-2">
-                      <Label htmlFor="email">Email Address</Label>
+                      <Label htmlFor="email">Email Address *</Label>
                       <Input
                         id="email"
                         type="email"
                         value={email}
-                        onChange={(e) => setEmail(e.target.value)}
+                        onChange={(e) => handleInputChange('email', e.target.value)}
                         placeholder="your.email@example.com"
-                        className="mt-1"
+                        className={`mt-1 ${errors.email ? 'border-red-500' : ''}`}
+                        required
+                        maxLength={254}
                       />
+                      {errors.email && (
+                        <p className="text-red-500 text-sm mt-1">{errors.email}</p>
+                      )}
                       <p className="text-xs text-muted-foreground mt-1">
                         This email will be visible to other users for contact purposes
                       </p>
@@ -341,11 +482,18 @@ export default function ProfilePage() {
                       <Textarea
                         id="bio"
                         value={bio}
-                        onChange={(e) => setBio(e.target.value)}
+                        onChange={(e) => handleInputChange('bio', e.target.value)}
                         placeholder="Tell us a bit about yourself"
-                        className="mt-1"
+                        className={`mt-1 ${errors.bio ? 'border-red-500' : ''}`}
                         rows={3}
+                        maxLength={500}
                       />
+                      {errors.bio && (
+                        <p className="text-red-500 text-sm mt-1">{errors.bio}</p>
+                      )}
+                      <p className="text-xs text-muted-foreground mt-1">
+                        {bio.length}/500 characters
+                      </p>
                     </div>
                     
                     <div>
@@ -353,10 +501,14 @@ export default function ProfilePage() {
                       <Input
                         id="location"
                         value={location}
-                        onChange={(e) => setLocation(e.target.value)}
+                        onChange={(e) => handleInputChange('location', e.target.value)}
                         placeholder="City, Country"
-                        className="mt-1"
+                        className={`mt-1 ${errors.location ? 'border-red-500' : ''}`}
+                        maxLength={100}
                       />
+                      {errors.location && (
+                        <p className="text-red-500 text-sm mt-1">{errors.location}</p>
+                      )}
                     </div>
                     
                     <div>
@@ -364,10 +516,14 @@ export default function ProfilePage() {
                       <Input
                         id="phone"
                         value={phone}
-                        onChange={(e) => setPhone(e.target.value)}
+                        onChange={(e) => handleInputChange('phone', e.target.value)}
                         placeholder="Your phone number"
-                        className="mt-1"
+                        className={`mt-1 ${errors.phone ? 'border-red-500' : ''}`}
+                        maxLength={20}
                       />
+                      {errors.phone && (
+                        <p className="text-red-500 text-sm mt-1">{errors.phone}</p>
+                      )}
                       <p className="text-xs text-muted-foreground mt-1">
                         This will be visible to other users for contact purposes
                       </p>
@@ -378,10 +534,14 @@ export default function ProfilePage() {
                       <Input
                         id="website"
                         value={website}
-                        onChange={(e) => setWebsite(e.target.value)}
+                        onChange={(e) => handleInputChange('website', e.target.value)}
                         placeholder="https://your-website.com"
-                        className="mt-1"
+                        className={`mt-1 ${errors.website ? 'border-red-500' : ''}`}
+                        maxLength={255}
                       />
+                      {errors.website && (
+                        <p className="text-red-500 text-sm mt-1">{errors.website}</p>
+                      )}
                     </div>
                   </div>
                 </CardContent>
