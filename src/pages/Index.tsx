@@ -107,9 +107,9 @@ const Index = () => {
           <CategoryFilter 
             categories={categories}
             selectedCategory={null}
-            onSelectCategory={(category) => {
-              if (category) {
-                navigate(`/products?category=${encodeURIComponent(category)}`);
+            onSelectCategory={(categoryId) => {
+              if (categoryId) {
+                navigate(`/products?category=${encodeURIComponent(categoryId)}`);
               }
             }}
           />

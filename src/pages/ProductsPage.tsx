@@ -128,7 +128,7 @@ const ProductsPage = () => {
       );
     }
     
-    // Filter by category
+    // Filter by category using category ID
     if (selectedCategory) {
       filtered = filtered.filter(product => 
         product.category === selectedCategory

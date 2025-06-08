@@ -54,14 +54,14 @@ const CategoryFilter: React.FC<CategoryFilterProps> = ({
       {categories.map((category) => (
         <Badge
           key={category.id}
-          variant={selectedCategory === category.name ? "default" : "outline"}
+          variant={selectedCategory === category.id ? "default" : "outline"}
           className={cn(
             "cursor-pointer px-3 py-1 flex items-center gap-1",
-            selectedCategory === category.name
+            selectedCategory === category.id
               ? "bg-marketplace-primary text-white"
               : "hover:bg-marketplace-primary/10"
           )}
-          onClick={() => onSelectCategory(category.name)}
+          onClick={() => onSelectCategory(category.id)}
         >
           {getIconForCategory(category.icon)}
           {category.name}
