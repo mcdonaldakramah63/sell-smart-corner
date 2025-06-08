@@ -17,7 +17,7 @@ const HeroSection = () => {
             <Button asChild size="lg" className="bg-white text-marketplace-primary hover:bg-white/90">
               <Link to="/products">Browse Products</Link>
             </Button>
-            <Button asChild size="lg" variant="outline" className="border-white text-white hover:bg-white/10">
+            <Button asChild size="lg" variant="secondary" className="bg-white/10 text-white hover:bg-white/20 border-white/20">
               <Link to="/sell">Start Selling</Link>
             </Button>
           </div>
