@@ -1,16 +1,14 @@
-import { useState } from 'react';
+
 import { useNavigate } from 'react-router-dom';
 import Layout from '@/components/layout/Layout';
 import HeroSection from '@/components/layout/HeroSection';
-import ProductGrid from '@/components/products/ProductGrid';
 import CategoryFilter from '@/components/products/CategoryFilter';
 import SearchBar from '@/components/products/SearchBar';
 import { Button } from '@/components/ui/button';
-import { categories, products } from '@/lib/mockData';
+import { categories } from '@/lib/mockData';
 
 const Index = () => {
   const navigate = useNavigate();
-  const [featuredProducts] = useState(products.slice(0, 4));
   
   const handleSeeAllProducts = () => {
     navigate('/products');
@@ -37,22 +35,6 @@ const Index = () => {
               }
             }}
           />
-        </div>
-      </section>
-      
-      <section className="py-12 bg-gray-50">
-        <div className="container mx-auto px-4">
-          <div className="flex justify-between items-center mb-8">
-            <h2 className="text-3xl font-bold">Featured Products</h2>
-            <Button 
-              onClick={handleSeeAllProducts}
-              variant="outline"
-            >
-              See All Products
-            </Button>
-          </div>
-          
-          <ProductGrid products={featuredProducts} />
         </div>
       </section>
       
