@@ -92,7 +92,7 @@ export default function ContactPage() {
                   </div>
                   <div>
                     <p className="font-semibold">Email</p>
-                    <p className="text-sm text-slate-600">support@usedmarket.com</p>
+                    <p className="text-sm text-slate-600">mcdonaldakramah650@gmail.com</p>
                   </div>
                 </div>
                 
@@ -104,7 +104,7 @@ export default function ContactPage() {
                   </div>
                   <div>
                     <p className="font-semibold">Phone</p>
-                    <p className="text-sm text-slate-600">+1 (555) 123-4567</p>
+                    <p className="text-sm text-slate-600">0539445725</p>
                   </div>
                 </div>
                 
