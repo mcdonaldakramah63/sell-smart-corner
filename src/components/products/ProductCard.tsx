@@ -1,4 +1,3 @@
-
 import { Product } from '@/lib/types';
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -72,7 +71,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   };
   
   const handleClick = () => {
-    navigate(`/product/${product.id}`);
+    navigate(`/products/${product.id}`);
   };
 
   return (
