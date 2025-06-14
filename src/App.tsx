@@ -4,7 +4,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { AuthContextProvider } from "@/contexts/AuthContext";
+import { AuthProvider } from "@/contexts/AuthContext";
 import { PushNotificationManager } from "@/components/notifications/PushNotificationManager";
 import Layout from "@/components/layout/Layout";
 import Index from "./pages/Index";
@@ -48,7 +48,7 @@ const AppRoutes = () => (
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <AuthContextProvider>
+      <AuthProvider>
         <TooltipProvider>
           <Toaster />
           <Sonner />
@@ -59,7 +59,7 @@ function App() {
             <PushNotificationManager />
           </BrowserRouter>
         </TooltipProvider>
-      </AuthContextProvider>
+      </AuthProvider>
     </QueryClientProvider>
   );
 }
