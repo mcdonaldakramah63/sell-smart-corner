@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { validateProfileInput, validateEmail, validateFile } from '@/utils/validation';
+import { validateName, validateEmail, validateTextContent, validateFile, validateAndSanitizeUrl, validatePhone } from '@/utils/validation';
 
 export const useProfileForm = () => {
   const { user, updateProfile } = useAuth();
@@ -107,14 +107,14 @@ export const useProfileForm = () => {
     const newErrors: typeof errors = {};
     
     if (formData.fullName.trim()) {
-      const validation = validateProfileInput('full_name', formData.fullName);
+      const validation = validateName(formData.fullName);
       if (!validation.isValid) {
         newErrors.fullName = validation.errors[0];
       }
     }
     
     if (formData.username.trim()) {
-      const validation = validateProfileInput('name', formData.username);
+      const validation = validateName(formData.username);
       if (!validation.isValid) {
         newErrors.username = validation.errors[0];
       }
@@ -126,30 +126,30 @@ export const useProfileForm = () => {
     }
     
     if (formData.bio.trim()) {
-      const validation = validateProfileInput('bio', formData.bio);
+      const validation = validateTextContent(formData.bio, { maxLength: 500 });
       if (!validation.isValid) {
         newErrors.bio = validation.errors[0];
       }
     }
     
     if (formData.location.trim()) {
-      const validation = validateProfileInput('location', formData.location);
+      const validation = validateTextContent(formData.location, { maxLength: 100 });
       if (!validation.isValid) {
         newErrors.location = validation.errors[0];
       }
     }
     
     if (formData.phone.trim()) {
-      const validation = validateProfileInput('phone', formData.phone);
+      const validation = validatePhone(formData.phone);
       if (!validation.isValid) {
-        newErrors.phone = validation.errors[0];
+        newErrors.phone = 'Please enter a valid phone number';
       }
     }
     
     if (formData.website.trim()) {
-      const validation = validateProfileInput('website', formData.website);
-      if (!validation.isValid) {
-        newErrors.website = validation.errors[0];
+      const sanitizedUrl = validateAndSanitizeUrl(formData.website);
+      if (!sanitizedUrl) {
+        newErrors.website = 'Please enter a valid website URL';
       }
     }
     
@@ -213,15 +213,20 @@ export const useProfileForm = () => {
       let validation;
       if (field === 'email') {
         validation = validateEmail(value);
-      } else {
-        const fieldMap: { [key: string]: string } = {
-          fullName: 'full_name',
-          username: 'name'
-        };
-        validation = validateProfileInput(fieldMap[field] || field, value);
+      } else if (field === 'fullName' || field === 'username') {
+        validation = validateName(value);
+      } else if (field === 'bio') {
+        validation = validateTextContent(value, { maxLength: 500 });
+      } else if (field === 'location') {
+        validation = validateTextContent(value, { maxLength: 100 });
+      } else if (field === 'phone') {
+        validation = validatePhone(value);
+      } else if (field === 'website') {
+        const sanitizedUrl = validateAndSanitizeUrl(value);
+        validation = { isValid: !!sanitizedUrl };
       }
       
-      if (validation.isValid) {
+      if (validation && validation.isValid) {
         setErrors(prev => ({ ...prev, [field]: undefined }));
       }
     }
@@ -257,25 +262,25 @@ export const useProfileForm = () => {
         updatedAvatarUrl = await uploadAvatar();
       }
       
-      const fullNameValidation = validateProfileInput('full_name', formData.fullName);
-      const usernameValidation = validateProfileInput('name', formData.username);
       const emailValidation = validateEmail(formData.email);
-      const bioValidation = validateProfileInput('bio', formData.bio);
-      const locationValidation = validateProfileInput('location', formData.location);
-      const phoneValidation = validateProfileInput('phone', formData.phone);
-      const websiteValidation = validateProfileInput('website', formData.website);
+      const fullNameValidation = validateName(formData.fullName);
+      const usernameValidation = validateName(formData.username);
+      const bioValidation = validateTextContent(formData.bio, { maxLength: 500 });
+      const locationValidation = validateTextContent(formData.location, { maxLength: 100 });
+      const phoneValidation = validatePhone(formData.phone);
+      const websiteUrl = validateAndSanitizeUrl(formData.website);
       
       const { error } = await supabase
         .from('profiles')
         .upsert({
           id: user.id,
-          full_name: fullNameValidation.sanitized || null,
-          username: usernameValidation.sanitized || null,
+          full_name: fullNameValidation.isValid ? formData.fullName : null,
+          username: usernameValidation.isValid ? formData.username : null,
           email: emailValidation.sanitized,
-          bio: bioValidation.sanitized || null,
-          location: locationValidation.sanitized || null,
-          phone: phoneValidation.sanitized || null,
-          website: websiteValidation.sanitized || null,
+          bio: bioValidation.isValid ? bioValidation.sanitized : null,
+          location: locationValidation.isValid ? locationValidation.sanitized : null,
+          phone: phoneValidation.isValid ? phoneValidation.sanitized : null,
+          website: websiteUrl || null,
           avatar_url: updatedAvatarUrl,
           updated_at: new Date().toISOString()
         });
@@ -283,7 +288,7 @@ export const useProfileForm = () => {
       if (error) throw error;
       
       const profileData = {
-        name: fullNameValidation.sanitized || user.name,
+        name: formData.fullName || user.name,
         avatar: updatedAvatarUrl,
       };
       
