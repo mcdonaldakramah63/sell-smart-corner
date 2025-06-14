@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { User } from '@/lib/types';
 import { supabase } from '@/integrations/supabase/client';
 import { Session } from '@supabase/supabase-js';
-import { sanitizeInput, validateSession } from '@/utils/authUtils';
+import { sanitizeInput } from '@/utils/authUtils';
 import { AuthState } from '@/types/auth';
 
 export const useAuthState = () => {
@@ -18,56 +18,25 @@ export const useAuthState = () => {
   useEffect(() => {
     console.log('Setting up auth state listener...');
     
-    // Set up auth state listener FIRST
+    // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         console.log('Auth state changed:', event, session?.user?.id);
         
-        // Handle different auth events
-        if (event === 'SIGNED_OUT' || event === 'TOKEN_REFRESHED') {
-          if (!session) {
-            console.log('User signed out or session expired');
-            setAuthState(prev => ({
-              ...prev,
-              session: null,
-              user: null,
-              isAuthenticated: false,
-              loading: false
-            }));
-            return;
-          }
+        // Handle sign out
+        if (event === 'SIGNED_OUT' || !session) {
+          console.log('User signed out or no session');
+          setAuthState({
+            session: null,
+            user: null,
+            isAuthenticated: false,
+            loading: false,
+            error: null
+          });
+          return;
         }
         
-        // Validate session before using it
-        if (session) {
-          console.log('Validating session...');
-          try {
-            const validSession = await validateSession();
-            if (!validSession) {
-              console.log('Session validation failed');
-              setAuthState(prev => ({
-                ...prev,
-                session: null,
-                user: null,
-                isAuthenticated: false,
-                loading: false
-              }));
-              return;
-            }
-          } catch (error) {
-            console.error('Session validation error:', error);
-            setAuthState(prev => ({
-              ...prev,
-              session: null,
-              user: null,
-              isAuthenticated: false,
-              loading: false
-            }));
-            return;
-          }
-        }
-        
-        // Update state based on session
+        // Handle sign in or token refresh
         if (session?.user) {
           console.log('Setting authenticated user:', session.user.id);
           const { id, email, user_metadata } = session.user;
@@ -79,37 +48,29 @@ export const useAuthState = () => {
             role: 'user',
           };
           
-          setAuthState(prev => ({
-            ...prev,
+          setAuthState({
             session,
             user: userData,
             isAuthenticated: true,
-            loading: false
-          }));
-        } else {
-          console.log('No user in session, setting unauthenticated state');
-          setAuthState(prev => ({
-            ...prev,
-            session: null,
-            user: null,
-            isAuthenticated: false,
-            loading: false
-          }));
+            loading: false,
+            error: null
+          });
         }
       }
     );
 
-    // THEN check for existing session with timeout
+    // Check for existing session
     const checkSession = async () => {
       try {
         console.log('Checking for existing session...');
         
-        const sessionPromise = validateSession();
-        const timeoutPromise = new Promise((_, reject) => 
-          setTimeout(() => reject(new Error('Session check timeout')), 10000)
-        );
+        const { data: { session }, error } = await supabase.auth.getSession();
         
-        const session = await Promise.race([sessionPromise, timeoutPromise]) as Session | null;
+        if (error) {
+          console.error('Session check error:', error);
+          setAuthState(prev => ({ ...prev, loading: false }));
+          return;
+        }
         
         console.log('Initial session check result:', !!session);
         
@@ -123,13 +84,13 @@ export const useAuthState = () => {
             role: 'user',
           };
           
-          setAuthState(prev => ({
-            ...prev,
+          setAuthState({
             session,
             user: userData,
             isAuthenticated: true,
-            loading: false
-          }));
+            loading: false,
+            error: null
+          });
         } else {
           setAuthState(prev => ({ ...prev, loading: false }));
         }

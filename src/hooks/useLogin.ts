@@ -38,31 +38,12 @@ export const useLogin = (
         throw new Error('Too many login attempts. Please try again in 15 minutes.');
       }
       
-      // Clean up auth state before login
-      console.log('Cleaning up auth state...');
-      cleanupAuthState();
-      
-      // Try to sign out first to prevent auth issues
-      try {
-        console.log('Attempting to sign out existing session...');
-        await supabase.auth.signOut({ scope: 'global' });
-      } catch (err) {
-        console.log('Sign out failed, continuing with login:', err);
-      }
-      
       console.log('Attempting to sign in...');
       
-      // Add timeout to prevent infinite loading
-      const loginPromise = supabase.auth.signInWithPassword({
+      const { data, error } = await supabase.auth.signInWithPassword({
         email: sanitizedEmail,
         password
       });
-      
-      const timeoutPromise = new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('Login timeout - please try again')), 15000)
-      );
-      
-      const { data, error } = await Promise.race([loginPromise, timeoutPromise]) as any;
       
       console.log('Login response received:', { data: !!data, error: !!error });
       
@@ -80,17 +61,15 @@ export const useLogin = (
         return;
       }
       
-      if (data.user) {
+      if (data.user && data.session) {
         console.log('Login successful for user:', data.user.id);
         toast({
           title: "Logged in successfully",
           description: `Welcome back!`,
         });
         
-        // Force a page refresh to ensure clean state
-        setTimeout(() => {
-          window.location.href = '/';
-        }, 500);
+        // Don't force reload, let the auth state change handle navigation
+        // The AuthPage component will automatically redirect authenticated users
       } else {
         console.error('No user data received');
         throw new Error('Login failed - no user data received');
