@@ -14,6 +14,7 @@ const LoginForm = () => {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<{ email?: string; password?: string }>({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const { login, loading, error } = useAuth();
   const navigate = useNavigate();
 
@@ -39,11 +40,19 @@ const LoginForm = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!validateForm()) {
+    if (!validateForm() || isSubmitting || loading) {
       return;
     }
     
-    await login(email, password);
+    setIsSubmitting(true);
+    
+    try {
+      await login(email, password);
+    } catch (error) {
+      console.error('Login form error:', error);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -66,6 +75,8 @@ const LoginForm = () => {
     }
   };
 
+  const isLoading = loading || isSubmitting;
+
   return (
     <Card className="w-full max-w-md mx-auto">
       <CardHeader>
@@ -84,6 +95,7 @@ const LoginForm = () => {
               onChange={handleEmailChange}
               required
               autoComplete="email"
+              disabled={isLoading}
               className={fieldErrors.email ? "border-red-500" : ""}
             />
             {fieldErrors.email && (
@@ -98,6 +110,7 @@ const LoginForm = () => {
                 variant="link" 
                 className="p-0 h-auto text-sm text-marketplace-accent"
                 onClick={() => navigate('/auth/reset-password')}
+                disabled={isLoading}
               >
                 Forgot password?
               </Button>
@@ -110,12 +123,14 @@ const LoginForm = () => {
                 onChange={handlePasswordChange}
                 required
                 autoComplete="current-password"
+                disabled={isLoading}
                 className={fieldErrors.password ? "border-red-500 pr-10" : "pr-10"}
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                disabled={isLoading}
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700 disabled:opacity-50"
               >
                 {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
               </button>
@@ -127,11 +142,15 @@ const LoginForm = () => {
           
           {error && <p className="text-red-500 text-sm">{error}</p>}
           
-          <Button type="submit" className="w-full bg-marketplace-primary hover:bg-opacity-90" disabled={loading}>
-            {loading ? (
+          <Button 
+            type="submit" 
+            className="w-full bg-marketplace-primary hover:bg-opacity-90" 
+            disabled={isLoading}
+          >
+            {isLoading ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Logging in...
+                {isSubmitting ? 'Logging in...' : 'Loading...'}
               </>
             ) : 'Login'}
           </Button>
@@ -144,6 +163,7 @@ const LoginForm = () => {
             variant="link"
             className="p-0 h-auto text-marketplace-accent"
             onClick={() => navigate('/auth/register')}
+            disabled={isLoading}
           >
             Register
           </Button>
