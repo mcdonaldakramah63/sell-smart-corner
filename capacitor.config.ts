@@ -12,19 +12,32 @@ const config: CapacitorConfig = {
   plugins: {
     SplashScreen: {
       launchShowDuration: 3000,
-      backgroundColor: '#ffffffff',
+      backgroundColor: '#ffffff',
       androidSplashResourceName: 'splash',
       androidScaleType: 'CENTER_CROP',
       showSpinner: true,
       androidSpinnerStyle: 'large',
       iosSpinnerStyle: 'small',
-      spinnerColor: '#999999',
+      spinnerColor: '#2563eb',
       splashFullScreen: true,
       splashImmersive: true,
       layoutName: 'launch_screen',
       useDialog: true,
     },
+    StatusBar: {
+      backgroundColor: '#2563eb',
+      style: 'light'
+    },
+    Keyboard: {
+      resize: 'body',
+      resizeOnFullScreen: true
+    }
   },
+  android: {
+    allowMixedContent: true,
+    captureInput: true,
+    webContentsDebuggingEnabled: false
+  }
 };
 
 export default config;
