@@ -14,7 +14,7 @@ export const DesktopNavigation = () => {
         Products
       </Link>
       {isAuthenticated && (
-        <Link to="/sell" className="text-sm font-medium hover:text-marketplace-primary transition-colors">
+        <Link to="/create-product" className="text-sm font-medium hover:text-marketplace-primary transition-colors">
           Sell Something
         </Link>
       )}
