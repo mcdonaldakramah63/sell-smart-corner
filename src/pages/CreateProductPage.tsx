@@ -1,10 +1,8 @@
-
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import Layout from '@/components/layout/Layout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -299,279 +297,277 @@ export default function CreateProductPage() {
   };
 
   return (
-    <Layout>
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
-        <div className="container mx-auto px-4 py-8">
-          <div className="mb-8">
-            <div className="flex items-center gap-3 mb-2">
-              <div className="p-2 bg-gradient-to-r from-green-500 to-blue-500 rounded-lg">
-                <PlusCircle className="h-6 w-6 text-white" />
-              </div>
-              <h1 className="text-3xl font-bold bg-gradient-to-r from-slate-800 to-slate-600 bg-clip-text text-transparent">
-                Create Listing
-              </h1>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
+      <div className="container mx-auto px-4 py-8">
+        <div className="mb-8">
+          <div className="flex items-center gap-3 mb-2">
+            <div className="p-2 bg-gradient-to-r from-green-500 to-blue-500 rounded-lg">
+              <PlusCircle className="h-6 w-6 text-white" />
             </div>
-            <p className="text-slate-600">List your item for sale on the marketplace</p>
+            <h1 className="text-3xl font-bold bg-gradient-to-r from-slate-800 to-slate-600 bg-clip-text text-transparent">
+              Create Listing
+            </h1>
           </div>
+          <p className="text-slate-600">List your item for sale on the marketplace</p>
+        </div>
 
-          <form onSubmit={handleSubmit} className="max-w-4xl space-y-8">
-            {/* Product Details */}
-            <Card className="shadow-lg border-slate-200 bg-white">
-              <CardHeader className="bg-gradient-to-r from-slate-50 to-blue-50 rounded-t-lg">
-                <div className="flex items-center gap-3">
-                  <div className="p-1.5 bg-gradient-to-r from-blue-500 to-purple-500 rounded-md">
-                    <Package className="h-4 w-4 text-white" />
-                  </div>
-                  <CardTitle className="text-slate-800">Product Information</CardTitle>
+        <form onSubmit={handleSubmit} className="max-w-4xl space-y-8">
+          {/* Product Details */}
+          <Card className="shadow-lg border-slate-200 bg-white">
+            <CardHeader className="bg-gradient-to-r from-slate-50 to-blue-50 rounded-t-lg">
+              <div className="flex items-center gap-3">
+                <div className="p-1.5 bg-gradient-to-r from-blue-500 to-purple-500 rounded-md">
+                  <Package className="h-4 w-4 text-white" />
                 </div>
-                <CardDescription>
-                  Provide details about your item to attract buyers
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6 pt-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="space-y-2">
-                    <Label htmlFor="title" className="text-slate-700 font-medium">
-                      Product Title *
-                    </Label>
-                    <Input
-                      id="title"
-                      placeholder="Enter a descriptive title"
-                      value={form.title}
-                      onChange={(e) => handleInputChange('title', e.target.value)}
-                      className={`border-slate-200 focus:border-blue-500 focus:ring-blue-500 ${errors.title ? 'border-red-500' : ''}`}
-                      maxLength={100}
-                      required
-                    />
-                    {errors.title && (
-                      <p className="text-red-500 text-sm">{errors.title}</p>
-                    )}
-                    <p className="text-xs text-muted-foreground">
-                      {form.title.length}/100 characters
-                    </p>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="price" className="text-slate-700 font-medium flex items-center gap-1">
-                      <DollarSign className="h-4 w-4" />
-                      Price *
-                    </Label>
-                    <Input
-                      id="price"
-                      type="number"
-                      step="0.01"
-                      placeholder="0.00"
-                      value={form.price}
-                      onChange={(e) => handleInputChange('price', e.target.value)}
-                      className={`border-slate-200 focus:border-blue-500 focus:ring-blue-500 ${errors.price ? 'border-red-500' : ''}`}
-                      required
-                    />
-                    {errors.price && (
-                      <p className="text-red-500 text-sm">{errors.price}</p>
-                    )}
-                  </div>
-                </div>
-
+                <CardTitle className="text-slate-800">Product Information</CardTitle>
+              </div>
+              <CardDescription>
+                Provide details about your item to attract buyers
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6 pt-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
-                  <Label htmlFor="description" className="text-slate-700 font-medium">
-                    Description
+                  <Label htmlFor="title" className="text-slate-700 font-medium">
+                    Product Title *
                   </Label>
-                  <Textarea
-                    id="description"
-                    placeholder="Describe your item's condition, features, and any relevant details..."
-                    value={form.description}
-                    onChange={(e) => handleInputChange('description', e.target.value)}
-                    rows={4}
-                    className={`border-slate-200 focus:border-blue-500 focus:ring-blue-500 ${errors.description ? 'border-red-500' : ''}`}
-                    maxLength={2000}
+                  <Input
+                    id="title"
+                    placeholder="Enter a descriptive title"
+                    value={form.title}
+                    onChange={(e) => handleInputChange('title', e.target.value)}
+                    className={`border-slate-200 focus:border-blue-500 focus:ring-blue-500 ${errors.title ? 'border-red-500' : ''}`}
+                    maxLength={100}
+                    required
                   />
-                  {errors.description && (
-                    <p className="text-red-500 text-sm">{errors.description}</p>
+                  {errors.title && (
+                    <p className="text-red-500 text-sm">{errors.title}</p>
                   )}
                   <p className="text-xs text-muted-foreground">
-                    {form.description.length}/2000 characters
+                    {form.title.length}/100 characters
                   </p>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  <div className="space-y-2">
-                    <Label className="text-slate-700 font-medium flex items-center gap-1">
-                      <Tag className="h-4 w-4" />
-                      Category *
-                    </Label>
-                    <Select 
-                      value={form.category} 
-                      onValueChange={(value) => handleInputChange('category', value)}
-                      required
-                    >
-                      <SelectTrigger className={`border-slate-200 focus:border-blue-500 focus:ring-blue-500 ${errors.category ? 'border-red-500' : ''}`}>
-                        <SelectValue placeholder="Select category" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="electronics">Electronics</SelectItem>
-                        <SelectItem value="clothing">Clothing</SelectItem>
-                        <SelectItem value="home">Home & Garden</SelectItem>
-                        <SelectItem value="sports">Sports & Recreation</SelectItem>
-                        <SelectItem value="books">Books & Media</SelectItem>
-                        <SelectItem value="automotive">Automotive</SelectItem>
-                        <SelectItem value="other">Other</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    {errors.category && (
-                      <p className="text-red-500 text-sm">{errors.category}</p>
-                    )}
-                  </div>
+                <div className="space-y-2">
+                  <Label htmlFor="price" className="text-slate-700 font-medium flex items-center gap-1">
+                    <DollarSign className="h-4 w-4" />
+                    Price *
+                  </Label>
+                  <Input
+                    id="price"
+                    type="number"
+                    step="0.01"
+                    placeholder="0.00"
+                    value={form.price}
+                    onChange={(e) => handleInputChange('price', e.target.value)}
+                    className={`border-slate-200 focus:border-blue-500 focus:ring-blue-500 ${errors.price ? 'border-red-500' : ''}`}
+                    required
+                  />
+                  {errors.price && (
+                    <p className="text-red-500 text-sm">{errors.price}</p>
+                  )}
+                </div>
+              </div>
 
-                  <div className="space-y-2">
-                    <Label className="text-slate-700 font-medium">
-                      Condition *
-                    </Label>
-                    <Select 
-                      value={form.condition} 
-                      onValueChange={(value) => handleInputChange('condition', value)}
-                      required
-                    >
-                      <SelectTrigger className={`border-slate-200 focus:border-blue-500 focus:ring-blue-500 ${errors.condition ? 'border-red-500' : ''}`}>
-                        <SelectValue placeholder="Select condition" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="new">New</SelectItem>
-                        <SelectItem value="like-new">Like New</SelectItem>
-                        <SelectItem value="good">Good</SelectItem>
-                        <SelectItem value="fair">Fair</SelectItem>
-                        <SelectItem value="poor">Poor</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    {errors.condition && (
-                      <p className="text-red-500 text-sm">{errors.condition}</p>
-                    )}
-                  </div>
+              <div className="space-y-2">
+                <Label htmlFor="description" className="text-slate-700 font-medium">
+                  Description
+                </Label>
+                <Textarea
+                  id="description"
+                  placeholder="Describe your item's condition, features, and any relevant details..."
+                  value={form.description}
+                  onChange={(e) => handleInputChange('description', e.target.value)}
+                  rows={4}
+                  className={`border-slate-200 focus:border-blue-500 focus:ring-blue-500 ${errors.description ? 'border-red-500' : ''}`}
+                  maxLength={2000}
+                />
+                {errors.description && (
+                  <p className="text-red-500 text-sm">{errors.description}</p>
+                )}
+                <p className="text-xs text-muted-foreground">
+                  {form.description.length}/2000 characters
+                </p>
+              </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="location" className="text-slate-700 font-medium flex items-center gap-1">
-                      <MapPin className="h-4 w-4" />
-                      Location
-                    </Label>
-                    <Input
-                      id="location"
-                      placeholder="City, State"
-                      value={form.location}
-                      onChange={(e) => handleInputChange('location', e.target.value)}
-                      className={`border-slate-200 focus:border-blue-500 focus:ring-blue-500 ${errors.location ? 'border-red-500' : ''}`}
-                      maxLength={100}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="space-y-2">
+                  <Label className="text-slate-700 font-medium flex items-center gap-1">
+                    <Tag className="h-4 w-4" />
+                    Category *
+                  </Label>
+                  <Select 
+                    value={form.category} 
+                    onValueChange={(value) => handleInputChange('category', value)}
+                    required
+                  >
+                    <SelectTrigger className={`border-slate-200 focus:border-blue-500 focus:ring-blue-500 ${errors.category ? 'border-red-500' : ''}`}>
+                      <SelectValue placeholder="Select category" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="electronics">Electronics</SelectItem>
+                      <SelectItem value="clothing">Clothing</SelectItem>
+                      <SelectItem value="home">Home & Garden</SelectItem>
+                      <SelectItem value="sports">Sports & Recreation</SelectItem>
+                      <SelectItem value="books">Books & Media</SelectItem>
+                      <SelectItem value="automotive">Automotive</SelectItem>
+                      <SelectItem value="other">Other</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  {errors.category && (
+                    <p className="text-red-500 text-sm">{errors.category}</p>
+                  )}
+                </div>
+
+                <div className="space-y-2">
+                  <Label className="text-slate-700 font-medium">
+                    Condition *
+                  </Label>
+                  <Select 
+                    value={form.condition} 
+                    onValueChange={(value) => handleInputChange('condition', value)}
+                    required
+                  >
+                    <SelectTrigger className={`border-slate-200 focus:border-blue-500 focus:ring-blue-500 ${errors.condition ? 'border-red-500' : ''}`}>
+                      <SelectValue placeholder="Select condition" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="new">New</SelectItem>
+                      <SelectItem value="like-new">Like New</SelectItem>
+                      <SelectItem value="good">Good</SelectItem>
+                      <SelectItem value="fair">Fair</SelectItem>
+                      <SelectItem value="poor">Poor</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  {errors.condition && (
+                    <p className="text-red-500 text-sm">{errors.condition}</p>
+                  )}
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="location" className="text-slate-700 font-medium flex items-center gap-1">
+                    <MapPin className="h-4 w-4" />
+                    Location
+                  </Label>
+                  <Input
+                    id="location"
+                    placeholder="City, State"
+                    value={form.location}
+                    onChange={(e) => handleInputChange('location', e.target.value)}
+                    className={`border-slate-200 focus:border-blue-500 focus:ring-blue-500 ${errors.location ? 'border-red-500' : ''}`}
+                    maxLength={100}
+                  />
+                  {errors.location && (
+                    <p className="text-red-500 text-sm">{errors.location}</p>
+                  )}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Image Upload */}
+          <Card className="shadow-lg border-slate-200 bg-white">
+            <CardHeader className="bg-gradient-to-r from-slate-50 to-blue-50 rounded-t-lg">
+              <div className="flex items-center gap-3">
+                <div className="p-1.5 bg-gradient-to-r from-purple-500 to-pink-500 rounded-md">
+                  <Upload className="h-4 w-4 text-white" />
+                </div>
+                <CardTitle className="text-slate-800">Product Images</CardTitle>
+              </div>
+              <CardDescription>
+                Upload up to 5 images to showcase your item (first image will be the main photo)
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="pt-6">
+              <div className="space-y-4">
+                {images.length < 5 && (
+                  <div className="border-2 border-dashed border-slate-300 rounded-lg p-8 text-center hover:border-blue-400 transition-colors">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      multiple
+                      onChange={handleImageSelect}
+                      className="hidden"
+                      id="image-upload"
                     />
-                    {errors.location && (
-                      <p className="text-red-500 text-sm">{errors.location}</p>
-                    )}
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Image Upload */}
-            <Card className="shadow-lg border-slate-200 bg-white">
-              <CardHeader className="bg-gradient-to-r from-slate-50 to-blue-50 rounded-t-lg">
-                <div className="flex items-center gap-3">
-                  <div className="p-1.5 bg-gradient-to-r from-purple-500 to-pink-500 rounded-md">
-                    <Upload className="h-4 w-4 text-white" />
-                  </div>
-                  <CardTitle className="text-slate-800">Product Images</CardTitle>
-                </div>
-                <CardDescription>
-                  Upload up to 5 images to showcase your item (first image will be the main photo)
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="pt-6">
-                <div className="space-y-4">
-                  {images.length < 5 && (
-                    <div className="border-2 border-dashed border-slate-300 rounded-lg p-8 text-center hover:border-blue-400 transition-colors">
-                      <input
-                        type="file"
-                        accept="image/*"
-                        multiple
-                        onChange={handleImageSelect}
-                        className="hidden"
-                        id="image-upload"
-                      />
-                      <label
-                        htmlFor="image-upload"
-                        className="cursor-pointer flex flex-col items-center gap-3"
-                      >
-                        <div className="p-3 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full">
-                          <Upload className="h-6 w-6 text-white" />
-                        </div>
-                        <div>
-                          <p className="text-slate-700 font-medium">Click to upload images</p>
-                          <p className="text-sm text-slate-500">PNG, JPG, WebP up to 10MB each</p>
-                        </div>
-                      </label>
-                    </div>
-                  )}
-
-                  {errors.images && (
-                    <p className="text-red-500 text-sm">{errors.images}</p>
-                  )}
-
-                  {previewUrls.length > 0 && (
-                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-                      {previewUrls.map((url, index) => (
-                        <div key={index} className="relative group">
-                          <img
-                            src={url}
-                            alt={`Preview ${index + 1}`}
-                            className="w-full h-32 object-cover rounded-lg border shadow-sm"
-                          />
-                          {index === 0 && (
-                            <div className="absolute top-2 left-2 bg-green-500 text-white px-2 py-1 rounded text-xs font-medium">
-                              Main
-                            </div>
-                          )}
-                          <button
-                            type="button"
-                            onClick={() => removeImage(index)}
-                            className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-600"
-                          >
-                            <X className="h-3 w-3" />
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Submit Button */}
-            <div className="flex justify-end gap-4">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => navigate('/dashboard')}
-                className="px-8"
-              >
-                Cancel
-              </Button>
-              <Button
-                type="submit"
-                disabled={isSubmitting}
-                className="px-8 bg-gradient-to-r from-green-500 to-blue-500 hover:from-green-600 hover:to-blue-600 text-white"
-              >
-                {isSubmitting ? (
-                  <div className="flex items-center gap-2">
-                    <div className="h-4 w-4 border-t-2 border-r-2 border-white rounded-full animate-spin" />
-                    Creating...
-                  </div>
-                ) : (
-                  <div className="flex items-center gap-2">
-                    <PlusCircle className="h-4 w-4" />
-                    Create Listing
+                    <label
+                      htmlFor="image-upload"
+                      className="cursor-pointer flex flex-col items-center gap-3"
+                    >
+                      <div className="p-3 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full">
+                        <Upload className="h-6 w-6 text-white" />
+                      </div>
+                      <div>
+                        <p className="text-slate-700 font-medium">Click to upload images</p>
+                        <p className="text-sm text-slate-500">PNG, JPG, WebP up to 10MB each</p>
+                      </div>
+                    </label>
                   </div>
                 )}
-              </Button>
-            </div>
-          </form>
-        </div>
+
+                {errors.images && (
+                  <p className="text-red-500 text-sm">{errors.images}</p>
+                )}
+
+                {previewUrls.length > 0 && (
+                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+                    {previewUrls.map((url, index) => (
+                      <div key={index} className="relative group">
+                        <img
+                          src={url}
+                          alt={`Preview ${index + 1}`}
+                          className="w-full h-32 object-cover rounded-lg border shadow-sm"
+                        />
+                        {index === 0 && (
+                          <div className="absolute top-2 left-2 bg-green-500 text-white px-2 py-1 rounded text-xs font-medium">
+                            Main
+                          </div>
+                        )}
+                        <button
+                          type="button"
+                          onClick={() => removeImage(index)}
+                          className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-600"
+                        >
+                          <X className="h-3 w-3" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Submit Button */}
+          <div className="flex justify-end gap-4">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => navigate('/dashboard')}
+              className="px-8"
+            >
+              Cancel
+            </Button>
+            <Button
+              type="submit"
+              disabled={isSubmitting}
+              className="px-8 bg-gradient-to-r from-green-500 to-blue-500 hover:from-green-600 hover:to-blue-600 text-white"
+            >
+              {isSubmitting ? (
+                <div className="flex items-center gap-2">
+                  <div className="h-4 w-4 border-t-2 border-r-2 border-white rounded-full animate-spin" />
+                  Creating...
+                </div>
+              ) : (
+                <div className="flex items-center gap-2">
+                  <PlusCircle className="h-4 w-4" />
+                  Create Listing
+                </div>
+              )}
+            </Button>
+          </div>
+        </form>
       </div>
-    </Layout>
+    </div>
   );
 }
