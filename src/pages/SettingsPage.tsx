@@ -6,10 +6,10 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
-import { Settings, User, Bell, Shield, HelpCircle, LogOut } from 'lucide-react';
+import { Settings, User, Shield, HelpCircle, LogOut } from 'lucide-react';
+import { NotificationSettings } from '@/components/notifications/NotificationSettings';
 
 export default function SettingsPage() {
   const { user, logout } = useAuth();
@@ -108,68 +108,12 @@ export default function SettingsPage() {
             </Card>
 
             {/* Notification Settings */}
-            <Card className="shadow-lg border-slate-200 bg-white">
-              <CardHeader className="bg-gradient-to-r from-slate-50 to-blue-50 rounded-t-lg">
-                <div className="flex items-center gap-3">
-                  <div className="p-1.5 bg-gradient-to-r from-green-500 to-blue-500 rounded-md">
-                    <Bell className="h-4 w-4 text-white" />
-                  </div>
-                  <CardTitle className="text-slate-800">Notification Preferences</CardTitle>
-                </div>
-                <CardDescription>
-                  Choose how you want to be notified about marketplace activity
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6 pt-6">
-                <div className="flex items-center justify-between p-4 bg-slate-50 rounded-lg">
-                  <div>
-                    <Label htmlFor="email-notifications" className="font-medium text-slate-800">
-                      Email Notifications
-                    </Label>
-                    <p className="text-sm text-slate-600">
-                      Receive email notifications for messages and updates
-                    </p>
-                  </div>
-                  <Switch
-                    id="email-notifications"
-                    checked={emailNotifications}
-                    onCheckedChange={setEmailNotifications}
-                  />
-                </div>
-                
-                <div className="flex items-center justify-between p-4 bg-slate-50 rounded-lg">
-                  <div>
-                    <Label htmlFor="push-notifications" className="font-medium text-slate-800">
-                      Push Notifications
-                    </Label>
-                    <p className="text-sm text-slate-600">
-                      Receive browser notifications for real-time updates
-                    </p>
-                  </div>
-                  <Switch
-                    id="push-notifications"
-                    checked={pushNotifications}
-                    onCheckedChange={setPushNotifications}
-                  />
-                </div>
-                
-                <div className="flex items-center justify-between p-4 bg-slate-50 rounded-lg">
-                  <div>
-                    <Label htmlFor="marketing-emails" className="font-medium text-slate-800">
-                      Marketing Emails
-                    </Label>
-                    <p className="text-sm text-slate-600">
-                      Receive emails about new features and promotions
-                    </p>
-                  </div>
-                  <Switch
-                    id="marketing-emails"
-                    checked={marketingEmails}
-                    onCheckedChange={setMarketingEmails}
-                  />
-                </div>
-              </CardContent>
-            </Card>
+            <NotificationSettings
+              emailNotifications={emailNotifications}
+              pushNotifications={pushNotifications}
+              onEmailNotificationsChange={setEmailNotifications}
+              onPushNotificationsChange={setPushNotifications}
+            />
 
             {/* Privacy & Security */}
             <Card className="shadow-lg border-slate-200 bg-white">
