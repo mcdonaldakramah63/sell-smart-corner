@@ -12,6 +12,7 @@ export const useSocialAuth = (
 
   const loginWithGoogle = async () => {
     try {
+      console.log('Starting Google login...');
       setAuthState(prev => ({ ...prev, loading: true, error: null }));
       
       // Clean up auth state
@@ -20,18 +21,24 @@ export const useSocialAuth = (
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/auth/callback`
+          redirectTo: `${window.location.origin}/auth/callback`,
+          queryParams: {
+            access_type: 'offline',
+            prompt: 'consent',
+          }
         }
       });
       
-      const errorMessage = handleAuthError(error, setAuthState);
-      
-      if (errorMessage) {
+      if (error) {
+        console.error('Google login error:', error);
+        const errorMessage = handleAuthError(error, setAuthState);
         toast({
           title: "Google login failed",
-          description: errorMessage,
+          description: errorMessage || "Please try again",
           variant: "destructive",
         });
+      } else {
+        console.log('Google login initiated successfully');
       }
     } catch (error) {
       console.error('Google login error:', error);
@@ -48,6 +55,7 @@ export const useSocialAuth = (
   
   const loginWithGithub = async () => {
     try {
+      console.log('Starting GitHub login...');
       setAuthState(prev => ({ ...prev, loading: true, error: null }));
       
       // Clean up auth state
@@ -60,12 +68,12 @@ export const useSocialAuth = (
         }
       });
       
-      const errorMessage = handleAuthError(error, setAuthState);
-      
-      if (errorMessage) {
+      if (error) {
+        console.error('GitHub login error:', error);
+        const errorMessage = handleAuthError(error, setAuthState);
         toast({
           title: "GitHub login failed",
-          description: errorMessage,
+          description: errorMessage || "Please try again",
           variant: "destructive",
         });
       }
@@ -84,6 +92,7 @@ export const useSocialAuth = (
 
   const loginWithMicrosoft = async () => {
     try {
+      console.log('Starting Microsoft login...');
       setAuthState(prev => ({ ...prev, loading: true, error: null }));
       
       // Clean up auth state
@@ -92,16 +101,17 @@ export const useSocialAuth = (
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'azure',
         options: {
-          redirectTo: `${window.location.origin}/auth/callback`
+          redirectTo: `${window.location.origin}/auth/callback`,
+          scopes: 'email'
         }
       });
       
-      const errorMessage = handleAuthError(error, setAuthState);
-      
-      if (errorMessage) {
+      if (error) {
+        console.error('Microsoft login error:', error);
+        const errorMessage = handleAuthError(error, setAuthState);
         toast({
           title: "Microsoft login failed",
-          description: errorMessage,
+          description: errorMessage || "Please try again",
           variant: "destructive",
         });
       }
