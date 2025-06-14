@@ -45,6 +45,7 @@ const AppRoutes = () => (
     <Route path="/profile" element={<ProfilePage />} />
     <Route path="/messages" element={<MessagesPage />} />
     <Route path="/messages/:conversationId" element={<ConversationPage />} />
+    <Route path="/conversation/:id" element={<ConversationPage />} />
     <Route path="/notifications-page" element={<NotificationsPage />} />
     <Route path="/settings-page" element={<SettingsPage />} />
     <Route path="/help" element={<HelpPage />} />
