@@ -5,6 +5,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
+import Layout from "@/components/layout/Layout";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import AuthPage from "./pages/AuthPage";
@@ -40,33 +41,35 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 
 const AppRoutes = () => {
   return (
-    <Routes>
-      <Route path="/" element={<Index />} />
-      <Route path="/products" element={<ProductsPage />} />
-      <Route path="/product/:id" element={<ProductDetailPage />} />
-      <Route path="/auth/login" element={<AuthPage initialTab="login" />} />
-      <Route path="/auth/register" element={<AuthPage initialTab="register" />} />
-      <Route path="/auth/reset-password" element={<ResetPasswordPage />} />
-      <Route path="/auth/update-password" element={<UpdatePasswordPage />} />
-      <Route path="/auth/callback" element={<AuthCallbackPage />} />
-      
-      {/* Route redirects */}
-      <Route path="/sell" element={<Navigate to="/create-product" replace />} />
-      <Route path="/notifications" element={<Navigate to="/notifications-page" replace />} />
-      <Route path="/settings" element={<Navigate to="/settings-page" replace />} />
-      
-      {/* Protected routes */}
-      <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
-      <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
-      <Route path="/create-product" element={<ProtectedRoute><CreateProductPage /></ProtectedRoute>} />
-      <Route path="/messages" element={<ProtectedRoute><MessagesPage /></ProtectedRoute>} />
-      <Route path="/conversation/:id" element={<ProtectedRoute><ConversationPage /></ProtectedRoute>} />
-      <Route path="/notifications-page" element={<ProtectedRoute><NotificationsPage /></ProtectedRoute>} />
-      <Route path="/settings-page" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
+    <Layout>
+      <Routes>
+        <Route path="/" element={<Index />} />
+        <Route path="/products" element={<ProductsPage />} />
+        <Route path="/product/:id" element={<ProductDetailPage />} />
+        <Route path="/auth/login" element={<AuthPage initialTab="login" />} />
+        <Route path="/auth/register" element={<AuthPage initialTab="register" />} />
+        <Route path="/auth/reset-password" element={<ResetPasswordPage />} />
+        <Route path="/auth/update-password" element={<UpdatePasswordPage />} />
+        <Route path="/auth/callback" element={<AuthCallbackPage />} />
+        
+        {/* Route redirects */}
+        <Route path="/sell" element={<Navigate to="/create-product" replace />} />
+        <Route path="/notifications" element={<Navigate to="/notifications-page" replace />} />
+        <Route path="/settings" element={<Navigate to="/settings-page" replace />} />
+        
+        {/* Protected routes */}
+        <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
+        <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
+        <Route path="/create-product" element={<ProtectedRoute><CreateProductPage /></ProtectedRoute>} />
+        <Route path="/messages" element={<ProtectedRoute><MessagesPage /></ProtectedRoute>} />
+        <Route path="/conversation/:id" element={<ProtectedRoute><ConversationPage /></ProtectedRoute>} />
+        <Route path="/notifications-page" element={<ProtectedRoute><NotificationsPage /></ProtectedRoute>} />
+        <Route path="/settings-page" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
 
-      {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-      <Route path="*" element={<NotFound />} />
-    </Routes>
+        {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+        <Route path="*" element={<NotFound />} />
+      </Routes>
+    </Layout>
   );
 };
 
