@@ -1,6 +1,6 @@
+
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import Layout from '@/components/layout/Layout';
 import HeroSection from '@/components/layout/HeroSection';
 import ProductGrid from '@/components/products/ProductGrid';
 import CategoryFilter from '@/components/products/CategoryFilter';
@@ -97,7 +97,7 @@ const Index = () => {
   }, [toast]);
 
   return (
-    <Layout>
+    <>
       <HeroSection />
       
       <section className="py-12 container mx-auto px-4">
@@ -190,7 +190,7 @@ const Index = () => {
           </Button>
         </div>
       </section>
-    </Layout>
+    </>
   );
 };
 
