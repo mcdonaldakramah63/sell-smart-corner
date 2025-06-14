@@ -247,9 +247,9 @@ export default function PrivacyPage() {
                   If you have any questions about this Privacy Policy, please contact us:
                 </p>
                 <p className="text-sm text-slate-600 mt-2">
-                  <strong>Email:</strong> privacy@usedmarket.com<br />
+                  <strong>Email:</strong> mcdonaldakramah650@gmail.com<br />
                   <strong>Address:</strong> 123 Market Street, San Francisco, CA 94105<br />
-                  <strong>Phone:</strong> +1 (555) 123-4567
+                  <strong>Phone:</strong> 0539445725
                 </p>
               </CardContent>
             </Card>

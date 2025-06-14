@@ -132,7 +132,7 @@ export default function HelpPage() {
                   Can't find what you're looking for? Contact our support team and we'll get back to you within 24 hours.
                 </p>
                 <div className="space-y-2 text-sm">
-                  <p><strong>Email:</strong> support@usedmarket.com</p>
+                  <p><strong>Email:</strong> mcdonaldakramah650@gmail.com</p>
                   <p><strong>Response time:</strong> Within 24 hours</p>
                 </div>
               </div>

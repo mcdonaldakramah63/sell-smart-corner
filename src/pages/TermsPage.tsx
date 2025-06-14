@@ -182,8 +182,9 @@ export default function TermsPage() {
                   If you have any questions about these Terms of Service, please contact us at:
                 </p>
                 <p className="text-sm text-slate-600 mt-2">
-                  <strong>Email:</strong> legal@usedmarket.com<br />
-                  <strong>Address:</strong> 123 Market Street, San Francisco, CA 94105
+                  <strong>Email:</strong> mcdonaldakramah650@gmail.com<br />
+                  <strong>Address:</strong> 123 Market Street, San Francisco, CA 94105<br />
+                  <strong>Phone:</strong> 0539445725
                 </p>
               </CardContent>
             </Card>
