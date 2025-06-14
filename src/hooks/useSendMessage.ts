@@ -45,6 +45,15 @@ export const useSendMessage = ({ conversationId, product, otherUser }: UseSendMe
       .update({ updated_at: new Date().toISOString() })
       .eq('id', conversationId);
     
+    // Mark message notifications as read for this conversation when replying
+    await supabase
+      .from('notifications')
+      .update({ read: true })
+      .eq('user_id', user.id)
+      .eq('type', 'message')
+      .like('action_url', `%/conversation/${conversationId}%`)
+      .eq('read', false);
+    
     // Create notification for recipient
     if (otherUser?.id) {
       await supabase
