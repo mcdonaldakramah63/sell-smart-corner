@@ -42,11 +42,13 @@ export const UserMenu = ({ unreadNotifications, onLogin, onRegister }: UserMenuP
 
   if (!isAuthenticated) {
     return (
-      <div className="flex items-center space-x-2">
+      <div className="flex items-center space-x-1 sm:space-x-2">
         {!isMobile && (
-          <Button variant="ghost" onClick={onLogin}>Login</Button>
+          <Button variant="ghost" onClick={onLogin} size="sm" className="hidden sm:inline-flex">
+            Login
+          </Button>
         )}
-        <Button onClick={isMobile ? onLogin : onRegister}>
+        <Button onClick={isMobile ? onLogin : onRegister} size="sm" className="text-xs sm:text-sm px-2 sm:px-4">
           {isMobile ? 'Login' : 'Register'}
         </Button>
       </div>
@@ -57,40 +59,40 @@ export const UserMenu = ({ unreadNotifications, onLogin, onRegister }: UserMenuP
     <>
       {!isMobile && (
         <>
-          <Button variant="ghost" size="icon" className="relative" onClick={() => navigate('/notifications-page')}>
-            <Bell size={20} />
+          <Button variant="ghost" size="icon" className="relative h-8 w-8 sm:h-10 sm:w-10" onClick={() => navigate('/notifications-page')}>
+            <Bell size={16} className="sm:w-5 sm:h-5" />
             {unreadNotifications > 0 && (
-              <Badge className="h-5 w-5 text-xs rounded-full p-0 flex items-center justify-center absolute -top-1 -right-1 bg-marketplace-accent">
+              <Badge className="h-4 w-4 sm:h-5 sm:w-5 text-xs rounded-full p-0 flex items-center justify-center absolute -top-1 -right-1 bg-marketplace-accent">
                 {unreadNotifications}
               </Badge>
             )}
           </Button>
-          <Button variant="ghost" size="icon" onClick={() => navigate('/messages')}>
-            <MessageSquare size={20} />
+          <Button variant="ghost" size="icon" className="h-8 w-8 sm:h-10 sm:w-10" onClick={() => navigate('/messages')}>
+            <MessageSquare size={16} className="sm:w-5 sm:h-5" />
           </Button>
         </>
       )}
       
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Avatar className="cursor-pointer">
+          <Avatar className="cursor-pointer h-8 w-8 sm:h-10 sm:w-10">
             <AvatarImage src={user?.avatar} />
-            <AvatarFallback>{user ? getInitials(user.name) : 'U'}</AvatarFallback>
+            <AvatarFallback className="text-xs sm:text-sm">{user ? getInitials(user.name) : 'U'}</AvatarFallback>
           </Avatar>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end">
-          <DropdownMenuLabel>My Account</DropdownMenuLabel>
+        <DropdownMenuContent align="end" className="w-48 sm:w-56">
+          <DropdownMenuLabel className="text-sm">My Account</DropdownMenuLabel>
           <DropdownMenuSeparator />
-          <DropdownMenuItem onClick={() => navigate('/profile')}>
+          <DropdownMenuItem onClick={() => navigate('/profile')} className="text-sm">
             <User className="mr-2 h-4 w-4" />
             Profile
           </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => navigate('/settings-page')}>
+          <DropdownMenuItem onClick={() => navigate('/settings-page')} className="text-sm">
             <Settings className="mr-2 h-4 w-4" />
             Settings
           </DropdownMenuItem>
           <DropdownMenuSeparator />
-          <DropdownMenuItem onClick={logout}>
+          <DropdownMenuItem onClick={logout} className="text-sm">
             <LogOut className="mr-2 h-4 w-4" />
             Logout
           </DropdownMenuItem>

@@ -72,7 +72,7 @@ const Header = () => {
 
   return (
     <header className="border-b sticky top-0 bg-background z-10">
-      <div className="container mx-auto px-4 flex items-center justify-between h-16">
+      <div className="container mx-auto px-2 sm:px-4 flex items-center justify-between h-14 sm:h-16">
         {/* Mobile Menu */}
         <MobileMenu 
           unreadNotifications={unreadNotifications}
@@ -81,13 +81,13 @@ const Header = () => {
         />
         
         {/* Logo */}
-        <Link to="/" className="flex items-center space-x-2">
+        <Link to="/" className="flex items-center space-x-1 sm:space-x-2 flex-shrink-0">
           <img 
             src="/lovable-uploads/4e530486-e6cb-4ca6-8a3f-9658a5975dee.png" 
             alt="Used Market Logo" 
-            className="h-8 w-8"
+            className="h-6 w-6 sm:h-8 sm:w-8"
           />
-          <span className="font-bold text-xl text-marketplace-primary hidden sm:inline">
+          <span className="font-bold text-base sm:text-xl text-marketplace-primary hidden xs:inline">
             Used Market
           </span>
         </Link>
@@ -96,7 +96,7 @@ const Header = () => {
         <DesktopNavigation />
         
         {/* Auth Section */}
-        <div className="flex items-center space-x-4">
+        <div className="flex items-center space-x-2 sm:space-x-4 flex-shrink-0">
           <UserMenu 
             unreadNotifications={unreadNotifications}
             onLogin={handleLogin}
