@@ -7,7 +7,14 @@ const Footer = () => {
       <div className="container mx-auto px-4">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           <div>
-            <h3 className="text-lg font-bold mb-4">Used Market</h3>
+            <div className="flex items-center space-x-2 mb-4">
+              <img 
+                src="/lovable-uploads/4e530486-e6cb-4ca6-8a3f-9658a5975dee.png" 
+                alt="Used Market Logo" 
+                className="h-6 w-6"
+              />
+              <h3 className="text-lg font-bold">Used Market</h3>
+            </div>
             <p className="text-gray-300 text-sm">
               Buy and sell items easily with our secure marketplace platform.
             </p>

@@ -81,8 +81,15 @@ const Header = () => {
         />
         
         {/* Logo */}
-        <Link to="/" className="font-bold text-xl text-marketplace-primary">
-          Used Market
+        <Link to="/" className="flex items-center space-x-2">
+          <img 
+            src="/lovable-uploads/4e530486-e6cb-4ca6-8a3f-9658a5975dee.png" 
+            alt="Used Market Logo" 
+            className="h-8 w-8"
+          />
+          <span className="font-bold text-xl text-marketplace-primary hidden sm:inline">
+            Used Market
+          </span>
         </Link>
         
         {/* Desktop Navigation */}
