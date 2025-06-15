@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -5,6 +6,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { AlertTriangle, CheckCircle } from 'lucide-react';
+import { isCapacitor } from '@/lib/isCapacitor';
 
 export default function AuthCallbackPage() {
   const navigate = useNavigate();
@@ -19,11 +21,7 @@ export default function AuthCallbackPage() {
         console.log('Processing auth callback...');
         setIsProcessing(true);
 
-        // Platform-specific: If in mobile app with deep link, redirect to appropriate in-app route after successful login
-        // (Very minimal logic here; if needed, expand to communicate to mobile app via bridge or use window.Capacitor APIs)
-        // Otherwise, normal behavior on web
-
-        const isCapacitorMobile = !!(window as any).Capacitor?.isNativePlatform?.();
+        const isCapacitorMobile = isCapacitor();
 
         const { data, error } = await supabase.auth.getSession();
 
@@ -49,10 +47,7 @@ export default function AuthCallbackPage() {
           });
 
           if (isCapacitorMobile) {
-            // Use deep link routing logic if needed (can be a no-op here if handled on native)
-            // Optionally, inform the app/user. If using capacitor plugins, can do more.
-            // Example: Instruct users to close browser tab and return to the app if stuck.
-            // Here, just add a short message for mobile context and don't redirect.
+            // Redirect back to app using deep link for Capacitor
             setTimeout(() => {
               window.location.href = 'app.lovable.d3616aa2da414916957d8d8533d680a4://auth/success';
             }, 1000);

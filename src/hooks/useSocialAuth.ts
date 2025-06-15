@@ -1,4 +1,3 @@
-
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from '@/integrations/supabase/client';
 import { cleanupAuthState } from '@/utils/authUtils';
@@ -17,7 +16,6 @@ export const useSocialAuth = (
 
   // Helper to choose the redirectTo based on platform
   const getRedirectTo = () => {
-    // Use Capacitor platform detection
     return isCapacitor()
       ? APP_SCHEME_REDIRECT
       : `${window.location.origin}/auth/callback`
