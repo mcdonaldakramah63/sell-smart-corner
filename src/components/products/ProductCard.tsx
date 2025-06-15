@@ -1,3 +1,4 @@
+
 import { Product } from '@/lib/types';
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -79,16 +80,21 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
       className="overflow-hidden transition-all duration-300 hover:shadow-lg cursor-pointer animate-fade-in" 
       onClick={handleClick}
     >
-      <div className="aspect-square overflow-hidden relative">
+      <div className="aspect-square overflow-hidden relative bg-gray-50">
         {product.images && product.images.length > 0 ? (
           <img 
             src={product.images[0]} 
             alt={product.title}
-            className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
+            className="w-full h-full object-contain transition-transform duration-300 hover:scale-105"
+            loading="lazy"
+            onError={(e) => {
+              const target = e.target as HTMLImageElement;
+              target.style.objectFit = 'cover';
+            }}
           />
         ) : (
           <div className="w-full h-full bg-muted flex items-center justify-center">
-            No image
+            <span className="text-muted-foreground text-sm">No image</span>
           </div>
         )}
         <Badge className="absolute top-2 right-2 bg-marketplace-accent">
@@ -118,7 +124,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           <img 
             src={product.seller.avatar || "https://via.placeholder.com/24"} 
             alt={product.seller.name}
-            className="w-5 h-5 rounded-full"
+            className="w-5 h-5 rounded-full object-cover"
           />
           <span className="text-xs">{product.seller.name}</span>
         </div>

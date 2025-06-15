@@ -13,12 +13,17 @@ interface DashboardProductCardProps {
 export default function DashboardProductCard({ product }: DashboardProductCardProps) {
   return (
     <Card className="overflow-hidden">
-      <div className="relative aspect-video">
-        <Link to={`/product/${product.id}`}>
+      <div className="relative aspect-video bg-gray-50">
+        <Link to={`/products/${product.id}`}>
           <img
             src={product.images[0] || '/placeholder.svg'}
             alt={product.title}
-            className="w-full h-full object-cover"
+            className="w-full h-full object-contain"
+            loading="lazy"
+            onError={(e) => {
+              const target = e.target as HTMLImageElement;
+              target.style.objectFit = 'cover';
+            }}
           />
           {product.is_sold && (
             <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
@@ -31,7 +36,7 @@ export default function DashboardProductCard({ product }: DashboardProductCardPr
       </div>
       
       <CardContent className="p-4">
-        <Link to={`/product/${product.id}`} className="hover:underline">
+        <Link to={`/products/${product.id}`} className="hover:underline">
           <h3 className="font-medium line-clamp-1">{product.title}</h3>
         </Link>
         <div className="flex justify-between items-center mt-1">
