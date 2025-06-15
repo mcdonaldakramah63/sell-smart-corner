@@ -14,7 +14,7 @@ export const createOrFindConversation = async (
   // Step 1: Call the RPC to find an existing conversation between the two users for this product
   console.log('Step 1: Calling RPC to find existing conversation...');
   const { data: existingConversationId, error: rpcError } = await supabase
-    .rpc('find_conversation_for_product', {
+    .rpc<string | null>('find_conversation_for_product', {
       product_uuid: product.id,
       user_one: currentUserId,
       user_two: product.seller.id,
@@ -25,7 +25,7 @@ export const createOrFindConversation = async (
     throw new Error(`Failed to search conversations: ${rpcError.message}`);
   }
 
-  if (existingConversationId) {
+  if (existingConversationId && typeof existingConversationId === 'string') {
     console.log('Found existing conversation:', existingConversationId);
     return existingConversationId;
   }

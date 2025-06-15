@@ -343,6 +343,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      find_conversation_for_product: {
+        Args: { product_uuid: string; user_one: string; user_two: string }
+        Returns: string
+      }
       get_conversation_participants: {
         Args: { conversation_uuid: string }
         Returns: {
