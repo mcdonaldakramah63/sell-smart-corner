@@ -11,7 +11,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Label } from '@/components/ui/label';
 import { PlusCircle, Upload, X, Package, DollarSign, MapPin, Tag } from 'lucide-react';
 import { validateTextContent, validatePrice, validateFile } from '@/utils/validation';
-import { categories } from '@/lib/mockData';
+import { useCategories } from '@/hooks/useCategories';
 
 interface ProductForm {
   title: string;
@@ -48,6 +48,8 @@ export default function CreateProductPage() {
     location?: string;
     images?: string;
   }>({});
+
+  const { data: categories = [], isLoading: categoriesLoading, error: categoriesError } = useCategories();
 
   const validateForm = () => {
     const newErrors: typeof errors = {};
@@ -397,22 +399,26 @@ export default function CreateProductPage() {
                     <Tag className="h-4 w-4" />
                     Category *
                   </Label>
-                  <Select 
-                    value={form.category} 
-                    onValueChange={(value) => handleInputChange('category', value)}
-                    required
-                  >
-                    <SelectTrigger className={`border-slate-200 focus:border-blue-500 focus:ring-blue-500 ${errors.category ? 'border-red-500' : ''}`}>
-                      <SelectValue placeholder="Select category" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {categories.map(cat => (
-                        <SelectItem key={cat.id} value={cat.id}>
-                          {cat.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  {categoriesLoading ? (
+                    <div className="py-2 text-muted-foreground">Loading categories…</div>
+                  ) : (
+                    <Select 
+                      value={form.category} 
+                      onValueChange={(value) => handleInputChange('category', value)}
+                      required
+                    >
+                      <SelectTrigger className={`border-slate-200 focus:border-blue-500 focus:ring-blue-500 ${errors.category ? 'border-red-500' : ''}`}>
+                        <SelectValue placeholder="Select category" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {categories.map(cat => (
+                          <SelectItem key={cat.id} value={cat.id}>
+                            {cat.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )}
                   {errors.category && (
                     <p className="text-red-500 text-sm">{errors.category}</p>
                   )}

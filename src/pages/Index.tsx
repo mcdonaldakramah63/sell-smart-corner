@@ -6,7 +6,7 @@ import ProductGrid from '@/components/products/ProductGrid';
 import CategoryFilter from '@/components/products/CategoryFilter';
 import SearchBar from '@/components/products/SearchBar';
 import { Button } from '@/components/ui/button';
-import { categories } from '@/lib/mockData';
+import { useCategories } from '@/hooks/useCategories';
 import { Product } from '@/lib/types';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -39,6 +39,8 @@ const Index = () => {
       }
     ]
   };
+
+  const { data: categories = [], isLoading: categoriesLoading, error: categoriesError } = useCategories();
 
   useEffect(() => {
     const fetchFeaturedProducts = async () => {
@@ -132,6 +134,7 @@ const Index = () => {
                 navigate(`/products?category=${encodeURIComponent(categoryId)}`);
               }
             }}
+            loading={categoriesLoading}
           />
         </div>
       </section>

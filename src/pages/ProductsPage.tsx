@@ -14,9 +14,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Slider } from '@/components/ui/slider';
-import { categories } from '@/lib/mockData';
-import { Product } from '@/lib/types';
-import { supabase } from '@/integrations/supabase/client';
+import { useCategories } from '@/hooks/useCategories';
 import { useToast } from '@/hooks/use-toast';
 import { Seo } from "@/components/layout/Seo";
 
@@ -55,6 +53,8 @@ const ProductsPage = () => {
       }
     ]
   };
+
+  const { data: categories = [], isLoading: categoriesLoading, error: categoriesError } = useCategories();
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -296,6 +296,7 @@ const ProductsPage = () => {
                 categories={categories}
                 selectedCategory={selectedCategory}
                 onSelectCategory={handleCategoryChange}
+                loading={categoriesLoading}
               />
             </div>
             
