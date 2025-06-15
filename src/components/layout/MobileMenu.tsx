@@ -1,4 +1,3 @@
-
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -46,7 +45,7 @@ export const MobileMenu = ({ unreadNotifications, onLogin, onRegister }: MobileM
             </Link>
             {isAuthenticated && (
               <>
-                <Link to="/sell" className="flex items-center space-x-2 p-2 rounded-md hover:bg-muted">
+                <Link to="/create-product" className="flex items-center space-x-2 p-2 rounded-md hover:bg-muted">
                   <PlusCircle className="h-4 w-4" />
                   <span>Sell Something</span>
                 </Link>
