@@ -5,6 +5,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { ConversationCard } from '@/components/messages/ConversationCard';
 import { EmptyMessagesState } from '@/components/messages/EmptyMessagesState';
 import { MessageSquare } from 'lucide-react';
+import Layout from '@/components/layout/Layout';
 
 interface ConversationPreview {
   id: string;
@@ -162,34 +163,36 @@ export default function MessagesPage() {
   }, [user?.id]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
-      <div className="container mx-auto px-4 py-8">
-        <div className="mb-8">
-          <div className="flex items-center gap-3 mb-2">
-            <div className="p-2 bg-gradient-to-r from-blue-500 to-purple-500 rounded-lg">
-              <MessageSquare className="h-6 w-6 text-white" />
+    <Layout>
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
+        <div className="container mx-auto px-4 py-8">
+          <div className="mb-8">
+            <div className="flex items-center gap-3 mb-2">
+              <div className="p-2 bg-gradient-to-r from-blue-500 to-purple-500 rounded-lg">
+                <MessageSquare className="h-6 w-6 text-white" />
+              </div>
+              <h1 className="text-3xl font-bold bg-gradient-to-r from-slate-800 to-slate-600 bg-clip-text text-transparent">
+                Messages
+              </h1>
             </div>
-            <h1 className="text-3xl font-bold bg-gradient-to-r from-slate-800 to-slate-600 bg-clip-text text-transparent">
-              Messages
-            </h1>
+            <p className="text-slate-600">Stay connected with buyers and sellers</p>
           </div>
-          <p className="text-slate-600">Stay connected with buyers and sellers</p>
+          
+          {loading ? (
+            <div className="flex justify-center py-12">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+            </div>
+          ) : conversations.length > 0 ? (
+            <div className="space-y-4">
+              {conversations.map((conversation) => (
+                <ConversationCard key={conversation.id} conversation={conversation} />
+              ))}
+            </div>
+          ) : (
+            <EmptyMessagesState />
+          )}
         </div>
-        
-        {loading ? (
-          <div className="flex justify-center py-12">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
-          </div>
-        ) : conversations.length > 0 ? (
-          <div className="space-y-4">
-            {conversations.map((conversation) => (
-              <ConversationCard key={conversation.id} conversation={conversation} />
-            ))}
-          </div>
-        ) : (
-          <EmptyMessagesState />
-        )}
       </div>
-    </div>
+    </Layout>
   );
 }
