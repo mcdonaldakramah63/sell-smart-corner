@@ -16,6 +16,7 @@ import { useProductForm } from "@/hooks/products/useProductForm";
 import { useImageUpload } from "@/hooks/products/useImageUpload";
 import ProductDetailsCard from "@/components/products/forms/ProductDetailsCard";
 import ImageUploadCard from "@/components/products/forms/ImageUploadCard";
+import Layout from "@/components/layout/Layout";
 
 interface ProductForm {
   title: string;
@@ -159,97 +160,99 @@ export default function CreateProductPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
-      <div className="container mx-auto px-4 py-8">
-        <div className="mb-8">
-          <div className="flex items-center gap-3 mb-2">
-            <div className="p-2 bg-gradient-to-r from-green-500 to-blue-500 rounded-lg">
-              <PlusCircle className="h-6 w-6 text-white" />
+    <Layout>
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
+        <div className="container mx-auto px-4 py-8">
+          <div className="mb-8">
+            <div className="flex items-center gap-3 mb-2">
+              <div className="p-2 bg-gradient-to-r from-green-500 to-blue-500 rounded-lg">
+                <PlusCircle className="h-6 w-6 text-white" />
+              </div>
+              <h1 className="text-3xl font-bold bg-gradient-to-r from-slate-800 to-slate-600 bg-clip-text text-transparent">
+                Create Listing
+              </h1>
             </div>
-            <h1 className="text-3xl font-bold bg-gradient-to-r from-slate-800 to-slate-600 bg-clip-text text-transparent">
-              Create Listing
-            </h1>
+            <p className="text-slate-600">List your item for sale on the marketplace</p>
           </div>
-          <p className="text-slate-600">List your item for sale on the marketplace</p>
-        </div>
 
-        <form onSubmit={handleSubmit} className="max-w-4xl space-y-8">
-          {/* Product Details */}
-          <Card className="shadow-lg border-slate-200 bg-white">
-            <CardHeader className="bg-gradient-to-r from-slate-50 to-blue-50 rounded-t-lg">
-              <div className="flex items-center gap-3">
-                <div className="p-1.5 bg-gradient-to-r from-blue-500 to-purple-500 rounded-md">
-                  <Package className="h-4 w-4 text-white" />
+          <form onSubmit={handleSubmit} className="max-w-4xl space-y-8">
+            {/* Product Details */}
+            <Card className="shadow-lg border-slate-200 bg-white">
+              <CardHeader className="bg-gradient-to-r from-slate-50 to-blue-50 rounded-t-lg">
+                <div className="flex items-center gap-3">
+                  <div className="p-1.5 bg-gradient-to-r from-blue-500 to-purple-500 rounded-md">
+                    <Package className="h-4 w-4 text-white" />
+                  </div>
+                  <CardTitle className="text-slate-800">Product Information</CardTitle>
                 </div>
-                <CardTitle className="text-slate-800">Product Information</CardTitle>
-              </div>
-              <CardDescription>
-                Provide details about your item to attract buyers
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6 pt-6">
-              <ProductDetailsCard
-                fields={fields}
-                errors={errors}
-                handleInputChange={handleInputChange}
-                categories={categories}
-                categoriesLoading={categoriesLoading}
-              />
-            </CardContent>
-          </Card>
-          {/* Image Upload */}
-          <Card className="shadow-lg border-slate-200 bg-white">
-            <CardHeader className="bg-gradient-to-r from-slate-50 to-blue-50 rounded-t-lg">
-              <div className="flex items-center gap-3">
-                <div className="p-1.5 bg-gradient-to-r from-purple-500 to-pink-500 rounded-md">
-                  <Upload className="h-4 w-4 text-white" />
+                <CardDescription>
+                  Provide details about your item to attract buyers
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6 pt-6">
+                <ProductDetailsCard
+                  fields={fields}
+                  errors={errors}
+                  handleInputChange={handleInputChange}
+                  categories={categories}
+                  categoriesLoading={categoriesLoading}
+                />
+              </CardContent>
+            </Card>
+            {/* Image Upload */}
+            <Card className="shadow-lg border-slate-200 bg-white">
+              <CardHeader className="bg-gradient-to-r from-slate-50 to-blue-50 rounded-t-lg">
+                <div className="flex items-center gap-3">
+                  <div className="p-1.5 bg-gradient-to-r from-purple-500 to-pink-500 rounded-md">
+                    <Upload className="h-4 w-4 text-white" />
+                  </div>
+                  <CardTitle className="text-slate-800">Product Images</CardTitle>
                 </div>
-                <CardTitle className="text-slate-800">Product Images</CardTitle>
-              </div>
-              <CardDescription>
-                Upload up to 5 images to showcase your item (first image will be the main photo)
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="pt-6">
-              <ImageUploadCard
-                images={images}
-                previewUrls={previewUrls}
-                error={imagesError}
-                onImageSelect={handleImageSelect}
-                onRemove={removeImage}
-              />
-            </CardContent>
-          </Card>
-          {/* Submit Button */}
-          <div className="flex justify-end gap-4">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => navigate('/dashboard')}
-              className="px-8"
-            >
-              Cancel
-            </Button>
-            <Button
-              type="submit"
-              disabled={isSubmitting}
-              className="px-8 bg-gradient-to-r from-green-500 to-blue-500 hover:from-green-600 hover:to-blue-600 text-white"
-            >
-              {isSubmitting ? (
-                <div className="flex items-center gap-2">
-                  <div className="h-4 w-4 border-t-2 border-r-2 border-white rounded-full animate-spin" />
-                  Creating...
-                </div>
-              ) : (
-                <div className="flex items-center gap-2">
-                  <PlusCircle className="h-4 w-4" />
-                  Create Listing
-                </div>
-              )}
-            </Button>
-          </div>
-        </form>
+                <CardDescription>
+                  Upload up to 5 images to showcase your item (first image will be the main photo)
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="pt-6">
+                <ImageUploadCard
+                  images={images}
+                  previewUrls={previewUrls}
+                  error={imagesError}
+                  onImageSelect={handleImageSelect}
+                  onRemove={removeImage}
+                />
+              </CardContent>
+            </Card>
+            {/* Submit Button */}
+            <div className="flex justify-end gap-4">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => navigate('/dashboard')}
+                className="px-8"
+              >
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                disabled={isSubmitting}
+                className="px-8 bg-gradient-to-r from-green-500 to-blue-500 hover:from-green-600 hover:to-blue-600 text-white"
+              >
+                {isSubmitting ? (
+                  <div className="flex items-center gap-2">
+                    <div className="h-4 w-4 border-t-2 border-r-2 border-white rounded-full animate-spin" />
+                    Creating...
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-2">
+                    <PlusCircle className="h-4 w-4" />
+                    Create Listing
+                  </div>
+                )}
+              </Button>
+            </div>
+          </form>
+        </div>
       </div>
-    </div>
+    </Layout>
   );
 }

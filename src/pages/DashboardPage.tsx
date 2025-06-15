@@ -9,6 +9,7 @@ import { Product, Notification } from '@/lib/types';
 import { PlusCircle, ShoppingBag, MessageSquare, Bell, Settings } from 'lucide-react';
 import DashboardProductCard from '@/components/dashboard/DashboardProductCard';
 import NotificationList from '@/components/notifications/NotificationList';
+import Layout from "@/components/layout/Layout";
 
 export default function DashboardPage() {
   const { user } = useAuth();
@@ -95,106 +96,108 @@ export default function DashboardPage() {
   }, [user?.id, user?.name, user?.avatar]);
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
-        <div>
-          <h1 className="text-3xl font-bold">Dashboard</h1>
-          <p className="text-muted-foreground">
-            Manage your marketplace activities
-          </p>
+    <Layout>
+      <div className="container mx-auto px-4 py-8">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
+          <div>
+            <h1 className="text-3xl font-bold">Dashboard</h1>
+            <p className="text-muted-foreground">
+              Manage your marketplace activities
+            </p>
+          </div>
+          <div className="flex gap-2">
+            <Button asChild>
+              <Link to="/create-product" className="flex items-center gap-1">
+                <PlusCircle size={18} />
+                <span>List Item</span>
+              </Link>
+            </Button>
+            <Button variant="outline" asChild>
+              <Link to="/profile">
+                <Settings size={18} />
+                <span className="sr-only">Settings</span>
+              </Link>
+            </Button>
+          </div>
         </div>
-        <div className="flex gap-2">
-          <Button asChild>
-            <Link to="/create-product" className="flex items-center gap-1">
-              <PlusCircle size={18} />
-              <span>List Item</span>
-            </Link>
-          </Button>
-          <Button variant="outline" asChild>
-            <Link to="/profile">
-              <Settings size={18} />
-              <span className="sr-only">Settings</span>
-            </Link>
-          </Button>
-        </div>
-      </div>
-      
-      <Tabs 
-        value={activeTab} 
-        onValueChange={setActiveTab}
-        className="space-y-4"
-      >
-        <TabsList>
-          <TabsTrigger value="listings" className="flex items-center gap-2">
-            <ShoppingBag size={16} />
-            <span>My Listings</span>
-          </TabsTrigger>
-          <TabsTrigger value="messages" className="flex items-center gap-2">
-            <MessageSquare size={16} />
-            <span>Messages</span>
-          </TabsTrigger>
-          <TabsTrigger value="notifications" className="flex items-center gap-2">
-            <Bell size={16} />
-            <span>Notifications</span>
-          </TabsTrigger>
-        </TabsList>
         
-        <TabsContent value="listings" className="space-y-4">
-          {loading ? (
-            <div className="flex justify-center py-8">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-            </div>
-          ) : products.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {products.map(product => (
-                <DashboardProductCard key={product.id} product={product} />
-              ))}
-            </div>
-          ) : (
+        <Tabs 
+          value={activeTab} 
+          onValueChange={setActiveTab}
+          className="space-y-4"
+        >
+          <TabsList>
+            <TabsTrigger value="listings" className="flex items-center gap-2">
+              <ShoppingBag size={16} />
+              <span>My Listings</span>
+            </TabsTrigger>
+            <TabsTrigger value="messages" className="flex items-center gap-2">
+              <MessageSquare size={16} />
+              <span>Messages</span>
+            </TabsTrigger>
+            <TabsTrigger value="notifications" className="flex items-center gap-2">
+              <Bell size={16} />
+              <span>Notifications</span>
+            </TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="listings" className="space-y-4">
+            {loading ? (
+              <div className="flex justify-center py-8">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+              </div>
+            ) : products.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {products.map(product => (
+                  <DashboardProductCard key={product.id} product={product} />
+                ))}
+              </div>
+            ) : (
+              <Card>
+                <CardHeader>
+                  <CardTitle>No listings yet</CardTitle>
+                  <CardDescription>
+                    You haven't listed any items for sale yet.
+                  </CardDescription>
+                </CardHeader>
+                <CardFooter>
+                  <Button asChild>
+                    <Link to="/create-product">Create your first listing</Link>
+                  </Button>
+                </CardFooter>
+              </Card>
+            )}
+          </TabsContent>
+          
+          <TabsContent value="messages">
             <Card>
               <CardHeader>
-                <CardTitle>No listings yet</CardTitle>
+                <CardTitle>Messages</CardTitle>
                 <CardDescription>
-                  You haven't listed any items for sale yet.
+                  View and respond to messages from buyers
                 </CardDescription>
               </CardHeader>
-              <CardFooter>
-                <Button asChild>
-                  <Link to="/create-product">Create your first listing</Link>
-                </Button>
-              </CardFooter>
+              <CardContent>
+                <Link to="/messages" className="block w-full">
+                  <Button variant="outline" className="w-full">
+                    Go to Messages
+                  </Button>
+                </Link>
+              </CardContent>
             </Card>
-          )}
-        </TabsContent>
-        
-        <TabsContent value="messages">
-          <Card>
-            <CardHeader>
-              <CardTitle>Messages</CardTitle>
-              <CardDescription>
-                View and respond to messages from buyers
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Link to="/messages" className="block w-full">
-                <Button variant="outline" className="w-full">
-                  Go to Messages
-                </Button>
-              </Link>
-            </CardContent>
-          </Card>
-        </TabsContent>
-        
-        <TabsContent value="notifications">
-          {loading ? (
-            <div className="flex justify-center py-8">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-            </div>
-          ) : (
-            <NotificationList notifications={notifications} />
-          )}
-        </TabsContent>
-      </Tabs>
-    </div>
+          </TabsContent>
+          
+          <TabsContent value="notifications">
+            {loading ? (
+              <div className="flex justify-center py-8">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+              </div>
+            ) : (
+              <NotificationList notifications={notifications} />
+            )}
+          </TabsContent>
+        </Tabs>
+      </div>
+    </Layout>
   );
 }
