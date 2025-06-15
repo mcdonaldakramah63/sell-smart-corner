@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -19,10 +18,15 @@ export default function AuthCallbackPage() {
       try {
         console.log('Processing auth callback...');
         setIsProcessing(true);
-        
-        // Handle the auth callback
+
+        // Platform-specific: If in mobile app with deep link, redirect to appropriate in-app route after successful login
+        // (Very minimal logic here; if needed, expand to communicate to mobile app via bridge or use window.Capacitor APIs)
+        // Otherwise, normal behavior on web
+
+        const isCapacitorMobile = !!(window as any).Capacitor?.isNativePlatform?.();
+
         const { data, error } = await supabase.auth.getSession();
-        
+
         if (error) {
           console.error('Error getting auth session:', error);
           setError('Authentication failed. Please try again.');
@@ -34,16 +38,28 @@ export default function AuthCallbackPage() {
           setTimeout(() => navigate('/auth/login'), 3000);
           return;
         }
-        
+
         if (data.session) {
           console.log('Authentication successful, redirecting...');
+
           setSuccess(true);
           toast({
             title: "Login successful",
             description: "You have been logged in successfully.",
           });
-          // Small delay to show success message
-          setTimeout(() => navigate('/'), 1500);
+
+          if (isCapacitorMobile) {
+            // Use deep link routing logic if needed (can be a no-op here if handled on native)
+            // Optionally, inform the app/user. If using capacitor plugins, can do more.
+            // Example: Instruct users to close browser tab and return to the app if stuck.
+            // Here, just add a short message for mobile context and don't redirect.
+            setTimeout(() => {
+              window.location.href = 'app.lovable.d3616aa2da414916957d8d8533d680a4://auth/success';
+            }, 1000);
+          } else {
+            // Small delay to show success message
+            setTimeout(() => navigate('/'), 1500);
+          }
         } else {
           // Check URL for error parameters
           const url = new URL(window.location.href);

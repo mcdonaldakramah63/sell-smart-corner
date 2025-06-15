@@ -1,33 +1,47 @@
+
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from '@/integrations/supabase/client';
 import { cleanupAuthState } from '@/utils/authUtils';
 import { handleAuthError } from '@/utils/authErrorHandler';
 import { AuthState } from '@/types/auth';
+import { isCapacitor } from '@/lib/isCapacitor';
+
+// Define the custom URL scheme for the app.
+// Ensure this matches what’s configured in your AndroidManifest and capacitor.config.ts
+const APP_SCHEME_REDIRECT = "app.lovable.d3616aa2da414916957d8d8533d680a4://auth/callback";
 
 export const useSocialAuth = (
   setAuthState: React.Dispatch<React.SetStateAction<AuthState>>
 ) => {
   const { toast } = useToast();
 
+  // Helper to choose the redirectTo based on platform
+  const getRedirectTo = () => {
+    // Use Capacitor platform detection
+    return isCapacitor()
+      ? APP_SCHEME_REDIRECT
+      : `${window.location.origin}/auth/callback`
+  };
+
   const loginWithGoogle = async () => {
     try {
       console.log('Starting Google login...');
       setAuthState(prev => ({ ...prev, loading: true, error: null }));
-      
+
       // Clean up auth state
       cleanupAuthState();
-      
+
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/auth/callback`,
+          redirectTo: getRedirectTo(),
           queryParams: {
             access_type: 'offline',
             prompt: 'consent',
           }
         }
       });
-      
+
       if (error) {
         console.error('Google login error:', error);
         const errorMessage = handleAuthError(error, setAuthState);
@@ -51,22 +65,22 @@ export const useSocialAuth = (
       setAuthState(prev => ({ ...prev, loading: false }));
     }
   };
-  
+
   const loginWithGithub = async () => {
     try {
       console.log('Starting GitHub login...');
       setAuthState(prev => ({ ...prev, loading: true, error: null }));
-      
+
       // Clean up auth state
       cleanupAuthState();
-      
+
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'github',
         options: {
-          redirectTo: `${window.location.origin}/auth/callback`
+          redirectTo: getRedirectTo()
         }
       });
-      
+
       if (error) {
         console.error('GitHub login error:', error);
         const errorMessage = handleAuthError(error, setAuthState);
