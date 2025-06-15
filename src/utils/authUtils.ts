@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { supabase } from '@/integrations/supabase/client';
 
 // Validation schema for names (alphanumeric, spaces, and a few special characters)
 const nameSchema = z.string().min(2).max(50).regex(/^[a-zA-Z0-9\s.'-]+$/);
@@ -135,6 +136,21 @@ export const validateFile = (file: File, options: FileValidationOptions): Valida
   }
   
   return { isValid: true, errors: [] };
+};
+
+// Function to validate session
+export const validateSession = async () => {
+  try {
+    const { data: { session }, error } = await supabase.auth.getSession();
+    if (error) {
+      console.error('Session validation error:', error);
+      return null;
+    }
+    return session;
+  } catch (error) {
+    console.error('Session validation failed:', error);
+    return null;
+  }
 };
 
 export const cleanupAuthState = () => {
