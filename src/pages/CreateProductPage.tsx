@@ -11,6 +11,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Label } from '@/components/ui/label';
 import { PlusCircle, Upload, X, Package, DollarSign, MapPin, Tag } from 'lucide-react';
 import { validateTextContent, validatePrice, validateFile } from '@/utils/validation';
+import { categories } from '@/lib/mockData';
 
 interface ProductForm {
   title: string;
@@ -405,13 +406,11 @@ export default function CreateProductPage() {
                       <SelectValue placeholder="Select category" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="electronics">Electronics</SelectItem>
-                      <SelectItem value="clothing">Clothing</SelectItem>
-                      <SelectItem value="home">Home & Garden</SelectItem>
-                      <SelectItem value="sports">Sports & Recreation</SelectItem>
-                      <SelectItem value="books">Books & Media</SelectItem>
-                      <SelectItem value="automotive">Automotive</SelectItem>
-                      <SelectItem value="other">Other</SelectItem>
+                      {categories.map(cat => (
+                        <SelectItem key={cat.id} value={cat.id}>
+                          {cat.name}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                   {errors.category && (

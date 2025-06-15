@@ -2,9 +2,7 @@
 import { Category } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import { Badge } from "@/components/ui/badge";
-import { 
-  Laptop, Armchair, Shirt, Book, Dumbbell, Gamepad, Search 
-} from 'lucide-react';
+import { Car, Home, Smartphone } from 'lucide-react';
 
 interface CategoryFilterProps {
   categories: Category[];
@@ -17,22 +15,17 @@ const CategoryFilter: React.FC<CategoryFilterProps> = ({
   selectedCategory,
   onSelectCategory,
 }) => {
+  // Map the database icons to available lucide-react icons.
   const getIconForCategory = (iconName: string) => {
     switch (iconName) {
-      case 'laptop':
-        return <Laptop size={18} />;
-      case 'armchair':
-        return <Armchair size={18} />;
-      case 'shirt':
-        return <Shirt size={18} />;
-      case 'book':
-        return <Book size={18} />;
-      case 'dumbbell':
-        return <Dumbbell size={18} />;
-      case 'gamepad':
-        return <Gamepad size={18} />;
+      case 'car':
+        return <Car size={18} />;
+      case 'home':
+        return <Home size={18} />;
+      case 'mobile':
+        return <Smartphone size={18} />;
       default:
-        return <Search size={18} />;
+        return <Car size={18} />; // fallback
     }
   };
 
@@ -72,3 +65,4 @@ const CategoryFilter: React.FC<CategoryFilterProps> = ({
 };
 
 export default CategoryFilter;
+

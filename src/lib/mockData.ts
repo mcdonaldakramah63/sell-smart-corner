@@ -1,43 +1,67 @@
-
 import { User, Product, Category, Message, Notification } from './types';
 
+// New categories (& matching database slugs/icons)
 export const categories: Category[] = [
   {
-    id: '1',
-    name: 'Electronics',
-    slug: 'electronics',
-    icon: 'laptop',
+    id: 'vehicles',
+    name: 'Vehicles',
+    slug: 'vehicles',
+    icon: 'car'
   },
   {
-    id: '2',
-    name: 'Furniture',
-    slug: 'furniture',
-    icon: 'armchair',
+    id: 'property',
+    name: 'Property',
+    slug: 'property',
+    icon: 'home'
   },
   {
-    id: '3',
-    name: 'Clothing',
-    slug: 'clothing',
-    icon: 'shirt',
+    id: 'mobile-phones-tablets',
+    name: 'Mobile Phones & Tablets',
+    slug: 'mobile-phones-tablets',
+    icon: 'mobile'
   },
   {
-    id: '4',
-    name: 'Books',
-    slug: 'books',
-    icon: 'book',
+    id: 'computers',
+    name: 'Computers',
+    slug: 'computers',
+    icon: 'mobile'
   },
   {
-    id: '5',
-    name: 'Sports',
-    slug: 'sports',
-    icon: 'dumbbell',
+    id: 'computer-accessories',
+    name: 'Computer Accessories',
+    slug: 'computer-accessories',
+    icon: 'mobile'
   },
   {
-    id: '6',
-    name: 'Toys',
-    slug: 'toys',
-    icon: 'gamepad',
+    id: 'fashion',
+    name: 'Fashion',
+    slug: 'fashion',
+    icon: 'home'
   },
+  {
+    id: 'beauty-personal-care',
+    name: 'Beauty and Personal Care',
+    slug: 'beauty-personal-care',
+    icon: 'home'
+  },
+  {
+    id: 'home-furniture-appliances',
+    name: 'Home Furniture & Appliances',
+    slug: 'home-furniture-appliances',
+    icon: 'home'
+  },
+  {
+    id: 'console',
+    name: 'Console',
+    slug: 'console',
+    icon: 'car'
+  },
+  {
+    id: 'console-accessories',
+    name: 'Console Accessories',
+    slug: 'console-accessories',
+    icon: 'car'
+  }
 ];
 
 export const users: User[] = [
@@ -70,118 +94,184 @@ export const users: User[] = [
 export const products: Product[] = [
   {
     id: '1',
-    title: 'MacBook Pro 16-inch',
-    description: 'Powerful laptop with M1 Pro chip, 16GB RAM, 512GB SSD, Space Gray.',
-    price: 1999.99,
+    title: 'Toyota Corolla 2015',
+    description: 'A well-maintained used car, low mileage and full service history.',
+    price: 8500,
     images: [
-      'https://images.unsplash.com/photo-1517336714731-489689fd1ca8?q=80&w=1000',
-      'https://images.unsplash.com/photo-1611186871348-b1ce696e52c9?q=80&w=1000',
+      'https://images.unsplash.com/photo-1503736334956-4c8f8e92946d?q=80&w=1000',
     ],
-    category: 'Electronics',
-    condition: 'like-new',
+    category: 'vehicles',
+    condition: 'good',
     seller: {
       id: '1',
       name: 'John Doe',
       avatar: 'https://randomuser.me/api/portraits/men/1.jpg',
     },
-    createdAt: '2023-05-10T08:12:00Z',
-    location: 'San Francisco, CA',
+    createdAt: '2023-06-10T11:00:00Z',
+    location: 'San Diego, CA',
   },
   {
     id: '2',
-    title: 'Modern Coffee Table',
-    description: 'Mid-century modern coffee table with walnut finish and tempered glass top.',
-    price: 249.99,
+    title: 'Downtown Apartment for Rent',
+    description: '2 bedroom apartment, close to all amenities, available now.',
+    price: 1200,
     images: [
-      'https://images.unsplash.com/photo-1533090481720-856c6e3c1fdc?q=80&w=1000',
-      'https://images.unsplash.com/photo-1565791380713-1756b9a05343?q=80&w=1000',
+      'https://images.unsplash.com/photo-1507089947368-19c1da9775ae?q=80&w=1000',
     ],
-    category: 'Furniture',
+    category: 'property',
     condition: 'good',
     seller: {
       id: '2',
       name: 'Jane Smith',
       avatar: 'https://randomuser.me/api/portraits/women/2.jpg',
     },
-    createdAt: '2023-04-25T15:30:00Z',
+    createdAt: '2023-06-12T14:30:00Z',
     location: 'Portland, OR',
   },
   {
     id: '3',
-    title: 'Canon EOS R5 Camera',
-    description: '45MP full-frame mirrorless camera, 8K video, in-body image stabilization, with 24-105mm lens.',
-    price: 3899.99,
+    title: 'iPhone 14 Pro',
+    description: 'Latest model, unlocked, like new with all accessories.',
+    price: 899.99,
+    images: [
+      'https://images.unsplash.com/photo-1512496015851-a90fb38ba796?q=80&w=1000',
+    ],
+    category: 'mobile-phones-tablets',
+    condition: 'like-new',
+    seller: {
+      id: '1',
+      name: 'John Doe',
+      avatar: 'https://randomuser.me/api/portraits/men/1.jpg',
+    },
+    createdAt: '2023-06-11T10:45:00Z',
+    location: 'Los Angeles, CA',
+  },
+  {
+    id: '4',
+    title: 'Gaming Laptop Asus ROG',
+    description: 'RTX 3070, 32GB RAM, 1TB SSD, perfect condition.',
+    price: 1500.00,
+    images: [
+      'https://images.unsplash.com/photo-1517336714731-489689fd1ca8?q=80&w=1000',
+    ],
+    category: 'computers',
+    condition: 'good',
+    seller: {
+      id: '2',
+      name: 'Jane Smith',
+      avatar: 'https://randomuser.me/api/portraits/women/2.jpg',
+    },
+    createdAt: '2023-06-13T16:20:00Z',
+    location: 'Chicago, IL',
+  },
+  {
+    id: '5',
+    title: 'Wireless Mouse Logitech MX Master',
+    description: 'High precision, ergonomic design, new in box.',
+    price: 85.00,
     images: [
       'https://images.unsplash.com/photo-1516035069371-29a1b244cc32?q=80&w=1000',
-      'https://images.unsplash.com/photo-1502920917128-1aa500764cbd?q=80&w=1000',
     ],
-    category: 'Electronics',
+    category: 'computer-accessories',
     condition: 'new',
     seller: {
       id: '1',
       name: 'John Doe',
       avatar: 'https://randomuser.me/api/portraits/men/1.jpg',
     },
-    createdAt: '2023-05-05T10:45:00Z',
-    location: 'Los Angeles, CA',
+    createdAt: '2023-06-14T09:15:00Z',
+    location: 'Austin, TX',
   },
   {
-    id: '4',
-    title: 'Leather Jacket',
-    description: 'Genuine leather jacket, black, size M, barely worn.',
-    price: 175.00,
+    id: '6',
+    title: 'Designer Dress - Gucci',
+    description: 'Original, size M, worn once.',
+    price: 650.00,
     images: [
       'https://images.unsplash.com/photo-1521223890158-f9f7c3d5d504?q=80&w=1000',
-      'https://images.unsplash.com/photo-1551028719-00167b16eac5?q=80&w=1000',
     ],
-    category: 'Clothing',
+    category: 'fashion',
     condition: 'like-new',
     seller: {
       id: '2',
       name: 'Jane Smith',
       avatar: 'https://randomuser.me/api/portraits/women/2.jpg',
     },
-    createdAt: '2023-04-30T16:20:00Z',
-    location: 'Chicago, IL',
+    createdAt: '2023-06-11T13:40:00Z',
+    location: 'Denver, CO',
   },
   {
-    id: '5',
-    title: 'Vintage Vinyl Records Collection',
-    description: '50 classic rock and jazz vinyl records from the 60s and 70s, excellent condition.',
-    price: 450.00,
+    id: '7',
+    title: 'Organic Face Cream',
+    description: 'Beauty and personal care, unopened jar.',
+    price: 35.00,
     images: [
-      'https://images.unsplash.com/photo-1603048588665-791ca8aea617?q=80&w=1000',
-      'https://images.unsplash.com/photo-1497032628192-86f99bcd76bc?q=80&w=1000',
+      'https://images.unsplash.com/photo-1551028719-00167b16eac5?q=80&w=1000',
     ],
-    category: 'Books',
-    condition: 'good',
+    category: 'beauty-personal-care',
+    condition: 'new',
     seller: {
       id: '1',
       name: 'John Doe',
       avatar: 'https://randomuser.me/api/portraits/men/1.jpg',
     },
-    createdAt: '2023-04-20T09:15:00Z',
-    location: 'Austin, TX',
+    createdAt: '2023-06-10T08:12:00Z',
+    location: 'San Francisco, CA',
   },
   {
-    id: '6',
-    title: 'Mountain Bike',
-    description: 'Trek Marlin 7, 29" wheels, hydraulic disc brakes, front suspension, size M/L.',
-    price: 699.99,
+    id: '8',
+    title: 'Sofa Set - 3 Pieces',
+    description: 'Home furniture, clean and modern, smoke-free home.',
+    price: 499,
     images: [
-      'https://images.unsplash.com/photo-1511994298241-608e28f14fde?q=80&w=1000',
-      'https://images.unsplash.com/photo-1485965120184-e220f721d03e?q=80&w=1000',
+      'https://images.unsplash.com/photo-1533090481720-856c6e3c1fdc?q=80&w=1000',
     ],
-    category: 'Sports',
+    category: 'home-furniture-appliances',
     condition: 'good',
     seller: {
       id: '2',
       name: 'Jane Smith',
       avatar: 'https://randomuser.me/api/portraits/women/2.jpg',
     },
-    createdAt: '2023-05-01T13:40:00Z',
-    location: 'Denver, CO',
+    createdAt: '2023-06-09T15:30:00Z',
+    location: 'Portland, OR',
   },
+  {
+    id: '9',
+    title: 'PlayStation 5 Console',
+    description: 'Next-gen gaming, includes 2 controllers.',
+    price: 700,
+    images: [
+      'https://images.unsplash.com/photo-1622466684088-3070c60f6a94?q=80&w=1000',
+    ],
+    category: 'console',
+    condition: 'like-new',
+    seller: {
+      id: '1',
+      name: 'John Doe',
+      avatar: 'https://randomuser.me/api/portraits/men/1.jpg',
+    },
+    createdAt: '2023-06-07T08:12:00Z',
+    location: 'Seattle, WA',
+  },
+  {
+    id: '10',
+    title: 'PS5 DualSense Charging Station',
+    description: 'For PlayStation 5 controllers, new in box.',
+    price: 40,
+    images: [
+      'https://images.unsplash.com/photo-1603048588665-791ca8aea617?q=80&w=1000',
+    ],
+    category: 'console-accessories',
+    condition: 'new',
+    seller: {
+      id: '2',
+      name: 'Jane Smith',
+      avatar: 'https://randomuser.me/api/portraits/women/2.jpg',
+    },
+    createdAt: '2023-06-08T09:15:00Z',
+    location: 'Austin, TX',
+  }
 ];
 
 export const messages: Message[] = [
