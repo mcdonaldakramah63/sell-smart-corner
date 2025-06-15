@@ -17,6 +17,8 @@ import { Slider } from '@/components/ui/slider';
 import { useCategories } from '@/hooks/useCategories';
 import { useToast } from '@/hooks/use-toast';
 import { Seo } from "@/components/layout/Seo";
+import { supabase } from "@/integrations/supabase/client";
+import { Product } from "@/lib/types";
 
 const ProductsPage = () => {
   const location = useLocation();
