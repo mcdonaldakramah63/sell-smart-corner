@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { Product } from '@/lib/types';
 
@@ -13,8 +12,9 @@ export const createOrFindConversation = async (
 
   // Step 1: Call the RPC to find an existing conversation between the two users for this product
   console.log('Step 1: Calling RPC to find existing conversation...');
+  // Fixed type argument: now passes both the return type and the argument type as Solved <string, string | null>
   const { data: existingConversationId, error: rpcError } = await supabase
-    .rpc<string | null>('find_conversation_for_product', {
+    .rpc<string, string | null>('find_conversation_for_product', {
       product_uuid: product.id,
       user_one: currentUserId,
       user_two: product.seller.id,
