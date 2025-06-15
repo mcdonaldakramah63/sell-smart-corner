@@ -215,7 +215,7 @@ export default function CreateProductPage() {
                 images={images}
                 previewUrls={previewUrls}
                 error={imagesError}
-                onImageSelect={(e) => handleImageSelect(e.target.files)}
+                onImageSelect={handleImageSelect}
                 onRemove={removeImage}
               />
             </CardContent>
