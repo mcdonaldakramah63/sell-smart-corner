@@ -36,6 +36,26 @@ const ProductsPage = () => {
   const [condition, setCondition] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
+  // Breadcrumb structured data
+  const breadcrumbJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        position: 1,
+        name: "Home",
+        item: "https://d3616aa2-da41-4916-957d-8d8533d680a4.lovableproject.com/"
+      },
+      {
+        "@type": "ListItem",
+        position: 2,
+        name: "Products",
+        item: "https://d3616aa2-da41-4916-957d-8d8533d680a4.lovableproject.com/products"
+      }
+    ]
+  };
+
   useEffect(() => {
     const fetchProducts = async () => {
       setLoading(true);
@@ -180,6 +200,7 @@ const ProductsPage = () => {
         description="Browse hundreds of used products, from electronics to furniture. Filter listings by category, price, condition, and location. Discover great deals near you."
         keywords="used products, buy used, sell used, secondhand goods, classifieds, online marketplace, electronics, furniture"
         canonicalUrl="https://d3616aa2-da41-4916-957d-8d8533d680a4.lovableproject.com/products"
+        breadcrumbJsonLd={breadcrumbJsonLd}
       />
       <div className="container mx-auto px-4 py-8">
         <h1 className="text-3xl font-bold mb-6">Browse Products</h1>

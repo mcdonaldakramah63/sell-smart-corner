@@ -26,6 +26,20 @@ const Index = () => {
     navigate(`/products?search=${encodeURIComponent(query)}`);
   };
 
+  // Breadcrumb structured data
+  const breadcrumbJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        position: 1,
+        name: "Home",
+        item: "https://d3616aa2-da41-4916-957d-8d8533d680a4.lovableproject.com/"
+      }
+    ]
+  };
+
   useEffect(() => {
     const fetchFeaturedProducts = async () => {
       setLoading(true);
@@ -102,6 +116,7 @@ const Index = () => {
         keywords="used marketplace, buy sell used items, secondhand, pre-owned, classified ads, local online marketplace"
         canonicalUrl="https://d3616aa2-da41-4916-957d-8d8533d680a4.lovableproject.com/"
         image="https://lovable.dev/opengraph-image-p98pqg.png"
+        breadcrumbJsonLd={breadcrumbJsonLd}
       />
       <HeroSection />
       

@@ -1,3 +1,4 @@
+
 User-agent: Googlebot
 Allow: /
 
@@ -12,3 +13,5 @@ Allow: /
 
 User-agent: *
 Allow: /
+
+Sitemap: https://d3616aa2-da41-4916-957d-8d8533d680a4.lovableproject.com/sitemap.xml

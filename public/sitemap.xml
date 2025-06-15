@@ -1,0 +1,22 @@
+
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset
+  xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+>
+  <url>
+    <loc>https://d3616aa2-da41-4916-957d-8d8533d680a4.lovableproject.com/</loc>
+    <priority>1.0</priority>
+    <changefreq>daily</changefreq>
+  </url>
+  <url>
+    <loc>https://d3616aa2-da41-4916-957d-8d8533d680a4.lovableproject.com/products</loc>
+    <priority>0.8</priority>
+    <changefreq>daily</changefreq>
+  </url>
+  <!-- This can be updated programmatically in backend; for now just sample product -->
+  <url>
+    <loc>https://d3616aa2-da41-4916-957d-8d8533d680a4.lovableproject.com/products/ed47d61b-ae91-4122-a83c-802c64c2133b</loc>
+    <priority>0.5</priority>
+    <changefreq>weekly</changefreq>
+  </url>
+</urlset>
