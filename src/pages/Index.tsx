@@ -10,6 +10,7 @@ import { categories } from '@/lib/mockData';
 import { Product } from '@/lib/types';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { Seo } from "@/components/layout/Seo";
 
 const Index = () => {
   const navigate = useNavigate();
@@ -95,6 +96,13 @@ const Index = () => {
 
   return (
     <Layout>
+      <Seo
+        title="Used Market - Buy & Sell Used Items Online"
+        description="Find and sell secondhand goods on Used Market, a trusted secure online marketplace. Discover electronics, furniture, clothing and more in your local area!"
+        keywords="used marketplace, buy sell used items, secondhand, pre-owned, classified ads, local online marketplace"
+        canonicalUrl="https://d3616aa2-da41-4916-957d-8d8533d680a4.lovableproject.com/"
+        image="https://lovable.dev/opengraph-image-p98pqg.png"
+      />
       <HeroSection />
       
       <section className="py-12 container mx-auto px-4">

@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import Layout from '@/components/layout/Layout';
@@ -16,6 +15,7 @@ import { createOrFindConversation } from '@/utils/conversationUtils';
 import { ReviewForm } from '@/components/reviews/ReviewForm';
 import { ReviewList } from '@/components/reviews/ReviewList';
 import { SellerContactInfo } from '@/components/seller/SellerContactInfo';
+import { Seo } from "@/components/layout/Seo";
 
 interface SellerProfile {
   id: string;
@@ -208,10 +208,61 @@ export default function ProductDetailPage() {
     );
   }
 
+  let seoTitle = product
+    ? `${product.title} - ${product.category} | Used Market`
+    : "Product Details | Used Market";
+  let seoDescription = product
+    ? `${product.title}: ${product.condition} condition. ${product.description?.slice(0, 120)} ${product.price ? "- Only $" + product.price : ""} | Find more on Used Market!`
+    : "See details for used items on Used Market.";
+  let canonicalUrl = product
+    ? `https://d3616aa2-da41-4916-957d-8d8533d680a4.lovableproject.com/products/${product.id}`
+    : undefined;
+  let image = product?.images?.[0] || "https://lovable.dev/opengraph-image-p98pqg.png";
+
+  // Structured data for SEO (schema.org Product)
+  const productJsonLd = product
+    ? {
+        "@context": "https://schema.org/",
+        "@type": "Product",
+        "name": product.title,
+        "image": product.images,
+        "description": product.description,
+        "sku": product.id,
+        "brand": { "@type": "Brand", "name": "Used Market" },
+        "offers": {
+          "@type": "Offer",
+          "url": canonicalUrl,
+          "priceCurrency": "USD",
+          "price": product.price,
+          "availability": product.is_sold
+            ? "https://schema.org/SoldOut"
+            : "https://schema.org/InStock",
+          "itemCondition": `https://schema.org/${product.condition
+            ?.replace(/ /g, "")
+            .replace(/-/g, "")}Condition`
+        },
+        ...(product.seller
+          ? {
+              "seller": {
+                "@type": "Person",
+                "name": product.seller.name
+              }
+            }
+          : {})
+      }
+    : undefined;
+
   const canReview = user && user.id !== product.seller.id && !product.is_sold;
 
   return (
     <Layout>
+      <Seo
+        title={seoTitle}
+        description={seoDescription}
+        image={image}
+        canonicalUrl={canonicalUrl}
+        jsonLd={productJsonLd}
+      />
       <div className="container mx-auto px-4 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Product Images and Details */}

@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import Layout from '@/components/layout/Layout';
@@ -19,6 +18,7 @@ import { categories } from '@/lib/mockData';
 import { Product } from '@/lib/types';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { Seo } from "@/components/layout/Seo";
 
 const ProductsPage = () => {
   const location = useLocation();
@@ -175,6 +175,12 @@ const ProductsPage = () => {
 
   return (
     <Layout>
+      <Seo
+        title="Browse Used Products For Sale | Used Market"
+        description="Browse hundreds of used products, from electronics to furniture. Filter listings by category, price, condition, and location. Discover great deals near you."
+        keywords="used products, buy used, sell used, secondhand goods, classifieds, online marketplace, electronics, furniture"
+        canonicalUrl="https://d3616aa2-da41-4916-957d-8d8533d680a4.lovableproject.com/products"
+      />
       <div className="container mx-auto px-4 py-8">
         <h1 className="text-3xl font-bold mb-6">Browse Products</h1>
         
