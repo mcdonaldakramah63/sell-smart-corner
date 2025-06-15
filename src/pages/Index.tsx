@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Layout from '@/components/layout/Layout';
@@ -183,9 +182,6 @@ const Index = () => {
           <p className="text-xl mb-8 max-w-2xl mx-auto">
             Join thousands of users buying and selling on Used Market every day.
           </p>
-          <Button asChild size="lg" className="bg-white text-marketplace-primary hover:bg-white/90">
-            <a href="/auth/register">Create Your Account</a>
-          </Button>
         </div>
       </section>
     </Layout>
