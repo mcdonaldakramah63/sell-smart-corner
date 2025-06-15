@@ -1,5 +1,7 @@
+
 import { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
+import Layout from '@/components/layout/Layout';
 import ProductGrid from '@/components/products/ProductGrid';
 import CategoryFilter from '@/components/products/CategoryFilter';
 import SearchBar from '@/components/products/SearchBar';
@@ -34,12 +36,10 @@ const ProductsPage = () => {
   const [condition, setCondition] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // Fetch products from Supabase
   useEffect(() => {
     const fetchProducts = async () => {
       setLoading(true);
       try {
-        // Fetch products with profiles (seller info)
         const { data: productData, error: productError } = await supabase
           .from('products')
           .select(`
@@ -59,7 +59,6 @@ const ProductsPage = () => {
           throw productError;
         }
 
-        // Fetch product images for each product
         const productsWithImages = await Promise.all(
           (productData || []).map(async (product) => {
             const { data: imageData } = await supabase
@@ -108,7 +107,6 @@ const ProductsPage = () => {
     filterProducts();
   }, [allProducts, selectedCategory, searchQuery, sortBy, priceRange, condition]);
 
-  // Update state if URL params change
   useEffect(() => {
     setSelectedCategory(categoryParam);
     setSearchQuery(searchParam || '');
@@ -116,8 +114,6 @@ const ProductsPage = () => {
 
   const filterProducts = () => {
     let filtered = [...allProducts];
-    
-    // Filter by search query
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
       filtered = filtered.filter(product => 
@@ -125,27 +121,19 @@ const ProductsPage = () => {
         product.description.toLowerCase().includes(query)
       );
     }
-    
-    // Filter by category using category ID
     if (selectedCategory) {
       filtered = filtered.filter(product => 
         product.category === selectedCategory
       );
     }
-    
-    // Filter by condition
     if (condition) {
       filtered = filtered.filter(product => 
         product.condition === condition
       );
     }
-    
-    // Filter by price range
     filtered = filtered.filter(product => 
       product.price >= priceRange[0] && product.price <= priceRange[1]
     );
-    
-    // Sort products
     switch (sortBy) {
       case 'newest':
         filtered.sort((a, b) => 
@@ -166,7 +154,6 @@ const ProductsPage = () => {
       default:
         break;
     }
-    
     setFilteredProducts(filtered);
   };
 
@@ -187,121 +174,123 @@ const ProductsPage = () => {
   };
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold mb-6">Browse Products</h1>
-      
-      <div className="flex flex-col md:flex-row gap-6">
-        {/* Filters - Left Side */}
-        <div className="w-full md:w-1/4 space-y-6">
-          <div className="bg-white p-4 rounded-md shadow-sm border">
-            <h3 className="font-medium mb-4">Filters</h3>
-            
-            <div className="space-y-4">
-              <div>
-                <Label htmlFor="searchInput">Search</Label>
-                <div className="mt-1">
-                  <SearchBar 
-                    onSearch={handleSearch} 
-                    initialQuery={searchQuery}
-                  />
-                </div>
-              </div>
+    <Layout>
+      <div className="container mx-auto px-4 py-8">
+        <h1 className="text-3xl font-bold mb-6">Browse Products</h1>
+        
+        <div className="flex flex-col md:flex-row gap-6">
+          {/* Filters - Left Side */}
+          <div className="w-full md:w-1/4 space-y-6">
+            <div className="bg-white p-4 rounded-md shadow-sm border">
+              <h3 className="font-medium mb-4">Filters</h3>
               
-              <div>
-                <Label>Price Range</Label>
-                <div className="mt-2">
-                  <Slider 
-                    defaultValue={[0, 5000]} 
-                    max={5000} 
-                    step={50}
-                    value={priceRange}
-                    onValueChange={setPriceRange}
-                  />
-                  <div className="flex justify-between mt-2 text-sm text-muted-foreground">
-                    <span>${priceRange[0]}</span>
-                    <span>${priceRange[1]}</span>
+              <div className="space-y-4">
+                <div>
+                  <Label htmlFor="searchInput">Search</Label>
+                  <div className="mt-1">
+                    <SearchBar 
+                      onSearch={handleSearch} 
+                      initialQuery={searchQuery}
+                    />
                   </div>
                 </div>
-              </div>
-              
-              <div>
-                <Label htmlFor="condition">Condition</Label>
-                <Select 
-                  value={condition || ''} 
-                  onValueChange={(value) => setCondition(value === 'any' ? null : value)}
+                
+                <div>
+                  <Label>Price Range</Label>
+                  <div className="mt-2">
+                    <Slider 
+                      defaultValue={[0, 5000]} 
+                      max={5000} 
+                      step={50}
+                      value={priceRange}
+                      onValueChange={setPriceRange}
+                    />
+                    <div className="flex justify-between mt-2 text-sm text-muted-foreground">
+                      <span>${priceRange[0]}</span>
+                      <span>${priceRange[1]}</span>
+                    </div>
+                  </div>
+                </div>
+                
+                <div>
+                  <Label htmlFor="condition">Condition</Label>
+                  <Select 
+                    value={condition || ''} 
+                    onValueChange={(value) => setCondition(value === 'any' ? null : value)}
+                  >
+                    <SelectTrigger id="condition" className="mt-1">
+                      <SelectValue placeholder="Any condition" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="any">Any condition</SelectItem>
+                      <SelectItem value="new">New</SelectItem>
+                      <SelectItem value="like-new">Like New</SelectItem>
+                      <SelectItem value="good">Good</SelectItem>
+                      <SelectItem value="fair">Fair</SelectItem>
+                      <SelectItem value="poor">Poor</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                <div>
+                  <Label htmlFor="sortBy">Sort By</Label>
+                  <Select 
+                    value={sortBy} 
+                    onValueChange={setSortBy}
+                  >
+                    <SelectTrigger id="sortBy" className="mt-1">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="newest">Newest First</SelectItem>
+                      <SelectItem value="oldest">Oldest First</SelectItem>
+                      <SelectItem value="price_low">Price: Low to High</SelectItem>
+                      <SelectItem value="price_high">Price: High to Low</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                <Button 
+                  variant="outline"
+                  onClick={handleReset}
+                  className="w-full mt-4"
                 >
-                  <SelectTrigger id="condition" className="mt-1">
-                    <SelectValue placeholder="Any condition" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="any">Any condition</SelectItem>
-                    <SelectItem value="new">New</SelectItem>
-                    <SelectItem value="like-new">Like New</SelectItem>
-                    <SelectItem value="good">Good</SelectItem>
-                    <SelectItem value="fair">Fair</SelectItem>
-                    <SelectItem value="poor">Poor</SelectItem>
-                  </SelectContent>
-                </Select>
+                  Reset Filters
+                </Button>
               </div>
-              
-              <div>
-                <Label htmlFor="sortBy">Sort By</Label>
-                <Select 
-                  value={sortBy} 
-                  onValueChange={setSortBy}
-                >
-                  <SelectTrigger id="sortBy" className="mt-1">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="newest">Newest First</SelectItem>
-                    <SelectItem value="oldest">Oldest First</SelectItem>
-                    <SelectItem value="price_low">Price: Low to High</SelectItem>
-                    <SelectItem value="price_high">Price: High to Low</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              
-              <Button 
-                variant="outline"
-                onClick={handleReset}
-                className="w-full mt-4"
-              >
-                Reset Filters
-              </Button>
             </div>
           </div>
-        </div>
-        
-        {/* Product Content - Right Side */}
-        <div className="w-full md:w-3/4">
-          {/* Categories */}
-          <div className="mb-6">
-            <CategoryFilter 
-              categories={categories}
-              selectedCategory={selectedCategory}
-              onSelectCategory={handleCategoryChange}
-            />
-          </div>
           
-          {/* Results summary */}
-          <div className="mb-6 flex justify-between items-center">
-            <p className="text-muted-foreground">
-              {loading ? 'Loading products...' : `Showing ${filteredProducts.length} ${filteredProducts.length === 1 ? 'product' : 'products'}`}
-            </p>
-          </div>
-          
-          {/* Product Grid */}
-          {loading ? (
-            <div className="flex justify-center py-12">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+          {/* Product Content - Right Side */}
+          <div className="w-full md:w-3/4">
+            {/* Categories */}
+            <div className="mb-6">
+              <CategoryFilter 
+                categories={categories}
+                selectedCategory={selectedCategory}
+                onSelectCategory={handleCategoryChange}
+              />
             </div>
-          ) : (
-            <ProductGrid products={filteredProducts} />
-          )}
+            
+            {/* Results summary */}
+            <div className="mb-6 flex justify-between items-center">
+              <p className="text-muted-foreground">
+                {loading ? 'Loading products...' : `Showing ${filteredProducts.length} ${filteredProducts.length === 1 ? 'product' : 'products'}`}
+              </p>
+            </div>
+            
+            {/* Product Grid */}
+            {loading ? (
+              <div className="flex justify-center py-12">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+              </div>
+            ) : (
+              <ProductGrid products={filteredProducts} />
+            )}
+          </div>
         </div>
       </div>
-    </div>
+    </Layout>
   );
 };
 

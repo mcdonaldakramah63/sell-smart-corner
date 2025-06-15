@@ -1,6 +1,7 @@
 
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import Layout from '@/components/layout/Layout';
 import HeroSection from '@/components/layout/HeroSection';
 import ProductGrid from '@/components/products/ProductGrid';
 import CategoryFilter from '@/components/products/CategoryFilter';
@@ -25,12 +26,10 @@ const Index = () => {
     navigate(`/products?search=${encodeURIComponent(query)}`);
   };
 
-  // Fetch featured products from Supabase
   useEffect(() => {
     const fetchFeaturedProducts = async () => {
       setLoading(true);
       try {
-        // Fetch latest 4 products with seller info
         const { data: productData, error: productError } = await supabase
           .from('products')
           .select(`
@@ -51,7 +50,6 @@ const Index = () => {
           throw productError;
         }
 
-        // Fetch product images for each product
         const productsWithImages = await Promise.all(
           (productData || []).map(async (product) => {
             const { data: imageData } = await supabase
@@ -97,7 +95,7 @@ const Index = () => {
   }, [toast]);
 
   return (
-    <>
+    <Layout>
       <HeroSection />
       
       <section className="py-12 container mx-auto px-4">
@@ -190,7 +188,7 @@ const Index = () => {
           </Button>
         </div>
       </section>
-    </>
+    </Layout>
   );
 };
 
