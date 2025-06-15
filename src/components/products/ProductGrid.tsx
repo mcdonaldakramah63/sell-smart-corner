@@ -1,5 +1,4 @@
 
-
 import { Product } from '@/lib/types';
 import ProductCard from './ProductCard';
 
@@ -20,7 +19,7 @@ const ProductGrid: React.FC<ProductGridProps> = ({ products }) => {
   return (
     <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4 lg:gap-6 px-2 sm:px-0">
       {products.map((product) => (
-        <ProductCard key={product.id} product={product} imageAlt={`${product.title} - ${product.category} - $${product.price}`} />
+        <ProductCard key={product.id} product={product} />
       ))}
     </div>
   );
