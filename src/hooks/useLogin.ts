@@ -38,6 +38,17 @@ export const useLogin = (
         throw new Error('Too many login attempts. Please try again in 15 minutes.');
       }
       
+      // Clean up existing state before login
+      cleanupAuthState();
+      
+      // Attempt global sign out first
+      try {
+        await supabase.auth.signOut({ scope: 'global' });
+      } catch (err) {
+        // Continue even if this fails
+        console.log('Sign out cleanup failed, continuing...');
+      }
+      
       console.log('Attempting to sign in...');
       
       const { data, error } = await supabase.auth.signInWithPassword({
@@ -68,8 +79,10 @@ export const useLogin = (
           description: `Welcome back!`,
         });
         
-        // Don't force reload, let the auth state change handle navigation
-        // The AuthPage component will automatically redirect authenticated users
+        // Force page reload for clean state
+        setTimeout(() => {
+          window.location.href = '/';
+        }, 1000);
       } else {
         console.error('No user data received');
         throw new Error('Login failed - no user data received');

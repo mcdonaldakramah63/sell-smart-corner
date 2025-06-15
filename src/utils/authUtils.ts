@@ -1,8 +1,142 @@
+import { z } from 'zod';
 
-import { supabase } from '@/integrations/supabase/client';
-import { validateEmail as baseValidateEmail, validateTextContent, sanitizeInput as baseSanitizeInput } from './validation';
+// Validation schema for names (alphanumeric, spaces, and a few special characters)
+const nameSchema = z.string().min(2).max(50).regex(/^[a-zA-Z0-9\s.'-]+$/);
 
-// Comprehensive auth state cleanup utility
+// Validation schema for email
+const emailSchema = z.string().email();
+
+// Validation schema for passwords (min 8 characters, require uppercase, lowercase, number, and special character)
+const passwordSchema = z.string().min(8).max(100)
+  .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+{}\[\]:;<>,.?~\\/-]).*$/, 
+  "Password must contain at least 8 characters, one uppercase, one lowercase, one number, and one special character");
+
+// Validation schema for URLs
+const urlSchema = z.string().url();
+
+// Validation schema for phone numbers (basic format check)
+const phoneSchema = z.string().regex(/^\+?\d{1,3}[-.\s]?\d{1,14}$/, "Invalid phone number format");
+
+interface ValidationResult {
+  isValid: boolean;
+  errors: string[];
+  sanitized?: string;
+}
+
+interface TextContentOptions {
+  minLength?: number;
+  maxLength: number;
+}
+
+interface FileValidationOptions {
+  maxSize: number; // in bytes
+  allowedTypes: string[]; // MIME types
+  allowedExtensions: string[]; // file extensions
+}
+
+// Function to validate a name
+export const validateName = (name: string): ValidationResult => {
+  try {
+    nameSchema.parse(name);
+    return { isValid: true, errors: [] };
+  } catch (error: any) {
+    return { isValid: false, errors: error.errors.map((e: any) => e.message) };
+  }
+};
+
+// Function to validate an email
+export const validateEmail = (email: string): ValidationResult => {
+  try {
+    const sanitized = emailSchema.parse(email);
+    return { isValid: true, errors: [], sanitized };
+  } catch (error: any) {
+    return { isValid: false, errors: error.errors.map((e: any) => e.message) };
+  }
+};
+
+// Function to validate a password
+export const validatePassword = (password: string): { isValid: boolean; errors: string[] } => {
+  try {
+    passwordSchema.parse(password);
+    return { isValid: true, errors: [] };
+  } catch (error: any) {
+    return { isValid: false, errors: error.errors.map((e: any) => e.message) };
+  }
+};
+
+// Function to validate a URL
+export const validateUrl = (url: string): boolean => {
+  try {
+    urlSchema.parse(url);
+    return true;
+  } catch (error) {
+    return false;
+  }
+};
+
+// Function to validate and sanitize a URL
+export const validateAndSanitizeUrl = (url: string): string | null => {
+  try {
+    const sanitizedUrl = urlSchema.parse(url);
+    return sanitizedUrl;
+  } catch (error) {
+    return null;
+  }
+};
+
+// Function to validate phone number
+export const validatePhone = (phone: string): ValidationResult => {
+  try {
+    phoneSchema.parse(phone);
+    return { isValid: true, errors: [] };
+  } catch (error: any) {
+    return { isValid: false, errors: error.errors.map((e: any) => e.message) };
+  }
+};
+
+// Function to sanitize input to prevent XSS attacks
+export const sanitizeInput = (input: string): string => {
+  const tempDiv = document.createElement('div');
+  tempDiv.textContent = input;
+  return tempDiv.innerHTML;
+};
+
+// Function to validate generic text content with options for minLength and maxLength
+export const validateTextContent = (text: string, options: TextContentOptions): ValidationResult => {
+  const { minLength = 0, maxLength } = options;
+  
+  if (text.length < minLength) {
+    return { isValid: false, errors: [`Must be at least ${minLength} characters`] };
+  }
+  
+  if (text.length > maxLength) {
+    return { isValid: false, errors: [`Must be no more than ${maxLength} characters`] };
+  }
+  
+  const sanitized = sanitizeInput(text);
+  return { isValid: true, errors: [], sanitized };
+};
+
+// Function to validate a file based on size and type
+export const validateFile = (file: File, options: FileValidationOptions): ValidationResult => {
+  const { maxSize, allowedTypes, allowedExtensions } = options;
+  
+  if (file.size > maxSize) {
+    return { isValid: false, errors: [`File size exceeds the maximum allowed size of ${maxSize / (1024 * 1024)} MB`] };
+  }
+  
+  if (!allowedTypes.includes(file.type)) {
+    return { isValid: false, errors: [`File type ${file.type} is not allowed. Allowed types are: ${allowedTypes.join(', ')}`] };
+  }
+  
+  const fileExtension = file.name.split('.').pop()?.toLowerCase();
+  if (fileExtension && !allowedExtensions.includes(`.${fileExtension}`)) {
+    return { isValid: false, errors: [`File extension ${fileExtension} is not allowed. Allowed extensions are: ${allowedExtensions.join(', ')}`] };
+  }
+  
+  return { isValid: true, errors: [] };
+};
+
 export const cleanupAuthState = () => {
   // Remove standard auth tokens
   localStorage.removeItem('supabase.auth.token');
@@ -20,143 +154,4 @@ export const cleanupAuthState = () => {
       sessionStorage.removeItem(key);
     }
   });
-};
-
-// Enhanced secure password validation
-export const validatePassword = (password: string): { isValid: boolean; errors: string[] } => {
-  const errors: string[] = [];
-  
-  if (password.length < 8) {
-    errors.push('Password must be at least 8 characters long');
-  }
-  
-  if (password.length > 128) {
-    errors.push('Password must be less than 128 characters');
-  }
-  
-  if (!/[A-Z]/.test(password)) {
-    errors.push('Password must contain at least one uppercase letter');
-  }
-  
-  if (!/[a-z]/.test(password)) {
-    errors.push('Password must contain at least one lowercase letter');
-  }
-  
-  if (!/\d/.test(password)) {
-    errors.push('Password must contain at least one number');
-  }
-  
-  if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)) {
-    errors.push('Password must contain at least one special character');
-  }
-  
-  // Check for common weak patterns
-  const weakPatterns = [
-    /(.)\1{2,}/, // Three or more repeated characters
-    /123|abc|qwe|asd/i, // Common sequences
-    /password|admin|user|login/i, // Common words
-  ];
-  
-  for (const pattern of weakPatterns) {
-    if (pattern.test(password)) {
-      errors.push('Password contains common patterns and may be weak');
-      break;
-    }
-  }
-  
-  return {
-    isValid: errors.length === 0,
-    errors
-  };
-};
-
-// Enhanced email validation with auth-specific checks
-export const validateEmail = (email: string): boolean => {
-  const validation = baseValidateEmail(email);
-  return validation.isValid;
-};
-
-// Enhanced input sanitization for auth contexts
-export const sanitizeInput = (input: string): string => {
-  return baseSanitizeInput(input, { maxLength: 255, allowHtml: false });
-};
-
-// Secure session validation with additional checks
-export const validateSession = async () => {
-  try {
-    const { data: { session }, error } = await supabase.auth.getSession();
-    
-    if (error) {
-      console.error('Session validation error:', error);
-      cleanupAuthState();
-      return null;
-    }
-    
-    // Check if session exists and is valid
-    if (!session) {
-      return null;
-    }
-    
-    // Check if session is expired
-    if (session.expires_at) {
-      const expiresAt = new Date(session.expires_at * 1000);
-      const now = new Date();
-      const bufferTime = 60000; // 1 minute buffer
-      
-      if (now >= new Date(expiresAt.getTime() - bufferTime)) {
-        console.log('Session expired or expiring soon, cleaning up');
-        cleanupAuthState();
-        return null;
-      }
-    }
-    
-    // Validate session structure
-    if (!session.user || !session.access_token) {
-      console.log('Invalid session structure, cleaning up');
-      cleanupAuthState();
-      return null;
-    }
-    
-    return session;
-  } catch (error) {
-    console.error('Session validation failed:', error);
-    cleanupAuthState();
-    return null;
-  }
-};
-
-// Validate user input for profile updates
-export const validateProfileInput = (field: string, value: string): { isValid: boolean; sanitized: string; errors: string[] } => {
-  switch (field) {
-    case 'name':
-    case 'full_name':
-      const nameValidation = validateTextContent(value, { minLength: 2, maxLength: 50 });
-      return nameValidation;
-      
-    case 'bio':
-      return validateTextContent(value, { maxLength: 500 });
-      
-    case 'location':
-      return validateTextContent(value, { maxLength: 100 });
-      
-    case 'phone':
-      return validateTextContent(value, { maxLength: 20 });
-      
-    case 'website':
-      const urlValidation = validateTextContent(value, { maxLength: 255 });
-      if (urlValidation.isValid && value.trim()) {
-        // Additional URL validation could be added here
-        if (!value.match(/^https?:\/\/.+/)) {
-          return {
-            isValid: false,
-            sanitized: urlValidation.sanitized,
-            errors: ['Website must start with http:// or https://']
-          };
-        }
-      }
-      return urlValidation;
-      
-    default:
-      return validateTextContent(value, { maxLength: 255 });
-  }
 };

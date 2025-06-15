@@ -59,6 +59,7 @@ export const useRegister = (
         options: {
           data: {
             name: sanitizedName,
+            full_name: sanitizedName,
           },
         }
       });
@@ -76,6 +77,13 @@ export const useRegister = (
           title: "Registration successful",
           description: data.session ? "Account created!" : "Please check your email to verify your account.",
         });
+        
+        // If there's a session, redirect after a short delay
+        if (data.session) {
+          setTimeout(() => {
+            window.location.href = '/';
+          }, 1000);
+        }
       }
     } catch (error: any) {
       console.error('Register error:', error);

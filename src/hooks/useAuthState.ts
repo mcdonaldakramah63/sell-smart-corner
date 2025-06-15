@@ -39,22 +39,31 @@ export const useAuthState = () => {
         // Handle sign in or token refresh
         if (session?.user) {
           console.log('Setting authenticated user:', session.user.id);
-          const { id, email, user_metadata } = session.user;
-          const userData: User = {
-            id,
-            name: sanitizeInput(user_metadata?.name || user_metadata?.full_name || email?.split('@')[0] || 'User'),
-            email: email || '',
-            createdAt: session.user.created_at || new Date().toISOString(),
-            role: 'user',
-          };
           
-          setAuthState({
-            session,
-            user: userData,
-            isAuthenticated: true,
-            loading: false,
-            error: null
-          });
+          // Defer data fetching to prevent deadlocks
+          setTimeout(async () => {
+            try {
+              const { id, email, user_metadata } = session.user;
+              const userData: User = {
+                id,
+                name: sanitizeInput(user_metadata?.name || user_metadata?.full_name || email?.split('@')[0] || 'User'),
+                email: email || '',
+                createdAt: session.user.created_at || new Date().toISOString(),
+                role: 'user',
+              };
+              
+              setAuthState({
+                session,
+                user: userData,
+                isAuthenticated: true,
+                loading: false,
+                error: null
+              });
+            } catch (error) {
+              console.error('Error setting user data:', error);
+              setAuthState(prev => ({ ...prev, loading: false, error: 'Failed to load user data' }));
+            }
+          }, 0);
         }
       }
     );
@@ -68,7 +77,7 @@ export const useAuthState = () => {
         
         if (error) {
           console.error('Session check error:', error);
-          setAuthState(prev => ({ ...prev, loading: false }));
+          setAuthState(prev => ({ ...prev, loading: false, error: 'Session check failed' }));
           return;
         }
         
@@ -96,7 +105,7 @@ export const useAuthState = () => {
         }
       } catch (error) {
         console.error('Session check failed:', error);
-        setAuthState(prev => ({ ...prev, loading: false }));
+        setAuthState(prev => ({ ...prev, loading: false, error: 'Failed to initialize auth' }));
       }
     };
 
