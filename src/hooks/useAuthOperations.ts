@@ -1,4 +1,3 @@
-
 import { AuthState } from '@/types/auth';
 import { useLogin } from './useLogin';
 import { useRegister } from './useRegister';
@@ -13,7 +12,7 @@ export const useAuthOperations = (
   const { login } = useLogin(authState, setAuthState);
   const { register } = useRegister(authState, setAuthState);
   const { logout } = useLogout(setAuthState);
-  const { loginWithGoogle, loginWithGithub, loginWithMicrosoft } = useSocialAuth(setAuthState);
+  const { loginWithGoogle, loginWithGithub } = useSocialAuth(setAuthState);
   const { updateProfile } = useProfileUpdate(authState, setAuthState);
 
   return {
@@ -22,7 +21,6 @@ export const useAuthOperations = (
     logout,
     loginWithGoogle,
     loginWithGithub,
-    loginWithMicrosoft,
     updateProfile
   };
 };

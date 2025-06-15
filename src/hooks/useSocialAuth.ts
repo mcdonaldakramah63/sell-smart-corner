@@ -1,4 +1,3 @@
-
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from '@/integrations/supabase/client';
 import { cleanupAuthState } from '@/utils/authUtils';
@@ -90,47 +89,8 @@ export const useSocialAuth = (
     }
   };
 
-  const loginWithMicrosoft = async () => {
-    try {
-      console.log('Starting Microsoft login...');
-      setAuthState(prev => ({ ...prev, loading: true, error: null }));
-      
-      // Clean up auth state
-      cleanupAuthState();
-      
-      const { data, error } = await supabase.auth.signInWithOAuth({
-        provider: 'azure',
-        options: {
-          redirectTo: `${window.location.origin}/auth/callback`,
-          scopes: 'email'
-        }
-      });
-      
-      if (error) {
-        console.error('Microsoft login error:', error);
-        const errorMessage = handleAuthError(error, setAuthState);
-        toast({
-          title: "Microsoft login failed",
-          description: errorMessage || "Please try again",
-          variant: "destructive",
-        });
-      }
-    } catch (error) {
-      console.error('Microsoft login error:', error);
-      setAuthState(prev => ({ ...prev, error: 'An unexpected error occurred' }));
-      toast({
-        title: "Microsoft login failed",
-        description: "An unexpected error occurred",
-        variant: "destructive",
-      });
-    } finally {
-      setAuthState(prev => ({ ...prev, loading: false }));
-    }
-  };
-
   return {
     loginWithGoogle,
-    loginWithGithub,
-    loginWithMicrosoft
+    loginWithGithub
   };
 };

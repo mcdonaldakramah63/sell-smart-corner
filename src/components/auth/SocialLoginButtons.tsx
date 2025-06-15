@@ -1,10 +1,9 @@
-
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { Github, Mail } from "lucide-react";
 
 export default function SocialLoginButtons() {
-  const { loginWithGoogle, loginWithGithub, loginWithMicrosoft, loading } = useAuth();
+  const { loginWithGoogle, loginWithGithub, loading } = useAuth();
 
   return (
     <div className="grid grid-cols-2 gap-4 mt-4">
@@ -34,26 +33,6 @@ export default function SocialLoginButtons() {
       >
         <Github className="h-4 w-4" />
         GitHub
-      </Button>
-      <Button
-        variant="outline"
-        onClick={loginWithMicrosoft}
-        disabled={loading}
-        type="button"
-        className="flex items-center justify-center gap-2 col-span-2"
-      >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          viewBox="0 0 23 23"
-          className="h-4 w-4"
-          fill="currentColor"
-        >
-          <path d="M0 0h11.5v11.5H0V0z" fill="#f25022" />
-          <path d="M11.5 0H23v11.5H11.5V0z" fill="#7fba00" />
-          <path d="M0 11.5h11.5V23H0V11.5z" fill="#00a4ef" />
-          <path d="M11.5 11.5H23V23H11.5V11.5z" fill="#ffb900" />
-        </svg>
-        Microsoft
       </Button>
     </div>
   );

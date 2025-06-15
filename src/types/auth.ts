@@ -13,7 +13,7 @@ export interface AuthContextProps {
   session: Session | null;
   loginWithGoogle: () => Promise<void>;
   loginWithGithub: () => Promise<void>;
-  loginWithMicrosoft: () => Promise<void>;
+  // Removed loginWithMicrosoft
   updateProfile: (profileData: Partial<User>) => Promise<void>;
 }
 
