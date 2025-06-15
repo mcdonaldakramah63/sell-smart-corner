@@ -40,15 +40,17 @@ export const useConversationData = () => {
   useEffect(() => {
     const fetchConversationData = async () => {
       if (!id || !user?.id) return;
-      
+
       try {
         setLoading(true);
         
-        // Check if user is part of this conversation using security definer function
-        console.log('Checking if user is participant using security definer function');
+        // 1. Check if user is part of this conversation using security definer function
+        console.log('[Conversation] Fetching participants for conversation:', id);
         const { data: participants, error: participantError } = await supabase
           .rpc('get_conversation_participants', { conversation_uuid: id });
-        
+
+        console.log('[Conversation] Participants result:', participants, participantError);
+
         if (participantError) {
           console.error('Error checking participants:', participantError);
           throw participantError;
@@ -56,7 +58,7 @@ export const useConversationData = () => {
         
         const participantIds = participants?.map(p => p.user_id) || [];
         const isParticipant = participantIds.includes(user.id);
-        
+
         if (!isParticipant) {
           toast({
             title: 'Access denied',
@@ -67,7 +69,8 @@ export const useConversationData = () => {
           return;
         }
         
-        // Get conversation details
+        // 2. Get conversation details (add debugging)
+        console.log('[Conversation] Fetching conversation details for id:', id);
         const { data: conversation, error: conversationError } = await supabase
           .from('conversations')
           .select(`
@@ -80,7 +83,9 @@ export const useConversationData = () => {
           `)
           .eq('id', id)
           .maybeSingle();
-        
+
+        console.log('[Conversation] Conversation fetch result:', conversation, conversationError);
+
         if (conversationError) throw conversationError;
         if (!conversation) {
           toast({
@@ -174,7 +179,7 @@ export const useConversationData = () => {
         setLoading(false);
       }
     };
-    
+
     fetchConversationData();
   }, [id, user?.id, toast, navigate]);
 
