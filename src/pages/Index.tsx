@@ -11,6 +11,10 @@ import { Product } from '@/lib/types';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { Seo } from "@/components/layout/Seo";
+import { useFeaturedProducts } from "@/hooks/products/useFeaturedProducts";
+import FeaturedProductsSection from "@/components/products/sections/FeaturedProductsSection";
+import HowItWorksSection from "@/components/products/sections/HowItWorksSection";
+import CallToActionSection from "@/components/products/sections/CallToActionSection";
 
 const Index = () => {
   const navigate = useNavigate();
@@ -110,6 +114,8 @@ const Index = () => {
     fetchFeaturedProducts();
   }, [toast]);
 
+  const { featuredProducts: featuredProducts2, loading: loading2 } = useFeaturedProducts(4);
+
   return (
     <Layout>
       <Seo
@@ -121,12 +127,12 @@ const Index = () => {
         breadcrumbJsonLd={breadcrumbJsonLd}
       />
       <HeroSection />
-      
       <section className="py-12 container mx-auto px-4">
+        {/* Search and categories */}
         <div className="mb-8">
           <h2 className="text-3xl font-bold mb-6">Find what you need</h2>
           <SearchBar onSearch={handleSearch} />
-          <CategoryFilter 
+          <CategoryFilter
             categories={categories}
             selectedCategory={null}
             onSelectCategory={(categoryId) => {
@@ -138,78 +144,9 @@ const Index = () => {
           />
         </div>
       </section>
-      
-      <section className="py-12 bg-gray-50">
-        <div className="container mx-auto px-4">
-          <div className="flex justify-between items-center mb-8">
-            <h2 className="text-3xl font-bold">Featured Products</h2>
-            <Button 
-              onClick={handleSeeAllProducts}
-              variant="outline"
-            >
-              See All Products
-            </Button>
-          </div>
-          
-          {loading ? (
-            <div className="flex justify-center py-12">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-            </div>
-          ) : featuredProducts.length > 0 ? (
-            <ProductGrid products={featuredProducts} />
-          ) : (
-            <div className="text-center py-10">
-              <h3 className="text-lg font-medium">No products available</h3>
-              <p className="text-muted-foreground">Be the first to list a product!</p>
-            </div>
-          )}
-        </div>
-      </section>
-      
-      <section className="py-12 container mx-auto px-4">
-        <h2 className="text-3xl font-bold mb-8 text-center">How It Works</h2>
-        
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          <div className="flex flex-col items-center text-center">
-            <div className="bg-marketplace-primary/10 w-16 h-16 rounded-full flex items-center justify-center mb-4">
-              <span className="text-2xl font-bold text-marketplace-primary">1</span>
-            </div>
-            <h3 className="text-xl font-semibold mb-2">Create an Account</h3>
-            <p className="text-muted-foreground">
-              Sign up for free and join our trusted Used Market community.
-            </p>
-          </div>
-          
-          <div className="flex flex-col items-center text-center">
-            <div className="bg-marketplace-primary/10 w-16 h-16 rounded-full flex items-center justify-center mb-4">
-              <span className="text-2xl font-bold text-marketplace-primary">2</span>
-            </div>
-            <h3 className="text-xl font-semibold mb-2">Buy or Sell</h3>
-            <p className="text-muted-foreground">
-              List your items for sale or browse products from other users.
-            </p>
-          </div>
-          
-          <div className="flex flex-col items-center text-center">
-            <div className="bg-marketplace-primary/10 w-16 h-16 rounded-full flex items-center justify-center mb-4">
-              <span className="text-2xl font-bold text-marketplace-primary">3</span>
-            </div>
-            <h3 className="text-xl font-semibold mb-2">Connect & Complete</h3>
-            <p className="text-muted-foreground">
-              Chat with buyers or sellers and complete your transactions safely.
-            </p>
-          </div>
-        </div>
-      </section>
-      
-      <section className="py-12 bg-marketplace-primary text-white">
-        <div className="container mx-auto px-4 text-center">
-          <h2 className="text-3xl font-bold mb-4">Ready to Start?</h2>
-          <p className="text-xl mb-8 max-w-2xl mx-auto">
-            Join thousands of users buying and selling on Used Market every day.
-          </p>
-        </div>
-      </section>
+      <FeaturedProductsSection products={featuredProducts2} loading={loading2} />
+      <HowItWorksSection />
+      <CallToActionSection />
     </Layout>
   );
 };
