@@ -4,12 +4,24 @@ import { Link } from 'react-router-dom';
 import Layout from '@/components/layout/Layout';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { Settings, User, Shield, HelpCircle, LogOut } from 'lucide-react';
 import { NotificationSettings } from '@/components/notifications/NotificationSettings';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 
 export default function SettingsPage() {
   const { user, logout } = useAuth();
@@ -17,6 +29,7 @@ export default function SettingsPage() {
   const [emailNotifications, setEmailNotifications] = useState(true);
   const [pushNotifications, setPushNotifications] = useState(true);
   const [marketingEmails, setMarketingEmails] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const handleSignOut = async () => {
     try {
@@ -31,6 +44,59 @@ export default function SettingsPage() {
         description: 'Failed to sign out',
         variant: 'destructive'
       });
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    if (!user?.id) {
+      toast({
+        title: 'Error',
+        description: 'No user found to delete',
+        variant: 'destructive'
+      });
+      return;
+    }
+
+    try {
+      setIsDeleting(true);
+
+      // Delete user's data from our tables first
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .delete()
+        .eq('id', user.id);
+
+      if (profileError) {
+        console.error('Error deleting profile:', profileError);
+        // Continue with account deletion even if profile deletion fails
+      }
+
+      // Delete the user's auth account
+      const { error: authError } = await supabase.auth.admin.deleteUser(user.id);
+
+      if (authError) {
+        throw authError;
+      }
+
+      // Sign out the user
+      await supabase.auth.signOut();
+
+      toast({
+        title: 'Account deleted',
+        description: 'Your account has been permanently deleted',
+      });
+
+      // Redirect to home page
+      window.location.href = '/';
+    } catch (error) {
+      console.error('Error deleting account:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to delete account. Please try again or contact support.',
+        variant: 'destructive'
+      });
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -150,9 +216,38 @@ export default function SettingsPage() {
                       Permanently delete your account and all data
                     </p>
                   </div>
-                  <Button variant="destructive" disabled className="opacity-50">
-                    Delete Account
-                  </Button>
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button variant="destructive" disabled={isDeleting}>
+                        {isDeleting ? 'Deleting...' : 'Delete Account'}
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          This action cannot be undone. This will permanently delete your account
+                          and remove all of your data from our servers, including:
+                          <ul className="list-disc list-inside mt-2 space-y-1">
+                            <li>Your profile information</li>
+                            <li>All your product listings</li>
+                            <li>Your messages and conversations</li>
+                            <li>Your reviews and ratings</li>
+                          </ul>
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction
+                          onClick={handleDeleteAccount}
+                          className="bg-red-600 hover:bg-red-700"
+                          disabled={isDeleting}
+                        >
+                          {isDeleting ? 'Deleting...' : 'Yes, delete my account'}
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
                 </div>
               </CardContent>
             </Card>
