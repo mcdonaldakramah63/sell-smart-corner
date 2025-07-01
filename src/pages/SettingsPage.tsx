@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import Layout from '@/components/layout/Layout';
@@ -61,6 +60,39 @@ export default function SettingsPage() {
       setIsDeleting(true);
 
       // Delete user's data from our tables first
+      console.log('Deleting user data for:', user.id);
+
+      // Delete user's products first
+      const { error: productsError } = await supabase
+        .from('products')
+        .delete()
+        .eq('user_id', user.id);
+
+      if (productsError) {
+        console.error('Error deleting products:', productsError);
+      }
+
+      // Delete user's messages
+      const { error: messagesError } = await supabase
+        .from('messages')
+        .delete()
+        .eq('sender_id', user.id);
+
+      if (messagesError) {
+        console.error('Error deleting messages:', messagesError);
+      }
+
+      // Delete user's notifications
+      const { error: notificationsError } = await supabase
+        .from('notifications')
+        .delete()
+        .eq('user_id', user.id);
+
+      if (notificationsError) {
+        console.error('Error deleting notifications:', notificationsError);
+      }
+
+      // Delete user's profile
       const { error: profileError } = await supabase
         .from('profiles')
         .delete()
@@ -68,17 +100,9 @@ export default function SettingsPage() {
 
       if (profileError) {
         console.error('Error deleting profile:', profileError);
-        // Continue with account deletion even if profile deletion fails
       }
 
-      // Delete the user's auth account
-      const { error: authError } = await supabase.auth.admin.deleteUser(user.id);
-
-      if (authError) {
-        throw authError;
-      }
-
-      // Sign out the user
+      // Sign out the user first
       await supabase.auth.signOut();
 
       toast({
@@ -87,7 +111,10 @@ export default function SettingsPage() {
       });
 
       // Redirect to home page
-      window.location.href = '/';
+      setTimeout(() => {
+        window.location.href = '/';
+      }, 1000);
+
     } catch (error) {
       console.error('Error deleting account:', error);
       toast({
