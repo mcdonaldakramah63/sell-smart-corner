@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -18,82 +19,87 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('listings');
 
-  useEffect(() => {
-    const fetchDashboardData = async () => {
-      setLoading(true);
-      try {
-        // Fetch user's products with category information
-        const { data: productData, error: productError } = await supabase
-          .from('products')
-          .select(`
-            *,
-            categories (
-              name
-            )
-          `)
-          .eq('seller_id', user?.id)
-          .order('created_at', { ascending: false });
-        
-        if (productError) throw productError;
-        
-        // Fetch product images for each product
-        const productsWithImages = await Promise.all(
-          (productData || []).map(async (product) => {
-            const { data: imageData } = await supabase
-              .from('product_images')
-              .select('image_url')
-              .eq('product_id', product.id)
-              .eq('is_primary', true)
-              .single();
-            
-            return {
-              ...product,
-              images: imageData ? [imageData.image_url] : [],
-              seller: {
-                id: user?.id || '',
-                name: user?.name || '',
-                avatar: user?.avatar || ''
-              },
-              createdAt: product.created_at,
-              category: product.categories?.name || 'Uncategorized',
-              condition: (product.condition || 'good') as Product['condition']
-            };
-          })
-        );
-        
-        // Fetch notifications
-        const { data: notificationData, error: notificationError } = await supabase
-          .from('notifications')
-          .select('*')
-          .eq('user_id', user?.id)
-          .order('created_at', { ascending: false })
-          .limit(10);
-        
-        if (notificationError) throw notificationError;
-        
-        setProducts(productsWithImages);
-        setNotifications(
-          (notificationData || []).map(notif => ({
-            id: notif.id,
-            userId: notif.user_id,
-            type: (notif.type || 'system') as Notification['type'],
-            content: notif.content,
-            createdAt: notif.created_at,
-            read: notif.read || false,
-            actionUrl: notif.action_url
-          }))
-        );
-      } catch (error) {
-        console.error('Error fetching dashboard data:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
+  const fetchDashboardData = async () => {
+    setLoading(true);
+    try {
+      // Fetch user's products with category information
+      const { data: productData, error: productError } = await supabase
+        .from('products')
+        .select(`
+          *,
+          categories (
+            name
+          )
+        `)
+        .eq('seller_id', user?.id)
+        .order('created_at', { ascending: false });
+      
+      if (productError) throw productError;
+      
+      // Fetch product images for each product
+      const productsWithImages = await Promise.all(
+        (productData || []).map(async (product) => {
+          const { data: imageData } = await supabase
+            .from('product_images')
+            .select('image_url')
+            .eq('product_id', product.id)
+            .eq('is_primary', true)
+            .single();
+          
+          return {
+            ...product,
+            images: imageData ? [imageData.image_url] : [],
+            seller: {
+              id: user?.id || '',
+              name: user?.name || '',
+              avatar: user?.avatar || ''
+            },
+            createdAt: product.created_at,
+            category: product.categories?.name || 'Uncategorized',
+            condition: (product.condition || 'good') as Product['condition']
+          };
+        })
+      );
+      
+      // Fetch notifications
+      const { data: notificationData, error: notificationError } = await supabase
+        .from('notifications')
+        .select('*')
+        .eq('user_id', user?.id)
+        .order('created_at', { ascending: false })
+        .limit(10);
+      
+      if (notificationError) throw notificationError;
+      
+      setProducts(productsWithImages);
+      setNotifications(
+        (notificationData || []).map(notif => ({
+          id: notif.id,
+          userId: notif.user_id,
+          type: (notif.type || 'system') as Notification['type'],
+          content: notif.content,
+          createdAt: notif.created_at,
+          read: notif.read || false,
+          actionUrl: notif.action_url
+        }))
+      );
+    } catch (error) {
+      console.error('Error fetching dashboard data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  useEffect(() => {
     if (user?.id) {
       fetchDashboardData();
     }
   }, [user?.id, user?.name, user?.avatar]);
+
+  const handleProductDeleted = () => {
+    // Refresh the dashboard data when a product is deleted
+    fetchDashboardData();
+  };
 
   return (
     <Layout>
@@ -149,7 +155,11 @@ export default function DashboardPage() {
             ) : products.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {products.map(product => (
-                  <DashboardProductCard key={product.id} product={product} />
+                  <DashboardProductCard 
+                    key={product.id} 
+                    product={product} 
+                    onProductDeleted={handleProductDeleted}
+                  />
                 ))}
               </div>
             ) : (

@@ -36,6 +36,7 @@ const AppRoutes = () => (
     <Route path="/products" element={<ProductsPage />} />
     <Route path="/products/:id" element={<ProductDetailPage />} />
     <Route path="/create-product" element={<CreateProductPage />} />
+    <Route path="/edit-product/:id" element={<CreateProductPage />} />
     <Route path="/auth/:mode" element={<AuthPage />} />
     <Route path="/auth/callback" element={<AuthCallbackPage />} />
     <Route path="/auth/reset-password" element={<ResetPasswordPage />} />

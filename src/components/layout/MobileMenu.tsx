@@ -11,7 +11,8 @@ import {
   MessageSquare, 
   PlusCircle, 
   User,
-  X
+  X,
+  LayoutDashboard
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -55,6 +56,10 @@ export const MobileMenu = ({ unreadNotifications, onLogin, onRegister }: MobileM
             </Link>
             {isAuthenticated && (
               <>
+                <Link to="/dashboard" className="flex items-center space-x-2 p-2 rounded-md hover:bg-muted" onClick={handleClose}>
+                  <LayoutDashboard className="h-4 w-4" />
+                  <span>Dashboard</span>
+                </Link>
                 <Link to="/create-product" className="flex items-center space-x-2 p-2 rounded-md hover:bg-muted" onClick={handleClose}>
                   <PlusCircle className="h-4 w-4" />
                   <span>Sell Something</span>
@@ -98,4 +103,3 @@ export const MobileMenu = ({ unreadNotifications, onLogin, onRegister }: MobileM
     </Sheet>
   );
 };
-
