@@ -59,51 +59,25 @@ export default function SettingsPage() {
     try {
       setIsDeleting(true);
 
-      // Delete user's data from our tables first
-      console.log('Deleting user data for:', user.id);
-
-      // Delete user's products first
-      const { error: productsError } = await supabase
-        .from('products')
-        .delete()
-        .eq('user_id', user.id);
-
-      if (productsError) {
-        console.error('Error deleting products:', productsError);
+      // Call the edge function to delete the account
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session?.access_token) {
+        throw new Error('No valid session found');
       }
 
-      // Delete user's messages
-      const { error: messagesError } = await supabase
-        .from('messages')
-        .delete()
-        .eq('sender_id', user.id);
+      const response = await fetch('/functions/v1/delete-user-account', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`,
+          'Content-Type': 'application/json'
+        }
+      });
 
-      if (messagesError) {
-        console.error('Error deleting messages:', messagesError);
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to delete account');
       }
-
-      // Delete user's notifications
-      const { error: notificationsError } = await supabase
-        .from('notifications')
-        .delete()
-        .eq('user_id', user.id);
-
-      if (notificationsError) {
-        console.error('Error deleting notifications:', notificationsError);
-      }
-
-      // Delete user's profile
-      const { error: profileError } = await supabase
-        .from('profiles')
-        .delete()
-        .eq('id', user.id);
-
-      if (profileError) {
-        console.error('Error deleting profile:', profileError);
-      }
-
-      // Sign out the user first
-      await supabase.auth.signOut();
 
       toast({
         title: 'Account deleted',
