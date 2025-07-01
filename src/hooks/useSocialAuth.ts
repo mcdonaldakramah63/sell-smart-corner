@@ -1,3 +1,4 @@
+
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from '@/integrations/supabase/client';
 import { cleanupAuthState } from '@/utils/authUtils';
@@ -6,7 +7,7 @@ import { AuthState } from '@/types/auth';
 import { isCapacitor } from '@/lib/isCapacitor';
 
 // Define the custom URL scheme for the app.
-// Ensure this matches what’s configured in your AndroidManifest and capacitor.config.ts
+// This should match what's configured in AndroidManifest.xml
 const APP_SCHEME_REDIRECT = "app.lovable.d3616aa2da414916957d8d8533d680a4://auth/callback";
 
 export const useSocialAuth = (
@@ -16,14 +17,21 @@ export const useSocialAuth = (
 
   // Helper to choose the redirectTo based on platform
   const getRedirectTo = () => {
-    return isCapacitor()
-      ? APP_SCHEME_REDIRECT
-      : `${window.location.origin}/auth/callback`
+    if (isCapacitor()) {
+      // For Capacitor, use the custom scheme that Android can intercept
+      return APP_SCHEME_REDIRECT;
+    } else {
+      // For web, use the normal callback URL
+      return `${window.location.origin}/auth/callback`;
+    }
   };
 
   const loginWithGoogle = async () => {
     try {
       console.log('Starting Google login...');
+      console.log('Platform is Capacitor:', isCapacitor());
+      console.log('Redirect URL:', getRedirectTo());
+      
       setAuthState(prev => ({ ...prev, loading: true, error: null }));
 
       // Clean up auth state
@@ -67,6 +75,9 @@ export const useSocialAuth = (
   const loginWithGithub = async () => {
     try {
       console.log('Starting GitHub login...');
+      console.log('Platform is Capacitor:', isCapacitor());
+      console.log('Redirect URL:', getRedirectTo());
+      
       setAuthState(prev => ({ ...prev, loading: true, error: null }));
 
       // Clean up auth state

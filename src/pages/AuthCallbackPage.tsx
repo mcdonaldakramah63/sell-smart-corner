@@ -19,6 +19,7 @@ export default function AuthCallbackPage() {
     const handleAuthCallback = async () => {
       try {
         console.log('Processing auth callback...');
+        console.log('Is Capacitor platform:', isCapacitor());
         setIsProcessing(true);
 
         const isCapacitorMobile = isCapacitor();
@@ -33,26 +34,43 @@ export default function AuthCallbackPage() {
             description: "There was a problem with your login. Please try again.",
             variant: "destructive",
           });
-          setTimeout(() => navigate('/auth/login'), 3000);
+          
+          if (isCapacitorMobile) {
+            // For mobile, close the browser and return to app
+            setTimeout(() => {
+              if ((window as any).Capacitor) {
+                (window as any).Capacitor.Plugins.App?.exitApp?.();
+              }
+            }, 3000);
+          } else {
+            setTimeout(() => navigate('/auth/login'), 3000);
+          }
           return;
         }
 
         if (data.session) {
-          console.log('Authentication successful, redirecting...');
-
+          console.log('Authentication successful');
           setSuccess(true);
+          
           toast({
             title: "Login successful",
             description: "You have been logged in successfully.",
           });
 
           if (isCapacitorMobile) {
-            // Redirect back to app using deep link for Capacitor
+            // For Capacitor mobile apps, close this browser window
+            // The app should detect the session change and navigate accordingly
             setTimeout(() => {
-              window.location.href = 'app.lovable.d3616aa2da414916957d8d8533d680a4://auth/success';
-            }, 1000);
+              console.log('Closing auth browser window...');
+              window.close();
+              
+              // If window.close() doesn't work, try to navigate back to the app
+              if ((window as any).Capacitor?.Plugins?.App) {
+                (window as any).Capacitor.Plugins.App.exitApp();
+              }
+            }, 1500);
           } else {
-            // Small delay to show success message
+            // For web, navigate to home page
             setTimeout(() => navigate('/'), 1500);
           }
         } else {
@@ -69,12 +87,30 @@ export default function AuthCallbackPage() {
             setError('No session found. Please try logging in again.');
           }
           
-          setTimeout(() => navigate('/auth/login'), 3000);
+          if (isCapacitorMobile) {
+            setTimeout(() => {
+              if ((window as any).Capacitor) {
+                (window as any).Capacitor.Plugins.App?.exitApp?.();
+              }
+            }, 3000);
+          } else {
+            setTimeout(() => navigate('/auth/login'), 3000);
+          }
         }
       } catch (err) {
         console.error('Unexpected error during auth callback:', err);
         setError('An unexpected error occurred. Please try again.');
-        setTimeout(() => navigate('/auth/login'), 3000);
+        
+        const isCapacitorMobile = isCapacitor();
+        if (isCapacitorMobile) {
+          setTimeout(() => {
+            if ((window as any).Capacitor) {
+              (window as any).Capacitor.Plugins.App?.exitApp?.();
+            }
+          }, 3000);
+        } else {
+          setTimeout(() => navigate('/auth/login'), 3000);
+        }
       } finally {
         setIsProcessing(false);
       }
@@ -83,6 +119,8 @@ export default function AuthCallbackPage() {
     handleAuthCallback();
   }, [navigate, toast]);
 
+  const isCapacitorMobile = isCapacitor();
+
   return (
     <div className="container mx-auto px-4 py-12">
       <div className="max-w-md mx-auto text-center">
@@ -90,24 +128,35 @@ export default function AuthCallbackPage() {
           <div className="flex flex-col items-center justify-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mb-4"></div>
             <p>Completing authentication, please wait...</p>
-            <p className="text-sm text-muted-foreground mt-2">You'll be redirected shortly.</p>
+            {isCapacitorMobile && (
+              <p className="text-sm text-muted-foreground mt-2">
+                This window will close automatically when done.
+              </p>
+            )}
           </div>
         ) : error ? (
           <Alert variant="destructive" className="mb-4">
             <AlertTriangle className="h-4 w-4" />
             <AlertTitle>Authentication Failed</AlertTitle>
             <AlertDescription>{error}</AlertDescription>
-            <div className="mt-4">
-              <Button onClick={() => navigate('/auth/login')} variant="outline" className="w-full">
-                Return to Login
-              </Button>
-            </div>
+            {!isCapacitorMobile && (
+              <div className="mt-4">
+                <Button onClick={() => navigate('/auth/login')} variant="outline" className="w-full">
+                  Return to Login
+                </Button>
+              </div>
+            )}
           </Alert>
         ) : success ? (
           <Alert className="bg-green-50 border-green-200 text-green-800 mb-4">
             <CheckCircle className="h-4 w-4 text-green-500" />
             <AlertTitle>Login Successful</AlertTitle>
-            <AlertDescription>You've been logged in successfully. Redirecting to the homepage...</AlertDescription>
+            <AlertDescription>
+              {isCapacitorMobile 
+                ? "You've been logged in successfully. This window will close automatically."
+                : "You've been logged in successfully. Redirecting to the homepage..."
+              }
+            </AlertDescription>
           </Alert>
         ) : null}
       </div>
