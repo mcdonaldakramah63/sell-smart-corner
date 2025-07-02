@@ -3,15 +3,18 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Send } from 'lucide-react';
+import { useTypingIndicator } from '@/hooks/useTypingIndicator';
 
 interface MessageInputProps {
   onSendMessage: (message: string) => Promise<void>;
   disabled?: boolean;
+  conversationId?: string;
 }
 
-export const MessageInput = ({ onSendMessage, disabled = false }: MessageInputProps) => {
+export const MessageInput = ({ onSendMessage, disabled = false, conversationId }: MessageInputProps) => {
   const [newMessage, setNewMessage] = useState('');
   const [sending, setSending] = useState(false);
+  const { startTyping, stopTyping } = useTypingIndicator({ conversationId });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -20,6 +23,7 @@ export const MessageInput = ({ onSendMessage, disabled = false }: MessageInputPr
     
     try {
       setSending(true);
+      stopTyping();
       await onSendMessage(newMessage.trim());
       setNewMessage('');
     } catch (error) {
@@ -29,14 +33,24 @@ export const MessageInput = ({ onSendMessage, disabled = false }: MessageInputPr
     }
   };
 
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setNewMessage(e.target.value);
+    if (e.target.value.trim()) {
+      startTyping();
+    } else {
+      stopTyping();
+    }
+  };
+
   return (
     <form onSubmit={handleSubmit} className="mt-6 flex gap-3 bg-white p-4 rounded-lg shadow-sm border">
       <Input
         value={newMessage}
-        onChange={(e) => setNewMessage(e.target.value)}
+        onChange={handleInputChange}
         placeholder="Type your message..."
         disabled={disabled || sending}
         className="flex-1 border-slate-200 focus:border-blue-500 focus:ring-blue-500"
+        onBlur={stopTyping}
       />
       <Button 
         type="submit" 

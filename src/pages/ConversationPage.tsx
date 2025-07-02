@@ -35,8 +35,15 @@ export default function ConversationPage() {
       product={product} 
       loading={loading}
     >
-      <MessageList messages={messages} currentUserId={user?.id} />
-      <MessageInput onSendMessage={sendMessage} />
+      <MessageList 
+        messages={messages} 
+        currentUserId={user?.id} 
+        conversationId={id}
+      />
+      <MessageInput 
+        onSendMessage={sendMessage} 
+        conversationId={id}
+      />
     </ConversationLayout>
   );
 }

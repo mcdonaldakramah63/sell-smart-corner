@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { ArrowLeft } from 'lucide-react';
+import { OnlineStatus } from '@/components/conversation/OnlineStatus';
 
 interface Participant {
   id: string;
@@ -26,16 +27,24 @@ export const ConversationHeader = ({ otherUser }: ConversationHeaderProps) => {
       
       {otherUser && (
         <div className="flex items-center">
-          <Avatar className="h-10 w-10 mr-3 ring-2 ring-slate-200">
-            {otherUser.avatar ? (
-              <AvatarImage src={otherUser.avatar} />
-            ) : (
-              <AvatarFallback className="bg-gradient-to-r from-blue-500 to-purple-500 text-white">
-                {otherUser.name[0]}
-              </AvatarFallback>
-            )}
-          </Avatar>
-          <span className="font-semibold text-slate-800">{otherUser.name}</span>
+          <div className="relative">
+            <Avatar className="h-10 w-10 mr-3 ring-2 ring-slate-200">
+              {otherUser.avatar ? (
+                <AvatarImage src={otherUser.avatar} />
+              ) : (
+                <AvatarFallback className="bg-gradient-to-r from-blue-500 to-purple-500 text-white">
+                  {otherUser.name[0]}
+                </AvatarFallback>
+              )}
+            </Avatar>
+            <div className="absolute -bottom-1 -right-1">
+              <OnlineStatus userId={otherUser.id} />
+            </div>
+          </div>
+          <div className="flex flex-col">
+            <span className="font-semibold text-slate-800">{otherUser.name}</span>
+            <OnlineStatus userId={otherUser.id} showText />
+          </div>
         </div>
       )}
     </div>

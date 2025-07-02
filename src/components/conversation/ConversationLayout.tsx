@@ -2,6 +2,7 @@
 import { ReactNode } from 'react';
 import { ConversationHeader } from '@/components/conversation/ConversationHeader';
 import { ProductInfoCard } from '@/components/conversation/ProductInfoCard';
+import { CommunicationActions } from '@/components/conversation/CommunicationActions';
 
 interface ProductDetails {
   id: string;
@@ -35,6 +36,13 @@ export const ConversationLayout = ({
         <ConversationHeader otherUser={otherUser} />
         
         {product && <ProductInfoCard product={product} />}
+        
+        {otherUser && product && (
+          <CommunicationActions 
+            otherUser={otherUser} 
+            productTitle={product.title} 
+          />
+        )}
         
         {loading ? (
           <div className="flex-1 flex justify-center items-center">

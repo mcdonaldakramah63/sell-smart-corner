@@ -2,6 +2,10 @@
 import { useRef, useEffect } from 'react';
 import { format } from 'date-fns';
 import { Send } from 'lucide-react';
+import { TypingIndicator } from '@/components/conversation/TypingIndicator';
+import { MessageReactions } from '@/components/conversation/MessageReactions';
+import { useMessageReactions } from '@/hooks/useMessageReactions';
+import { useTypingIndicator } from '@/hooks/useTypingIndicator';
 
 interface Message {
   id: string;
@@ -14,14 +18,24 @@ interface Message {
 interface MessageListProps {
   messages: Message[];
   currentUserId?: string;
+  conversationId?: string;
 }
 
-export const MessageList = ({ messages, currentUserId }: MessageListProps) => {
+export const MessageList = ({ messages, currentUserId, conversationId }: MessageListProps) => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const { reactions, addReaction, loadReactions } = useMessageReactions();
+  const { isOtherUserTyping } = useTypingIndicator({ conversationId });
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
+
+  useEffect(() => {
+    // Load reactions for all messages
+    messages.forEach(message => {
+      loadReactions(message.id);
+    });
+  }, [messages, loadReactions]);
 
   if (messages.length === 0) {
     return (
@@ -53,15 +67,30 @@ export const MessageList = ({ messages, currentUserId }: MessageListProps) => {
                 : 'bg-gradient-to-r from-slate-100 to-slate-200 text-slate-800'
             } rounded-2xl px-4 py-3 shadow-sm`}>
               <p className="leading-relaxed">{message.content}</p>
-              <p className={`text-xs mt-2 ${
-                isFromUser ? 'text-blue-100' : 'text-slate-500'
-              }`}>
-                {format(new Date(message.created_at), 'h:mm a')}
-              </p>
+              <div className="flex items-center justify-between mt-2">
+                <p className={`text-xs ${
+                  isFromUser ? 'text-blue-100' : 'text-slate-500'
+                }`}>
+                  {format(new Date(message.created_at), 'h:mm a')}
+                  {message.read && isFromUser && (
+                    <span className="ml-2 text-blue-200">✓✓</span>
+                  )}
+                </p>
+              </div>
+              {!isFromUser && (
+                <MessageReactions
+                  messageId={message.id}
+                  reactions={reactions[message.id]}
+                  onReact={addReaction}
+                />
+              )}
             </div>
           </div>
         );
       })}
+      
+      <TypingIndicator isTyping={isOtherUserTyping} userName="Other user" />
+      
       <div ref={messagesEndRef} />
     </div>
   );
