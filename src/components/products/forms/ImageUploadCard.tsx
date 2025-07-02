@@ -1,5 +1,6 @@
 
-import { Upload, X } from "lucide-react";
+import { Upload, X, Edit } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 interface ImageUploadCardProps {
   images: File[];
@@ -7,6 +8,7 @@ interface ImageUploadCardProps {
   error?: string;
   onImageSelect: (files: FileList | null) => void;
   onRemove: (index: number) => void;
+  onEdit?: (index: number) => void;
 }
 
 export default function ImageUploadCard({
@@ -15,6 +17,7 @@ export default function ImageUploadCard({
   error,
   onImageSelect,
   onRemove,
+  onEdit,
 }: ImageUploadCardProps) {
   return (
     <div>
@@ -50,13 +53,28 @@ export default function ImageUploadCard({
                   Main
                 </div>
               )}
-              <button
-                type="button"
-                onClick={() => onRemove(index)}
-                className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-600"
-              >
-                <X className="h-3 w-3" />
-              </button>
+              <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg flex items-center justify-center gap-1">
+                {onEdit && (
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="secondary"
+                    onClick={() => onEdit(index)}
+                    className="h-8 w-8 p-0"
+                  >
+                    <Edit className="h-3 w-3" />
+                  </Button>
+                )}
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="destructive"
+                  onClick={() => onRemove(index)}
+                  className="h-8 w-8 p-0"
+                >
+                  <X className="h-3 w-3" />
+                </Button>
+              </div>
             </div>
           ))}
         </div>

@@ -41,5 +41,14 @@ export function useImageUpload() {
     setError(undefined);
   };
 
-  return { images, previewUrls, error, handleImageSelect, removeImage, setImages, setPreviewUrls, setError };
+  return { 
+    images, 
+    previewUrls, 
+    error, 
+    handleImageSelect, 
+    removeImage, 
+    setImages, 
+    setPreviewUrls, 
+    setError 
+  };
 }
