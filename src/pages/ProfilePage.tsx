@@ -1,7 +1,7 @@
 
 import Layout from '@/components/layout/Layout';
-import ProfileForm from '@/components/profile/ProfileForm';
-import ProfilePictureCard from '@/components/profile/ProfilePictureCard';
+import { ProfileForm } from '@/components/profile/ProfileForm';
+import { ProfilePictureCard } from '@/components/profile/ProfilePictureCard';
 import PhoneVerificationCard from '@/components/profile/PhoneVerificationCard';
 import TwoFactorAuthCard from '@/components/profile/TwoFactorAuthCard';
 import { User, Settings } from 'lucide-react';
