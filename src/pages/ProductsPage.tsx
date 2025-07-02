@@ -1,13 +1,13 @@
-import { useState, useEffect } from 'react';
+
+import { useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import Layout from '@/components/layout/Layout';
 import { Seo } from "@/components/layout/Seo";
-import { supabase } from "@/integrations/supabase/client";
-import { Product } from "@/lib/types";
 import { useCategories } from '@/hooks/useCategories';
 import { useProductsData } from '@/hooks/products/useProductsData';
-import { useProductFilters } from '@/hooks/products/useProductFilters';
-import ProductFilters from '@/components/products/filters/ProductFilters';
+import { useAdvancedProductFilters } from '@/hooks/products/useAdvancedProductFilters';
+import AdvancedFilters from '@/components/products/filters/AdvancedFilters';
+import { SearchHeader } from '@/components/products/search/SearchHeader';
 import ProductsContent from '@/components/products/ProductsContent';
 import { useToast } from '@/hooks/use-toast';
 
@@ -17,6 +17,9 @@ const ProductsPage = () => {
   const queryParams = new URLSearchParams(location.search);
   const categoryParam = queryParams.get('category');
   const searchParam = queryParams.get('search');
+  const locationParam = queryParams.get('location');
+
+  const [showFilters, setShowFilters] = useState(true);
 
   // Breadcrumb structured data
   const breadcrumbJsonLd = {
@@ -38,9 +41,9 @@ const ProductsPage = () => {
     ]
   };
 
-  const { data: categories = [], isLoading: categoriesLoading, error: categoriesError } = useCategories();
-
+  const { data: categories = [], isLoading: categoriesLoading } = useCategories();
   const { allProducts, loading } = useProductsData();
+  
   const {
     selectedCategory,
     setSelectedCategory,
@@ -52,40 +55,30 @@ const ProductsPage = () => {
     setPriceRange,
     condition,
     setCondition,
+    location: filterLocation,
+    setLocation,
+    region,
+    setRegion,
+    isNegotiable,
+    setIsNegotiable,
+    dateRange,
+    setDateRange,
     handleReset,
-  } = useProductFilters({
+    filteredProducts,
+    activeFiltersCount,
+  } = useAdvancedProductFilters(allProducts, {
     category: categoryParam,
     searchQuery: searchParam,
+    location: locationParam,
   });
 
-  // Filtering logic
-  const filteredProducts = allProducts
-    .filter(product =>
-      (!searchQuery ||
-        product.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        product.description.toLowerCase().includes(searchQuery.toLowerCase()))
-    )
-    .filter(product =>
-      !selectedCategory || product.category === selectedCategory
-    )
-    .filter(product =>
-      !condition || product.condition === condition
-    )
-    .filter(product =>
-      product.price >= priceRange[0] && product.price <= priceRange[1]
-    )
-    .sort((a, b) => {
-      if (sortBy === "newest") {
-        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-      } else if (sortBy === "oldest") {
-        return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
-      } else if (sortBy === "price_low") {
-        return a.price - b.price;
-      } else if (sortBy === "price_high") {
-        return b.price - a.price;
-      }
-      return 0;
+  const handleSearch = () => {
+    // Search is handled automatically by the filter hook
+    toast({
+      title: "Search Updated",
+      description: `Found ${filteredProducts.length} products`,
     });
+  };
 
   return (
     <Layout>
@@ -98,23 +91,47 @@ const ProductsPage = () => {
       />
       <div className="container mx-auto px-4 py-8">
         <h1 className="text-3xl font-bold mb-6">Browse Products</h1>
-        <div className="flex flex-col md:flex-row gap-6">
-          {/* Filters - Left Side */}
-          <div className="w-full md:w-1/4 space-y-6">
-            <ProductFilters
-              searchQuery={searchQuery}
-              setSearchQuery={setSearchQuery}
-              priceRange={priceRange}
-              setPriceRange={setPriceRange}
-              condition={condition}
-              setCondition={setCondition}
-              sortBy={sortBy}
-              setSortBy={setSortBy}
-              handleReset={handleReset}
-            />
-          </div>
+        
+        {/* Enhanced Search Header */}
+        <SearchHeader
+          searchQuery={searchQuery}
+          setSearchQuery={setSearchQuery}
+          location={filterLocation}
+          setLocation={setLocation}
+          onSearch={handleSearch}
+          activeFiltersCount={activeFiltersCount}
+          onToggleFilters={() => setShowFilters(!showFilters)}
+          showFilters={showFilters}
+        />
+
+        <div className="flex flex-col lg:flex-row gap-6">
+          {/* Advanced Filters - Left Side */}
+          {showFilters && (
+            <div className="w-full lg:w-1/4">
+              <AdvancedFilters
+                searchQuery={searchQuery}
+                setSearchQuery={setSearchQuery}
+                priceRange={priceRange}
+                setPriceRange={setPriceRange}
+                condition={condition}
+                setCondition={setCondition}
+                sortBy={sortBy}
+                setSortBy={setSortBy}
+                location={filterLocation}
+                setLocation={setLocation}
+                region={region}
+                setRegion={setRegion}
+                isNegotiable={isNegotiable}
+                setIsNegotiable={setIsNegotiable}
+                dateRange={dateRange}
+                setDateRange={setDateRange}
+                handleReset={handleReset}
+              />
+            </div>
+          )}
+          
           {/* Product Content - Right Side */}
-          <div className="w-full md:w-3/4">
+          <div className={`w-full ${showFilters ? 'lg:w-3/4' : 'lg:w-full'}`}>
             <ProductsContent
               categories={categories}
               selectedCategory={selectedCategory}

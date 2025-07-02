@@ -4,9 +4,40 @@ import { ProfileForm } from '@/components/profile/ProfileForm';
 import { ProfilePictureCard } from '@/components/profile/ProfilePictureCard';
 import PhoneVerificationCard from '@/components/profile/PhoneVerificationCard';
 import TwoFactorAuthCard from '@/components/profile/TwoFactorAuthCard';
-import { User, Settings } from 'lucide-react';
+import { User } from 'lucide-react';
+import { useState } from 'react';
 
 export default function ProfilePage() {
+  const [formData, setFormData] = useState({
+    full_name: '',
+    username: '',
+    email: '',
+    phone: '',
+    bio: '',
+    location: '',
+    website: ''
+  });
+  const [errors, setErrors] = useState({});
+  const [loading, setLoading] = useState(false);
+  const [avatarUrl, setAvatarUrl] = useState('');
+
+  const handleInputChange = (field: string, value: string) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    console.log('Profile updated:', formData);
+  };
+
+  const handleAvatarChange = (url: string) => {
+    setAvatarUrl(url);
+  };
+
+  const handleRemovePicture = () => {
+    setAvatarUrl('');
+  };
+
   return (
     <Layout>
       <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
@@ -25,10 +56,20 @@ export default function ProfilePage() {
           
           <div className="grid gap-6 max-w-4xl">
             {/* Profile Picture */}
-            <ProfilePictureCard />
+            <ProfilePictureCard 
+              avatarUrl={avatarUrl}
+              onAvatarChange={handleAvatarChange}
+              onRemovePicture={handleRemovePicture}
+            />
             
             {/* Profile Information */}
-            <ProfileForm />
+            <ProfileForm 
+              formData={formData}
+              errors={errors}
+              loading={loading}
+              onInputChange={handleInputChange}
+              onSubmit={handleSubmit}
+            />
 
             {/* Phone Verification */}
             <PhoneVerificationCard />
