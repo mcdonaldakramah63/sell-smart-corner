@@ -9,7 +9,7 @@ import { useState } from 'react';
 
 export default function ProfilePage() {
   const [formData, setFormData] = useState({
-    full_name: '',
+    fullName: '',
     username: '',
     email: '',
     phone: '',
@@ -30,8 +30,12 @@ export default function ProfilePage() {
     console.log('Profile updated:', formData);
   };
 
-  const handleAvatarChange = (url: string) => {
-    setAvatarUrl(url);
+  const handleAvatarChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      const url = URL.createObjectURL(file);
+      setAvatarUrl(url);
+    }
   };
 
   const handleRemovePicture = () => {

@@ -1,8 +1,86 @@
-
-import { useState } from 'react';
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+
+interface FormFieldProps {
+  id: string;
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+  placeholder?: string;
+  error?: string;
+  type?: string;
+  rows?: number;
+  maxLength?: number;
+  required?: boolean;
+  description?: string;
+  showCharCount?: boolean;
+}
+
+export function FormField({
+  id,
+  label,
+  value,
+  onChange,
+  placeholder,
+  error,
+  type = "text",
+  rows,
+  maxLength,
+  required = false,
+  description,
+  showCharCount = false
+}: FormFieldProps) {
+  const isTextarea = rows && rows > 1;
+  
+  return (
+    <div className="space-y-2">
+      <Label htmlFor={id}>
+        {label}
+        {required && <span className="text-red-500 ml-1">*</span>}
+      </Label>
+      
+      {isTextarea ? (
+        <Textarea
+          id={id}
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          placeholder={placeholder}
+          rows={rows}
+          maxLength={maxLength}
+          className={error ? "border-red-500" : ""}
+        />
+      ) : (
+        <Input
+          id={id}
+          type={type}
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          placeholder={placeholder}
+          maxLength={maxLength}
+          className={error ? "border-red-500" : ""}
+        />
+      )}
+      
+      {description && (
+        <p className="text-sm text-muted-foreground">{description}</p>
+      )}
+      
+      {showCharCount && maxLength && (
+        <p className="text-sm text-muted-foreground text-right">
+          {value.length}/{maxLength}
+        </p>
+      )}
+      
+      {error && (
+        <p className="text-sm text-red-500">{error}</p>
+      )}
+    </div>
+  );
+}
+
+// Keep the existing ProfileFormFields component for backward compatibility
+import { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
