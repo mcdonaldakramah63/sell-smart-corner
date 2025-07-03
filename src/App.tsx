@@ -20,6 +20,7 @@ import MessagesPage from "./pages/MessagesPage";
 import ConversationPage from "./pages/ConversationPage";
 import NotificationsPage from "./pages/NotificationsPage";
 import SettingsPage from "./pages/SettingsPage";
+import AdminDashboardPage from "./pages/AdminDashboardPage";
 import HelpPage from "./pages/HelpPage";
 import SafetyPage from "./pages/SafetyPage";
 import ContactPage from "./pages/ContactPage";
@@ -48,6 +49,7 @@ const AppRoutes = () => (
     <Route path="/conversation/:id" element={<ConversationPage />} />
     <Route path="/notifications-page" element={<NotificationsPage />} />
     <Route path="/settings-page" element={<SettingsPage />} />
+    <Route path="/admin" element={<AdminDashboardPage />} />
     <Route path="/help" element={<HelpPage />} />
     <Route path="/safety" element={<SafetyPage />} />
     <Route path="/contact" element={<ContactPage />} />
