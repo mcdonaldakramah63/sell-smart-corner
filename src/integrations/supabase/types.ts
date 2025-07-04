@@ -156,6 +156,89 @@ export type Database = {
         }
         Relationships: []
       }
+      premium_ad_prices: {
+        Row: {
+          ad_type: Database["public"]["Enums"]["premium_ad_type"]
+          created_at: string
+          currency: string | null
+          description: string | null
+          duration_days: number
+          id: string
+          price: number
+          updated_at: string
+        }
+        Insert: {
+          ad_type: Database["public"]["Enums"]["premium_ad_type"]
+          created_at?: string
+          currency?: string | null
+          description?: string | null
+          duration_days: number
+          id?: string
+          price: number
+          updated_at?: string
+        }
+        Update: {
+          ad_type?: Database["public"]["Enums"]["premium_ad_type"]
+          created_at?: string
+          currency?: string | null
+          description?: string | null
+          duration_days?: number
+          id?: string
+          price?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      premium_ads: {
+        Row: {
+          ad_type: Database["public"]["Enums"]["premium_ad_type"]
+          amount: number
+          created_at: string
+          currency: string | null
+          expires_at: string
+          id: string
+          payment_reference: string | null
+          product_id: string
+          status: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          ad_type: Database["public"]["Enums"]["premium_ad_type"]
+          amount: number
+          created_at?: string
+          currency?: string | null
+          expires_at: string
+          id?: string
+          payment_reference?: string | null
+          product_id: string
+          status?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          ad_type?: Database["public"]["Enums"]["premium_ad_type"]
+          amount?: number
+          created_at?: string
+          currency?: string | null
+          expires_at?: string
+          id?: string
+          payment_reference?: string | null
+          product_id?: string
+          status?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "premium_ads_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       product_images: {
         Row: {
           created_at: string
@@ -389,6 +472,20 @@ export type Database = {
           user_id: string
         }[]
       }
+      get_premium_ad_info: {
+        Args: { product_uuid: string }
+        Returns: {
+          ad_type: Database["public"]["Enums"]["premium_ad_type"]
+          expires_at: string
+        }[]
+      }
+      has_active_premium_ad: {
+        Args: {
+          product_uuid: string
+          ad_type_filter?: Database["public"]["Enums"]["premium_ad_type"]
+        }
+        Returns: boolean
+      }
       has_role: {
         Args: {
           _user_id: string
@@ -415,6 +512,7 @@ export type Database = {
     }
     Enums: {
       app_role: "admin" | "moderator" | "user"
+      premium_ad_type: "featured" | "bump" | "vip" | "spotlight"
       product_status: "pending" | "approved" | "rejected" | "flagged"
     }
     CompositeTypes: {
@@ -532,6 +630,7 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "moderator", "user"],
+      premium_ad_type: ["featured", "bump", "vip", "spotlight"],
       product_status: ["pending", "approved", "rejected", "flagged"],
     },
   },

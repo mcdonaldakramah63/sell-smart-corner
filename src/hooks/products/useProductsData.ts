@@ -4,6 +4,17 @@ import { supabase } from "@/integrations/supabase/client";
 import { Product } from "@/lib/types";
 import { useToast } from "@/hooks/use-toast";
 
+// Helper function to get premium ad priority (lower number = higher priority)
+const getPremiumPriority = (adType?: string): number => {
+  switch (adType) {
+    case 'spotlight': return 1;
+    case 'vip': return 2;
+    case 'featured': return 3;
+    case 'bump': return 4;
+    default: return 999; // Regular ads
+  }
+};
+
 export function useProductsData() {
   const [allProducts, setAllProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
@@ -13,6 +24,13 @@ export function useProductsData() {
     const fetchProducts = async () => {
       setLoading(true);
       try {
+        // First get premium ads to sort products with premium status
+        const { data: premiumAds } = await supabase
+          .from("premium_ads")
+          .select("product_id, ad_type")
+          .gt("expires_at", new Date().toISOString())
+          .eq("status", "active");
+
         const { data: productData, error: productError } = await supabase
           .from("products")
           .select(`
@@ -34,6 +52,10 @@ export function useProductsData() {
               .select("image_url")
               .eq("product_id", product.id)
               .order("is_primary", { ascending: false });
+            
+            // Check if product has premium ad
+            const premiumAd = premiumAds?.find(ad => ad.product_id === product.id);
+            
             return {
               id: product.id,
               title: product.title,
@@ -50,11 +72,24 @@ export function useProductsData() {
               createdAt: product.created_at,
               location: product.location || "",
               is_sold: product.is_sold,
-            } as Product;
+              premiumAdType: premiumAd?.ad_type
+            } as Product & { premiumAdType?: string };
           })
         );
 
-        setAllProducts(productsWithImages);
+        // Sort products: premium ads first, then by creation date
+        const sortedProducts = productsWithImages.sort((a, b) => {
+          const aPriority = getPremiumPriority(a.premiumAdType);
+          const bPriority = getPremiumPriority(b.premiumAdType);
+          
+          if (aPriority !== bPriority) {
+            return aPriority - bPriority; // Lower priority number = higher priority
+          }
+          
+          return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+        });
+
+        setAllProducts(sortedProducts);
       } catch (error) {
         toast({
           title: "Error",

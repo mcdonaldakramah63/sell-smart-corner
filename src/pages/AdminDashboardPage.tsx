@@ -9,6 +9,7 @@ import Layout from "@/components/layout/Layout";
 import { AdminUserManagement } from '@/components/admin/AdminUserManagement';
 import { AdminProductModeration } from '@/components/admin/AdminProductModeration';
 import { AdminAnalytics } from '@/components/admin/AdminAnalytics';
+import { AdminPremiumAds } from '@/components/admin/AdminPremiumAds';
 import { useAdminAccess } from '@/hooks/useAdminAccess';
 
 interface AdminStats {
@@ -122,7 +123,7 @@ export default function AdminDashboardPage() {
           onValueChange={setActiveTab}
           className="space-y-6"
         >
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="overview" className="flex items-center gap-2">
               <BarChart3 size={16} />
               Overview
@@ -134,6 +135,10 @@ export default function AdminDashboardPage() {
             <TabsTrigger value="products" className="flex items-center gap-2">
               <Package size={16} />
               Products
+            </TabsTrigger>
+            <TabsTrigger value="premium" className="flex items-center gap-2">
+              <Shield size={16} />
+              Premium Ads
             </TabsTrigger>
             <TabsTrigger value="analytics" className="flex items-center gap-2">
               <BarChart3 size={16} />
@@ -197,6 +202,10 @@ export default function AdminDashboardPage() {
 
           <TabsContent value="products">
             <AdminProductModeration onStatsUpdate={fetchAdminStats} />
+          </TabsContent>
+
+          <TabsContent value="premium">
+            <AdminPremiumAds />
           </TabsContent>
 
           <TabsContent value="analytics">

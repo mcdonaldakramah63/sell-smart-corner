@@ -16,6 +16,9 @@ import { ReviewForm } from '@/components/reviews/ReviewForm';
 import { ReviewList } from '@/components/reviews/ReviewList';
 import { SellerContactInfo } from '@/components/seller/SellerContactInfo';
 import { Seo } from "@/components/layout/Seo";
+import { PremiumAdUpgrade } from '@/components/products/PremiumAdUpgrade';
+import { PremiumAdBadge } from '@/components/products/PremiumAdBadge';
+import { usePremiumAds } from '@/hooks/products/usePremiumAds';
 
 interface SellerProfile {
   id: string;
@@ -41,6 +44,7 @@ export default function ProductDetailPage() {
   const [liked, setLiked] = useState(false);
   const [isCreatingConversation, setIsCreatingConversation] = useState(false);
   const [reviewRefreshTrigger, setReviewRefreshTrigger] = useState(0);
+  const { premiumAdInfo, refreshPremiumStatus } = usePremiumAds(id);
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -406,6 +410,29 @@ export default function ProductDetailPage() {
           
           {/* Seller Information Sidebar */}
           <div className="space-y-6">
+            {premiumAdInfo && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <PremiumAdBadge adType={premiumAdInfo.ad_type} />
+                    Premium Status
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-sm text-muted-foreground">
+                    Expires: {new Date(premiumAdInfo.expires_at).toLocaleDateString()}
+                  </p>
+                </CardContent>
+              </Card>
+            )}
+            
+            {user?.id === product.seller.id && (
+              <PremiumAdUpgrade 
+                productId={product.id} 
+                currentAdType={premiumAdInfo?.ad_type}
+              />
+            )}
+            
             {sellerProfile && (
               <SellerContactInfo seller={sellerProfile} />
             )}

@@ -24,6 +24,7 @@ export interface Product {
   createdAt: string;
   location: string;
   is_sold?: boolean;
+  premiumAdType?: 'featured' | 'bump' | 'vip' | 'spotlight';
 }
 
 export interface Message {
