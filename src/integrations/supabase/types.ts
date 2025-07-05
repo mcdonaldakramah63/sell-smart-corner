@@ -433,6 +433,99 @@ export type Database = {
         }
         Relationships: []
       }
+      reports: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          report_type: Database["public"]["Enums"]["report_type"]
+          reported_product_id: string | null
+          reported_user_id: string | null
+          reporter_id: string
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: Database["public"]["Enums"]["report_status"]
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          report_type: Database["public"]["Enums"]["report_type"]
+          reported_product_id?: string | null
+          reported_user_id?: string | null
+          reporter_id: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: Database["public"]["Enums"]["report_status"]
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          report_type?: Database["public"]["Enums"]["report_type"]
+          reported_product_id?: string | null
+          reported_user_id?: string | null
+          reporter_id?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: Database["public"]["Enums"]["report_status"]
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      user_bans: {
+        Row: {
+          banned_at: string
+          banned_by: string
+          expires_at: string | null
+          id: string
+          is_permanent: boolean
+          reason: string | null
+          user_id: string
+        }
+        Insert: {
+          banned_at?: string
+          banned_by: string
+          expires_at?: string | null
+          id?: string
+          is_permanent?: boolean
+          reason?: string | null
+          user_id: string
+        }
+        Update: {
+          banned_at?: string
+          banned_by?: string
+          expires_at?: string | null
+          id?: string
+          is_permanent?: boolean
+          reason?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_blocks: {
+        Row: {
+          blocked_id: string
+          blocker_id: string
+          created_at: string
+          id: string
+        }
+        Insert: {
+          blocked_id: string
+          blocker_id: string
+          created_at?: string
+          id?: string
+        }
+        Update: {
+          blocked_id?: string
+          blocker_id?: string
+          created_at?: string
+          id?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string
@@ -505,6 +598,14 @@ export type Database = {
         Args: { p_user_id: string }
         Returns: boolean
       }
+      is_user_banned: {
+        Args: { user_uuid: string }
+        Returns: boolean
+      }
+      is_user_blocked: {
+        Args: { blocker_uuid: string; blocked_uuid: string }
+        Returns: boolean
+      }
       make_user_admin: {
         Args: { _user_id: string }
         Returns: undefined
@@ -514,6 +615,13 @@ export type Database = {
       app_role: "admin" | "moderator" | "user"
       premium_ad_type: "featured" | "bump" | "vip" | "spotlight"
       product_status: "pending" | "approved" | "rejected" | "flagged"
+      report_status: "pending" | "reviewed" | "resolved" | "dismissed"
+      report_type:
+        | "inappropriate_content"
+        | "spam"
+        | "harassment"
+        | "fraud"
+        | "other"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -632,6 +740,14 @@ export const Constants = {
       app_role: ["admin", "moderator", "user"],
       premium_ad_type: ["featured", "bump", "vip", "spotlight"],
       product_status: ["pending", "approved", "rejected", "flagged"],
+      report_status: ["pending", "reviewed", "resolved", "dismissed"],
+      report_type: [
+        "inappropriate_content",
+        "spam",
+        "harassment",
+        "fraud",
+        "other",
+      ],
     },
   },
 } as const
