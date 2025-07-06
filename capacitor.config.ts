@@ -18,19 +18,22 @@ const config: CapacitorConfig = {
       showSpinner: true,
       androidSpinnerStyle: 'large',
       iosSpinnerStyle: 'small',
-      spinnerColor: '#2563eb',
+      spinnerColor: '#1a365d',
       splashFullScreen: true,
       splashImmersive: true,
       layoutName: 'launch_screen',
       useDialog: true,
     },
     StatusBar: {
-      backgroundColor: '#2563eb',
+      backgroundColor: '#1a365d',
       style: 'light'
     },
     Keyboard: {
       resize: 'body',
       resizeOnFullScreen: true
+    },
+    PushNotifications: {
+      presentationOptions: ["badge", "sound", "alert"]
     }
   },
   android: {

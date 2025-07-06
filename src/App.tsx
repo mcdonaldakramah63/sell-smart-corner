@@ -6,6 +6,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { PushNotificationManager } from "@/components/notifications/PushNotificationManager";
+import { InstallPrompt } from "@/components/pwa/InstallPrompt";
 import Index from "./pages/Index";
 import ProductsPage from "./pages/ProductsPage";
 import ProductDetailPage from "./pages/ProductDetailPage";
@@ -70,6 +71,7 @@ function App() {
           <BrowserRouter>
             <AppRoutes />
             <PushNotificationManager />
+            <InstallPrompt />
           </BrowserRouter>
         </TooltipProvider>
       </AuthProvider>
