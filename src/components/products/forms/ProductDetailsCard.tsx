@@ -36,15 +36,20 @@ export default function ProductDetailsCard({
         </div>
         <div className="space-y-2">
           <Label htmlFor="price" className="flex items-center gap-1">
-            <DollarSign className="h-4 w-4" /> Price *
+            <DollarSign className="h-4 w-4" /> Price (GHS) *
           </Label>
-          <Input
-            id="price"
-            type="number"
-            step="0.01"
-            value={fields.price}
-            onChange={(e) => handleInputChange("price", e.target.value)}
-          />
+          <div className="relative">
+            <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground">₵</span>
+            <Input
+              id="price"
+              type="number"
+              step="0.01"
+              value={fields.price}
+              onChange={(e) => handleInputChange("price", e.target.value)}
+              className="pl-8"
+              placeholder="0.00"
+            />
+          </div>
           {errors.price && <p className="text-red-500 text-sm">{errors.price}</p>}
         </div>
       </div>

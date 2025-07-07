@@ -158,7 +158,7 @@ export const PremiumAdUpgrade = ({ productId, currentAdType }: PremiumAdUpgradeP
                 <div className="space-y-4">
                   <div className="text-center">
                     <div className="text-3xl font-bold text-marketplace-primary">
-                      ₦{price.price.toLocaleString()}
+                      ₵{price.price.toLocaleString()}
                     </div>
                     <div className="text-sm text-muted-foreground">
                       for {price.duration_days} day{price.duration_days > 1 ? 's' : ''}
