@@ -1,5 +1,5 @@
 
-import { useState, useRef } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from "@/components/ui/button";
@@ -8,8 +8,6 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Label } from "@/components/ui/label";
 import { Loader2, Eye, EyeOff } from "lucide-react";
 import { validateEmail } from '@/utils/authUtils';
-import { useToast } from '@/hooks/use-toast';
-import HCaptchaComponent, { HCaptchaRef } from '@/components/security/HCaptcha';
 
 const LoginForm = () => {
   const [email, setEmail] = useState('');
@@ -17,11 +15,8 @@ const LoginForm = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<{ email?: string; password?: string }>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [captchaToken, setCaptchaToken] = useState<string>('');
   const { login, loading, error } = useAuth();
-  const { toast } = useToast();
   const navigate = useNavigate();
-  const captchaRef = useRef<HCaptchaRef>(null);
 
   const validateForm = () => {
     const errors: { email?: string; password?: string } = {};
@@ -48,15 +43,6 @@ const LoginForm = () => {
     if (!validateForm() || isSubmitting || loading) {
       return;
     }
-
-    if (!captchaToken) {
-      toast({
-        title: 'CAPTCHA required',
-        description: 'Please complete the CAPTCHA verification',
-        variant: 'destructive'
-      });
-      return;
-    }
     
     setIsSubmitting(true);
     
@@ -64,19 +50,9 @@ const LoginForm = () => {
       await login(email, password);
     } catch (error) {
       console.error('Login form error:', error);
-      captchaRef.current?.resetCaptcha();
-      setCaptchaToken('');
     } finally {
       setIsSubmitting(false);
     }
-  };
-
-  const handleCaptchaVerify = (token: string) => {
-    setCaptchaToken(token);
-  };
-
-  const handleCaptchaError = () => {
-    setCaptchaToken('');
   };
 
   const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -164,18 +140,12 @@ const LoginForm = () => {
             )}
           </div>
           
-          <HCaptchaComponent
-            ref={captchaRef}
-            onVerify={handleCaptchaVerify}
-            onError={handleCaptchaError}
-          />
-          
           {error && <p className="text-red-500 text-sm">{error}</p>}
           
           <Button 
             type="submit" 
             className="w-full bg-marketplace-primary hover:bg-opacity-90" 
-            disabled={isLoading || !captchaToken}
+            disabled={isLoading}
           >
             {isLoading ? (
               <>

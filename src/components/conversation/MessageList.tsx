@@ -52,7 +52,7 @@ export const MessageList = ({ messages, currentUserId, conversationId }: Message
   }
 
   return (
-    <div className="flex-1 overflow-y-auto pb-2 sm:pb-4 space-y-3 sm:space-y-4 bg-white rounded-lg p-2 sm:p-4 shadow-sm border">
+    <div className="flex-1 overflow-y-auto pb-4 space-y-4 bg-white rounded-lg p-4 shadow-sm border">
       {messages.map(message => {
         const isFromUser = message.sender_id === currentUserId;
         
@@ -61,13 +61,13 @@ export const MessageList = ({ messages, currentUserId, conversationId }: Message
             key={message.id}
             className={`flex ${isFromUser ? 'justify-end' : 'justify-start'}`}
           >
-            <div className={`max-w-[85%] sm:max-w-[75%] ${
+            <div className={`max-w-[75%] ${
               isFromUser 
                 ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white' 
                 : 'bg-gradient-to-r from-slate-100 to-slate-200 text-slate-800'
-            } rounded-2xl px-3 sm:px-4 py-2 sm:py-3 shadow-sm`}>
-              <p className="leading-relaxed text-sm sm:text-base">{message.content}</p>
-              <div className="flex items-center justify-between mt-1 sm:mt-2">
+            } rounded-2xl px-4 py-3 shadow-sm`}>
+              <p className="leading-relaxed">{message.content}</p>
+              <div className="flex items-center justify-between mt-2">
                 <p className={`text-xs ${
                   isFromUser ? 'text-blue-100' : 'text-slate-500'
                 }`}>

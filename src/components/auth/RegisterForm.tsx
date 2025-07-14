@@ -1,5 +1,5 @@
 
-import { useState, useRef } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from "@/components/ui/button";
@@ -9,8 +9,6 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Loader2, Eye, EyeOff, Check, X } from "lucide-react";
 import { validateEmail, validatePassword } from '@/utils/authUtils';
-import { useToast } from '@/hooks/use-toast';
-import HCaptchaComponent, { HCaptchaRef } from '@/components/security/HCaptcha';
 
 const RegisterForm = () => {
   const [name, setName] = useState('');
@@ -20,7 +18,6 @@ const RegisterForm = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [agreeTerms, setAgreeTerms] = useState(false);
-  const [captchaToken, setCaptchaToken] = useState<string>('');
   const [fieldErrors, setFieldErrors] = useState<{ 
     name?: string; 
     email?: string; 
@@ -29,9 +26,7 @@ const RegisterForm = () => {
     terms?: string;
   }>({});
   const { register, loading, error } = useAuth();
-  const { toast } = useToast();
   const navigate = useNavigate();
-  const captchaRef = useRef<HCaptchaRef>(null);
 
   const validateForm = () => {
     const errors: typeof fieldErrors = {};
@@ -69,30 +64,8 @@ const RegisterForm = () => {
     if (!validateForm()) {
       return;
     }
-
-    if (!captchaToken) {
-      toast({
-        title: 'CAPTCHA required',
-        description: 'Please complete the CAPTCHA verification',
-        variant: 'destructive'
-      });
-      return;
-    }
     
-    try {
-      await register(name.trim(), email.trim(), password);
-    } catch (error) {
-      captchaRef.current?.resetCaptcha();
-      setCaptchaToken('');
-    }
-  };
-
-  const handleCaptchaVerify = (token: string) => {
-    setCaptchaToken(token);
-  };
-
-  const handleCaptchaError = () => {
-    setCaptchaToken('');
+    await register(name.trim(), email.trim(), password);
   };
 
   // Password strength indicator
@@ -284,17 +257,11 @@ const RegisterForm = () => {
             </div>
           </div>
           
-          <HCaptchaComponent
-            ref={captchaRef}
-            onVerify={handleCaptchaVerify}
-            onError={handleCaptchaError}
-          />
-          
           {error && (
             <p className="text-red-500 text-sm">{error}</p>
           )}
           
-          <Button type="submit" className="w-full bg-marketplace-primary hover:bg-opacity-90" disabled={loading || !captchaToken}>
+          <Button type="submit" className="w-full bg-marketplace-primary hover:bg-opacity-90" disabled={loading}>
             {loading ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />

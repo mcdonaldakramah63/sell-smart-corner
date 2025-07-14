@@ -43,19 +43,19 @@ export const MessageInput = ({ onSendMessage, disabled = false, conversationId }
   };
 
   return (
-    <form onSubmit={handleSubmit} className="mt-4 sm:mt-6 flex gap-2 sm:gap-3 bg-white p-3 sm:p-4 rounded-lg shadow-sm border">
+    <form onSubmit={handleSubmit} className="mt-6 flex gap-3 bg-white p-4 rounded-lg shadow-sm border">
       <Input
         value={newMessage}
         onChange={handleInputChange}
         placeholder="Type your message..."
         disabled={disabled || sending}
-        className="flex-1 border-slate-200 focus:border-blue-500 focus:ring-blue-500 text-sm sm:text-base"
+        className="flex-1 border-slate-200 focus:border-blue-500 focus:ring-blue-500"
         onBlur={stopTyping}
       />
       <Button 
         type="submit" 
         disabled={!newMessage.trim() || disabled || sending}
-        className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 px-4 sm:px-6 min-w-[44px]"
+        className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 px-6"
       >
         {sending ? (
           <div className="h-4 w-4 border-t-2 border-r-2 border-white rounded-full animate-spin" />

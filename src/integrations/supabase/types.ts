@@ -156,89 +156,6 @@ export type Database = {
         }
         Relationships: []
       }
-      premium_ad_prices: {
-        Row: {
-          ad_type: Database["public"]["Enums"]["premium_ad_type"]
-          created_at: string
-          currency: string | null
-          description: string | null
-          duration_days: number
-          id: string
-          price: number
-          updated_at: string
-        }
-        Insert: {
-          ad_type: Database["public"]["Enums"]["premium_ad_type"]
-          created_at?: string
-          currency?: string | null
-          description?: string | null
-          duration_days: number
-          id?: string
-          price: number
-          updated_at?: string
-        }
-        Update: {
-          ad_type?: Database["public"]["Enums"]["premium_ad_type"]
-          created_at?: string
-          currency?: string | null
-          description?: string | null
-          duration_days?: number
-          id?: string
-          price?: number
-          updated_at?: string
-        }
-        Relationships: []
-      }
-      premium_ads: {
-        Row: {
-          ad_type: Database["public"]["Enums"]["premium_ad_type"]
-          amount: number
-          created_at: string
-          currency: string | null
-          expires_at: string
-          id: string
-          payment_reference: string | null
-          product_id: string
-          status: string | null
-          updated_at: string
-          user_id: string
-        }
-        Insert: {
-          ad_type: Database["public"]["Enums"]["premium_ad_type"]
-          amount: number
-          created_at?: string
-          currency?: string | null
-          expires_at: string
-          id?: string
-          payment_reference?: string | null
-          product_id: string
-          status?: string | null
-          updated_at?: string
-          user_id: string
-        }
-        Update: {
-          ad_type?: Database["public"]["Enums"]["premium_ad_type"]
-          amount?: number
-          created_at?: string
-          currency?: string | null
-          expires_at?: string
-          id?: string
-          payment_reference?: string | null
-          product_id?: string
-          status?: string | null
-          updated_at?: string
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "premium_ads_product_id_fkey"
-            columns: ["product_id"]
-            isOneToOne: false
-            referencedRelation: "products"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       product_images: {
         Row: {
           created_at: string
@@ -329,11 +246,7 @@ export type Database = {
           is_sold: boolean | null
           location: string | null
           price: number
-          rejection_reason: string | null
-          reviewed_at: string | null
-          reviewed_by: string | null
           seller_id: string | null
-          status: Database["public"]["Enums"]["product_status"] | null
           title: string
           updated_at: string
           user_id: string
@@ -347,11 +260,7 @@ export type Database = {
           is_sold?: boolean | null
           location?: string | null
           price: number
-          rejection_reason?: string | null
-          reviewed_at?: string | null
-          reviewed_by?: string | null
           seller_id?: string | null
-          status?: Database["public"]["Enums"]["product_status"] | null
           title: string
           updated_at?: string
           user_id: string
@@ -365,11 +274,7 @@ export type Database = {
           is_sold?: boolean | null
           location?: string | null
           price?: number
-          rejection_reason?: string | null
-          reviewed_at?: string | null
-          reviewed_by?: string | null
           seller_id?: string | null
-          status?: Database["public"]["Enums"]["product_status"] | null
           title?: string
           updated_at?: string
           user_id?: string
@@ -433,123 +338,6 @@ export type Database = {
         }
         Relationships: []
       }
-      reports: {
-        Row: {
-          created_at: string
-          description: string | null
-          id: string
-          report_type: Database["public"]["Enums"]["report_type"]
-          reported_product_id: string | null
-          reported_user_id: string | null
-          reporter_id: string
-          reviewed_at: string | null
-          reviewed_by: string | null
-          status: Database["public"]["Enums"]["report_status"]
-          updated_at: string
-        }
-        Insert: {
-          created_at?: string
-          description?: string | null
-          id?: string
-          report_type: Database["public"]["Enums"]["report_type"]
-          reported_product_id?: string | null
-          reported_user_id?: string | null
-          reporter_id: string
-          reviewed_at?: string | null
-          reviewed_by?: string | null
-          status?: Database["public"]["Enums"]["report_status"]
-          updated_at?: string
-        }
-        Update: {
-          created_at?: string
-          description?: string | null
-          id?: string
-          report_type?: Database["public"]["Enums"]["report_type"]
-          reported_product_id?: string | null
-          reported_user_id?: string | null
-          reporter_id?: string
-          reviewed_at?: string | null
-          reviewed_by?: string | null
-          status?: Database["public"]["Enums"]["report_status"]
-          updated_at?: string
-        }
-        Relationships: []
-      }
-      user_bans: {
-        Row: {
-          banned_at: string
-          banned_by: string
-          expires_at: string | null
-          id: string
-          is_permanent: boolean
-          reason: string | null
-          user_id: string
-        }
-        Insert: {
-          banned_at?: string
-          banned_by: string
-          expires_at?: string | null
-          id?: string
-          is_permanent?: boolean
-          reason?: string | null
-          user_id: string
-        }
-        Update: {
-          banned_at?: string
-          banned_by?: string
-          expires_at?: string | null
-          id?: string
-          is_permanent?: boolean
-          reason?: string | null
-          user_id?: string
-        }
-        Relationships: []
-      }
-      user_blocks: {
-        Row: {
-          blocked_id: string
-          blocker_id: string
-          created_at: string
-          id: string
-        }
-        Insert: {
-          blocked_id: string
-          blocker_id: string
-          created_at?: string
-          id?: string
-        }
-        Update: {
-          blocked_id?: string
-          blocker_id?: string
-          created_at?: string
-          id?: string
-        }
-        Relationships: []
-      }
-      user_roles: {
-        Row: {
-          created_at: string
-          id: string
-          role: Database["public"]["Enums"]["app_role"]
-          updated_at: string
-          user_id: string
-        }
-        Insert: {
-          created_at?: string
-          id?: string
-          role?: Database["public"]["Enums"]["app_role"]
-          updated_at?: string
-          user_id: string
-        }
-        Update: {
-          created_at?: string
-          id?: string
-          role?: Database["public"]["Enums"]["app_role"]
-          updated_at?: string
-          user_id?: string
-        }
-        Relationships: []
-      }
     }
     Views: {
       [_ in never]: never
@@ -565,31 +353,6 @@ export type Database = {
           user_id: string
         }[]
       }
-      get_premium_ad_info: {
-        Args: { product_uuid: string }
-        Returns: {
-          ad_type: Database["public"]["Enums"]["premium_ad_type"]
-          expires_at: string
-        }[]
-      }
-      has_active_premium_ad: {
-        Args: {
-          product_uuid: string
-          ad_type_filter?: Database["public"]["Enums"]["premium_ad_type"]
-        }
-        Returns: boolean
-      }
-      has_role: {
-        Args: {
-          _user_id: string
-          _role: Database["public"]["Enums"]["app_role"]
-        }
-        Returns: boolean
-      }
-      is_admin: {
-        Args: Record<PropertyKey, never>
-        Returns: boolean
-      }
       is_conversation_participant: {
         Args: { conversation_uuid: string; user_uuid: string }
         Returns: boolean
@@ -598,30 +361,9 @@ export type Database = {
         Args: { p_user_id: string }
         Returns: boolean
       }
-      is_user_banned: {
-        Args: { user_uuid: string }
-        Returns: boolean
-      }
-      is_user_blocked: {
-        Args: { blocker_uuid: string; blocked_uuid: string }
-        Returns: boolean
-      }
-      make_user_admin: {
-        Args: { _user_id: string }
-        Returns: undefined
-      }
     }
     Enums: {
-      app_role: "admin" | "moderator" | "user"
-      premium_ad_type: "featured" | "bump" | "vip" | "spotlight"
-      product_status: "pending" | "approved" | "rejected" | "flagged"
-      report_status: "pending" | "reviewed" | "resolved" | "dismissed"
-      report_type:
-        | "inappropriate_content"
-        | "spam"
-        | "harassment"
-        | "fraud"
-        | "other"
+      [_ in never]: never
     }
     CompositeTypes: {
       [_ in never]: never
@@ -736,18 +478,6 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {
-      app_role: ["admin", "moderator", "user"],
-      premium_ad_type: ["featured", "bump", "vip", "spotlight"],
-      product_status: ["pending", "approved", "rejected", "flagged"],
-      report_status: ["pending", "reviewed", "resolved", "dismissed"],
-      report_type: [
-        "inappropriate_content",
-        "spam",
-        "harassment",
-        "fraud",
-        "other",
-      ],
-    },
+    Enums: {},
   },
 } as const

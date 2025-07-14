@@ -104,18 +104,18 @@ export default function PhoneVerificationCard() {
 
   return (
     <Card className="shadow-lg border-slate-200 bg-white">
-      <CardHeader className="bg-gradient-to-r from-slate-50 to-blue-50 rounded-t-lg p-4 sm:p-6">
+      <CardHeader className="bg-gradient-to-r from-slate-50 to-blue-50 rounded-t-lg">
         <div className="flex items-center gap-3">
           <div className="p-1.5 bg-gradient-to-r from-green-500 to-blue-500 rounded-md">
             <Phone className="h-4 w-4 text-white" />
           </div>
-          <CardTitle className="text-slate-800 text-lg sm:text-xl">Phone Verification</CardTitle>
+          <CardTitle className="text-slate-800">Phone Verification</CardTitle>
         </div>
-        <CardDescription className="text-sm sm:text-base">
+        <CardDescription>
           Verify your phone number for enhanced security
         </CardDescription>
       </CardHeader>
-      <CardContent className="space-y-4 sm:space-y-6 p-4 sm:p-6">
+      <CardContent className="space-y-6 pt-6">
         {!isVerified ? (
           <>
             <div className="space-y-2">
@@ -139,39 +139,37 @@ export default function PhoneVerificationCard() {
                 {isVerifying ? 'Sending...' : 'Send Verification Code'}
               </Button>
             ) : (
-                <div className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="code">Verification Code</Label>
-                    <Input
-                      id="code"
-                      type="text"
-                      placeholder="Enter 4-digit code"
-                      value={verificationCode}
-                      onChange={(e) => setVerificationCode(e.target.value)}
-                      maxLength={4}
-                      className="text-center text-lg font-mono tracking-wider"
-                    />
-                  </div>
-                  <div className="flex flex-col sm:flex-row gap-2">
-                    <Button 
-                      onClick={verifyCode}
-                      disabled={isVerifying || !verificationCode}
-                      className="flex-1 order-1"
-                    >
-                      {isVerifying ? 'Verifying...' : 'Verify Code'}
-                    </Button>
-                    <Button 
-                      variant="outline"
-                      onClick={() => {
-                        setCodeSent(false);
-                        setVerificationCode('');
-                      }}
-                      className="order-2 sm:order-2"
-                    >
-                      Change Number
-                    </Button>
-                  </div>
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="code">Verification Code</Label>
+                  <Input
+                    id="code"
+                    type="text"
+                    placeholder="Enter 4-digit code"
+                    value={verificationCode}
+                    onChange={(e) => setVerificationCode(e.target.value)}
+                    maxLength={4}
+                  />
                 </div>
+                <div className="flex space-x-2">
+                  <Button 
+                    onClick={verifyCode}
+                    disabled={isVerifying || !verificationCode}
+                    className="flex-1"
+                  >
+                    {isVerifying ? 'Verifying...' : 'Verify Code'}
+                  </Button>
+                  <Button 
+                    variant="outline"
+                    onClick={() => {
+                      setCodeSent(false);
+                      setVerificationCode('');
+                    }}
+                  >
+                    Change Number
+                  </Button>
+                </div>
+              </div>
             )}
           </>
         ) : (

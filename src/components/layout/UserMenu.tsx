@@ -16,12 +16,10 @@ import {
   LogOut, 
   MessageSquare, 
   Settings, 
-  User,
-  Shield
+  User
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { useAdminAccess } from '@/hooks/useAdminAccess';
 
 interface UserMenuProps {
   unreadNotifications: number;
@@ -33,7 +31,6 @@ export const UserMenu = ({ unreadNotifications, onLogin, onRegister }: UserMenuP
   const { user, isAuthenticated, logout } = useAuth();
   const navigate = useNavigate();
   const isMobile = useIsMobile();
-  const { isAdmin } = useAdminAccess();
 
   const getInitials = (name: string) => {
     return name
@@ -94,12 +91,6 @@ export const UserMenu = ({ unreadNotifications, onLogin, onRegister }: UserMenuP
             <Settings className="mr-2 h-4 w-4" />
             Settings
           </DropdownMenuItem>
-          {isAdmin && (
-            <DropdownMenuItem onClick={() => navigate('/admin')} className="text-sm">
-              <Shield className="mr-2 h-4 w-4" />
-              Admin Dashboard
-            </DropdownMenuItem>
-          )}
           <DropdownMenuSeparator />
           <DropdownMenuItem onClick={logout} className="text-sm">
             <LogOut className="mr-2 h-4 w-4" />

@@ -9,7 +9,6 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { createOrFindConversation } from '@/utils/conversationUtils';
-import { PremiumAdBadge } from './PremiumAdBadge';
 
 interface ProductCardProps {
   product: Product;
@@ -98,14 +97,9 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
             <span className="text-muted-foreground text-sm">No image</span>
           </div>
         )}
-        <div className="absolute top-2 right-2 flex flex-col gap-1 items-end">
-          {product.premiumAdType && (
-            <PremiumAdBadge adType={product.premiumAdType} />
-          )}
-          <Badge className="bg-marketplace-accent">
-            ${product.price.toFixed(2)}
-          </Badge>
-        </div>
+        <Badge className="absolute top-2 right-2 bg-marketplace-accent">
+          ${product.price.toFixed(2)}
+        </Badge>
       </div>
       <CardContent className="p-4">
         <div className="flex justify-between items-start mb-2">

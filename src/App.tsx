@@ -6,7 +6,6 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { PushNotificationManager } from "@/components/notifications/PushNotificationManager";
-import { InstallPrompt } from "@/components/pwa/InstallPrompt";
 import Index from "./pages/Index";
 import ProductsPage from "./pages/ProductsPage";
 import ProductDetailPage from "./pages/ProductDetailPage";
@@ -21,7 +20,6 @@ import MessagesPage from "./pages/MessagesPage";
 import ConversationPage from "./pages/ConversationPage";
 import NotificationsPage from "./pages/NotificationsPage";
 import SettingsPage from "./pages/SettingsPage";
-import AdminDashboardPage from "./pages/AdminDashboardPage";
 import HelpPage from "./pages/HelpPage";
 import SafetyPage from "./pages/SafetyPage";
 import ContactPage from "./pages/ContactPage";
@@ -50,7 +48,6 @@ const AppRoutes = () => (
     <Route path="/conversation/:id" element={<ConversationPage />} />
     <Route path="/notifications-page" element={<NotificationsPage />} />
     <Route path="/settings-page" element={<SettingsPage />} />
-    <Route path="/admin" element={<AdminDashboardPage />} />
     <Route path="/help" element={<HelpPage />} />
     <Route path="/safety" element={<SafetyPage />} />
     <Route path="/contact" element={<ContactPage />} />
@@ -71,7 +68,6 @@ function App() {
           <BrowserRouter>
             <AppRoutes />
             <PushNotificationManager />
-            <InstallPrompt />
           </BrowserRouter>
         </TooltipProvider>
       </AuthProvider>
