@@ -50,10 +50,7 @@ export const useSubscriptionPlans = () => {
 
       if (error) throw error;
       if (data) {
-        setPlans(data.map(plan => ({
-          ...plan,
-          status: plan.status as 'active' | 'cancelled' | 'expired' | 'suspended'
-        })));
+        setPlans(data);
       }
     } catch (error) {
       console.error('Error fetching plans:', error);

@@ -6,40 +6,36 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Textarea } from '@/components/ui/textarea';
 import { useUserVerification } from '@/hooks/useUserVerification';
 import { Shield, Phone, FileText, CheckCircle, Clock, XCircle } from 'lucide-react';
 
 export const VerificationCenter = () => {
-  const { loading, submitPhoneVerification, submitIDVerification, getVerificationStatus } = useUserVerification();
-  const [verifications, setVerifications] = useState<any[]>([]);
+  const { verifications, loading, submitVerification, getVerificationStatus, refetch } = useUserVerification();
   const [phoneNumber, setPhoneNumber] = useState('');
   const [documentType, setDocumentType] = useState('');
   const [documentNumber, setDocumentNumber] = useState('');
 
   useEffect(() => {
-    loadVerificationStatus();
+    refetch();
   }, []);
 
-  const loadVerificationStatus = async () => {
-    const status = await getVerificationStatus();
-    setVerifications(status);
-  };
-
   const handlePhoneVerification = async () => {
-    const result = await submitPhoneVerification(phoneNumber);
+    const result = await submitVerification('phone', { phone_number: phoneNumber });
     if (result.success) {
       setPhoneNumber('');
-      loadVerificationStatus();
+      refetch();
     }
   };
 
   const handleIDVerification = async () => {
-    const result = await submitIDVerification(documentType, documentNumber, []);
+    const result = await submitVerification('id_document', { 
+      document_type: documentType, 
+      document_number: documentNumber 
+    });
     if (result.success) {
       setDocumentType('');
       setDocumentNumber('');
-      loadVerificationStatus();
+      refetch();
     }
   };
 
@@ -56,9 +52,12 @@ export const VerificationCenter = () => {
     }
   };
 
-  const getVerificationByType = (type: string) => {
+  const getVerificationByType = (type: 'phone' | 'email' | 'id_document') => {
     return verifications.find(v => v.verification_type === type);
   };
+
+  const phoneVerification = getVerificationByType('phone');
+  const idVerification = getVerificationByType('id_document');
 
   return (
     <div className="space-y-6">
@@ -74,11 +73,11 @@ export const VerificationCenter = () => {
             <CardTitle className="flex items-center space-x-2">
               <Phone className="h-5 w-5" />
               <span>Phone Verification</span>
-              {getVerificationByType('phone') && getStatusBadge(getVerificationByType('phone').status)}
+              {phoneVerification && getStatusBadge(phoneVerification.status)}
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            {!getVerificationByType('phone') || getVerificationByType('phone').status === 'rejected' ? (
+            {!phoneVerification || phoneVerification.status === 'rejected' ? (
               <>
                 <div>
                   <Label htmlFor="phone">Phone Number</Label>
@@ -101,7 +100,7 @@ export const VerificationCenter = () => {
             ) : (
               <div className="text-center py-4">
                 <p className="text-muted-foreground">
-                  {getVerificationByType('phone').status === 'verified' 
+                  {phoneVerification.status === 'verified' 
                     ? 'Your phone number has been verified!' 
                     : 'Phone verification is under review.'}
                 </p>
@@ -116,11 +115,11 @@ export const VerificationCenter = () => {
             <CardTitle className="flex items-center space-x-2">
               <FileText className="h-5 w-5" />
               <span>ID Verification</span>
-              {getVerificationByType('id_document') && getStatusBadge(getVerificationByType('id_document').status)}
+              {idVerification && getStatusBadge(idVerification.status)}
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            {!getVerificationByType('id_document') || getVerificationByType('id_document').status === 'rejected' ? (
+            {!idVerification || idVerification.status === 'rejected' ? (
               <>
                 <div>
                   <Label htmlFor="docType">Document Type</Label>
@@ -156,7 +155,7 @@ export const VerificationCenter = () => {
             ) : (
               <div className="text-center py-4">
                 <p className="text-muted-foreground">
-                  {getVerificationByType('id_document').status === 'verified' 
+                  {idVerification.status === 'verified' 
                     ? 'Your ID has been verified!' 
                     : 'ID verification is under review.'}
                 </p>
