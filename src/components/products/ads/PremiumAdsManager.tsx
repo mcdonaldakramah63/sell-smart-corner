@@ -1,9 +1,7 @@
-
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Zap, Star, TrendingUp, ArrowUp } from "lucide-react";
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -16,6 +14,8 @@ interface PremiumAdPrice {
   description: string;
   currency: string;
 }
+
+type PremiumAdType = 'featured' | 'vip' | 'spotlight' | 'bump';
 
 interface PremiumAdsManagerProps {
   productId: string;
@@ -74,7 +74,7 @@ export function PremiumAdsManager({ productId, currentUserId }: PremiumAdsManage
         .insert({
           product_id: productId,
           user_id: currentUserId,
-          ad_type: adType,
+          ad_type: adType as PremiumAdType,
           expires_at: expiresAt.toISOString(),
           amount: price,
           status: 'active'
