@@ -1,9 +1,9 @@
-
 import { useState } from 'react';
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Search, Filter, MapPin, X } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { AdvancedSearchModal } from './AdvancedSearchModal';
 
 interface SearchHeaderProps {
   searchQuery: string;
@@ -14,6 +14,15 @@ interface SearchHeaderProps {
   activeFiltersCount: number;
   onToggleFilters: () => void;
   showFilters: boolean;
+  // Add these new props for advanced search
+  priceRange?: [number, number];
+  setPriceRange?: (range: [number, number]) => void;
+  condition?: string | null;
+  setCondition?: (condition: string | null) => void;
+  selectedCategory?: string | null;
+  setSelectedCategory?: (category: string | null) => void;
+  sortBy?: string;
+  setSortBy?: (sort: string) => void;
 }
 
 export function SearchHeader({
@@ -24,7 +33,15 @@ export function SearchHeader({
   onSearch,
   activeFiltersCount,
   onToggleFilters,
-  showFilters
+  showFilters,
+  priceRange = [0, 5000],
+  setPriceRange = () => {},
+  condition = null,
+  setCondition = () => {},
+  selectedCategory = null,
+  setSelectedCategory = () => {},
+  sortBy = 'newest',
+  setSortBy = () => {}
 }: SearchHeaderProps) {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -74,22 +91,40 @@ export function SearchHeader({
           </Button>
         </div>
 
-        {/* Filter Toggle and Active Filters */}
+        {/* Filter Toggle and Advanced Search */}
         <div className="flex items-center justify-between">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={onToggleFilters}
-            className="flex items-center gap-2"
-          >
-            <Filter className="h-4 w-4" />
-            {showFilters ? 'Hide' : 'Show'} Filters
-            {activeFiltersCount > 0 && (
-              <Badge variant="secondary" className="ml-1">
-                {activeFiltersCount}
-              </Badge>
-            )}
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={onToggleFilters}
+              className="flex items-center gap-2"
+            >
+              <Filter className="h-4 w-4" />
+              {showFilters ? 'Hide' : 'Show'} Filters
+              {activeFiltersCount > 0 && (
+                <Badge variant="secondary" className="ml-1">
+                  {activeFiltersCount}
+                </Badge>
+              )}
+            </Button>
+
+            <AdvancedSearchModal
+              searchQuery={searchQuery}
+              setSearchQuery={setSearchQuery}
+              location={location}
+              setLocation={setLocation}
+              priceRange={priceRange}
+              setPriceRange={setPriceRange}
+              condition={condition}
+              setCondition={setCondition}
+              selectedCategory={selectedCategory}
+              setSelectedCategory={setSelectedCategory}
+              sortBy={sortBy}
+              setSortBy={setSortBy}
+              onApplyFilters={onSearch}
+            />
+          </div>
 
           <div className="text-sm text-muted-foreground">
             Use filters to narrow down your search results

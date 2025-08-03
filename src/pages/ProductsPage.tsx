@@ -102,6 +102,14 @@ const ProductsPage = () => {
           activeFiltersCount={activeFiltersCount}
           onToggleFilters={() => setShowFilters(!showFilters)}
           showFilters={showFilters}
+          priceRange={priceRange}
+          setPriceRange={setPriceRange}
+          condition={condition}
+          setCondition={setCondition}
+          selectedCategory={selectedCategory}
+          setSelectedCategory={setSelectedCategory}
+          sortBy={sortBy}
+          setSortBy={setSortBy}
         />
 
         <div className="flex flex-col lg:flex-row gap-6">
