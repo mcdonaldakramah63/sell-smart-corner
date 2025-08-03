@@ -1,105 +1,79 @@
-
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
-import { 
-  Bell, 
-  LogOut, 
-  Menu, 
-  MessageSquare, 
-  PlusCircle, 
-  User,
-  X,
-  LayoutDashboard
+import {
+  Home,
+  Search,
+  LayoutDashboard,
+  MessageCircle,
+  Plus,
+  BarChart3,
 } from 'lucide-react';
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet"
+import { Button } from "@/components/ui/button"
 import { useAuth } from '@/contexts/AuthContext';
+import { Link } from 'react-router-dom';
+import { cn } from '@/lib/utils';
 
-interface MobileMenuProps {
-  unreadNotifications: number;
-  onLogin: () => void;
-  onRegister: () => void;
-}
+export default function MobileMenu() {
+  const { user } = useAuth();
 
-export const MobileMenu = ({ unreadNotifications, onLogin, onRegister }: MobileMenuProps) => {
-  const { isAuthenticated, logout } = useAuth();
+  const navigationItems = [
+    { name: 'Home', href: '/', icon: Home },
+    { name: 'Browse', href: '/products', icon: Search },
+    ...(user ? [
+      { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
+      { name: 'Messages', href: '/messages', icon: MessageCircle },
+      { name: 'Analytics', href: '/analytics', icon: BarChart3 },
+      { name: 'Sell', href: '/create-product', icon: Plus },
+    ] : []),
+  ];
+
   const [open, setOpen] = useState(false);
-
-  // Handler to close Sheet on nav
-  const handleClose = () => setOpen(false);
-  const handleLogout = () => {
-    logout();
-    handleClose();
-  };
 
   return (
     <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger asChild>
-        <Button variant="ghost" size="icon" className="md:hidden">
-          <Menu />
+        <Button variant="ghost" size="sm" className="px-2">
+          <LayoutDashboard className="h-4 w-4" />
+          <span className="sr-only">Menu</span>
         </Button>
       </SheetTrigger>
-      <SheetContent side="left" className="w-[250px] sm:w-[300px]">
-        <div className="flex flex-col h-full">
-          <div className="flex items-center justify-between py-4">
-            <Link to="/" className="font-bold text-xl text-marketplace-primary" onClick={handleClose}>Used Market</Link>
-            <button onClick={handleClose}><X className="h-4 w-4" /></button>
-          </div>
-          
-          <nav className="flex flex-col space-y-4 mt-8">
-            <Link to="/" className="flex items-center space-x-2 p-2 rounded-md hover:bg-muted" onClick={handleClose}>
-              <span>Home</span>
-            </Link>
-            <Link to="/products" className="flex items-center space-x-2 p-2 rounded-md hover:bg-muted" onClick={handleClose}>
-              <span>All Products</span>
-            </Link>
-            {isAuthenticated && (
-              <>
-                <Link to="/dashboard" className="flex items-center space-x-2 p-2 rounded-md hover:bg-muted" onClick={handleClose}>
-                  <LayoutDashboard className="h-4 w-4" />
-                  <span>Dashboard</span>
-                </Link>
-                <Link to="/create-product" className="flex items-center space-x-2 p-2 rounded-md hover:bg-muted" onClick={handleClose}>
-                  <PlusCircle className="h-4 w-4" />
-                  <span>Sell Something</span>
-                </Link>
-                <Link to="/messages" className="flex items-center space-x-2 p-2 rounded-md hover:bg-muted" onClick={handleClose}>
-                  <MessageSquare className="h-4 w-4" />
-                  <span>Messages</span>
-                </Link>
-                <Link to="/notifications-page" className="flex items-center space-x-2 p-2 rounded-md hover:bg-muted" onClick={handleClose}>
-                  <Bell className="h-4 w-4" />
-                  <span>Notifications</span>
-                  {unreadNotifications > 0 && (
-                    <Badge className="h-5 w-5 text-xs rounded-full p-0 flex items-center justify-center ml-auto bg-marketplace-accent">
-                      {unreadNotifications}
-                    </Badge>
-                  )}
-                </Link>
-                <Link to="/profile" className="flex items-center space-x-2 p-2 rounded-md hover:bg-muted" onClick={handleClose}>
-                  <User className="h-4 w-4" />
-                  <span>Profile</span>
-                </Link>
-                <button 
-                  onClick={handleLogout}
-                  className="flex items-center space-x-2 p-2 rounded-md hover:bg-muted text-left w-full"
-                >
-                  <LogOut className="h-4 w-4" />
-                  <span>Logout</span>
-                </button>
-              </>
-            )}
-          </nav>
-          
-          {!isAuthenticated && (
-            <div className="mt-auto pb-4 pt-6 flex flex-col space-y-2">
-              <Button onClick={() => { onLogin(); handleClose(); }}>Login</Button>
-              <Button variant="outline" onClick={() => { onRegister(); handleClose(); }}>Register</Button>
-            </div>
-          )}
+      <SheetContent side="left" className="p-0">
+        <SheetHeader className="px-8 pb-6 pt-10">
+          <SheetTitle>Menu</SheetTitle>
+          <SheetDescription>
+            Navigate the application
+          </SheetDescription>
+        </SheetHeader>
+        <div className="grid gap-1 text-sm font-medium">
+          {navigationItems.map((item) => (
+            <Button
+              key={item.name}
+              asChild
+              variant="ghost"
+              className="w-full justify-start px-8"
+            >
+              <Link
+                to={item.href}
+                className={cn(
+                  "flex items-center gap-2 py-2",
+                  open && "opacity-100 transition-opacity delay-[600ms]"
+                )}
+                onClick={() => setOpen(false)}
+              >
+                <item.icon className="h-4 w-4" />
+                {item.name}
+              </Link>
+            </Button>
+          ))}
         </div>
       </SheetContent>
     </Sheet>
-  );
-};
+  )
+}
