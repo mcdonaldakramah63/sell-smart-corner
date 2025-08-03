@@ -37,7 +37,13 @@ export const useSavedSearches = () => {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setSavedSearches(data || []);
+      
+      if (data) {
+        setSavedSearches(data.map(item => ({
+          ...item,
+          alert_frequency: item.alert_frequency as 'immediate' | 'daily' | 'weekly'
+        })));
+      }
     } catch (error) {
       console.error('Error fetching saved searches:', error);
     } finally {
@@ -54,14 +60,29 @@ export const useSavedSearches = () => {
         .from('saved_searches')
         .insert({
           user_id: user.id,
-          ...searchData
+          search_name: searchData.search_name || '',
+          search_query: searchData.search_query,
+          filters: searchData.filters,
+          location_filters: searchData.location_filters,
+          price_range_min: searchData.price_range_min,
+          price_range_max: searchData.price_range_max,
+          category_id: searchData.category_id,
+          alert_enabled: searchData.alert_enabled ?? true,
+          alert_frequency: searchData.alert_frequency || 'daily'
         })
         .select()
         .single();
 
       if (error) throw error;
 
-      setSavedSearches(prev => [data, ...prev]);
+      if (data) {
+        const formattedData = {
+          ...data,
+          alert_frequency: data.alert_frequency as 'immediate' | 'daily' | 'weekly'
+        };
+        setSavedSearches(prev => [formattedData, ...prev]);
+      }
+
       toast({
         title: 'Search saved',
         description: 'Your search has been saved successfully.',
@@ -127,9 +148,15 @@ export const useSavedSearches = () => {
 
       if (error) throw error;
 
-      setSavedSearches(prev => prev.map(search => 
-        search.id === searchId ? data : search
-      ));
+      if (data) {
+        const formattedData = {
+          ...data,
+          alert_frequency: data.alert_frequency as 'immediate' | 'daily' | 'weekly'
+        };
+        setSavedSearches(prev => prev.map(search => 
+          search.id === searchId ? formattedData : search
+        ));
+      }
 
       toast({
         title: 'Alert settings updated',

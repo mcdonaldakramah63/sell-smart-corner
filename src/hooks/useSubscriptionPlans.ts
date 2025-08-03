@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/contexts/AuthContext';
 
 export interface SubscriptionPlan {
   id: string;
@@ -20,13 +21,15 @@ export interface SubscriptionPlan {
 
 export interface UserSubscription {
   id: string;
+  user_id: string;
   plan_id: string;
   status: 'active' | 'cancelled' | 'expired' | 'suspended';
   starts_at: string;
   expires_at: string;
   auto_renewal: boolean;
   payment_reference?: string;
-  plan?: SubscriptionPlan;
+  created_at: string;
+  updated_at: string;
 }
 
 export const useSubscriptionPlans = () => {
@@ -34,8 +37,10 @@ export const useSubscriptionPlans = () => {
   const [userSubscription, setUserSubscription] = useState<UserSubscription | null>(null);
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
+  const { user } = useAuth();
 
   const fetchPlans = async () => {
+    setLoading(true);
     try {
       const { data, error } = await supabase
         .from('subscription_plans')
@@ -44,69 +49,84 @@ export const useSubscriptionPlans = () => {
         .order('price', { ascending: true });
 
       if (error) throw error;
-      setPlans(data || []);
+      if (data) {
+        setPlans(data.map(plan => ({
+          ...plan,
+          status: plan.status as 'active' | 'cancelled' | 'expired' | 'suspended'
+        })));
+      }
     } catch (error) {
-      console.error('Error fetching subscription plans:', error);
+      console.error('Error fetching plans:', error);
+    } finally {
+      setLoading(false);
     }
   };
 
   const fetchUserSubscription = async () => {
+    if (!user?.id) return;
+    
+    setLoading(true);
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-
       const { data, error } = await supabase
         .from('user_subscriptions')
-        .select(`
-          *,
-          plan:subscription_plans(*)
-        `)
+        .select('*')
         .eq('user_id', user.id)
         .eq('status', 'active')
         .single();
 
       if (error && error.code !== 'PGRST116') throw error;
-      setUserSubscription(data);
+      
+      if (data) {
+        setUserSubscription({
+          ...data,
+          status: data.status as 'active' | 'cancelled' | 'expired' | 'suspended'
+        });
+      }
     } catch (error) {
       console.error('Error fetching user subscription:', error);
+    } finally {
+      setLoading(false);
     }
   };
 
-  const subscribe = async (planId: string, paymentReference?: string) => {
+  const subscribeToPlan = async (planId: string, paymentReference?: string) => {
+    if (!user?.id) return { success: false, error: 'User not authenticated' };
+
+    const plan = plans.find(p => p.id === planId);
+    if (!plan) return { success: false, error: 'Plan not found' };
+
     setLoading(true);
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('User not authenticated');
-
-      const plan = plans.find(p => p.id === planId);
-      if (!plan) throw new Error('Plan not found');
-
-      const startDate = new Date();
-      const endDate = new Date(startDate);
-      endDate.setDate(endDate.getDate() + plan.duration_days);
+      const startsAt = new Date();
+      const expiresAt = new Date();
+      expiresAt.setDate(startsAt.getDate() + plan.duration_days);
 
       const { data, error } = await supabase
         .from('user_subscriptions')
         .insert({
           user_id: user.id,
           plan_id: planId,
-          starts_at: startDate.toISOString(),
-          expires_at: endDate.toISOString(),
+          status: 'active',
+          starts_at: startsAt.toISOString(),
+          expires_at: expiresAt.toISOString(),
           payment_reference: paymentReference,
-          status: 'active'
+          auto_renewal: true
         })
-        .select(`
-          *,
-          plan:subscription_plans(*)
-        `)
+        .select()
         .single();
 
       if (error) throw error;
 
-      setUserSubscription(data);
+      if (data) {
+        setUserSubscription({
+          ...data,
+          status: data.status as 'active' | 'cancelled' | 'expired' | 'suspended'
+        });
+      }
+
       toast({
         title: 'Subscription activated',
-        description: `You have successfully subscribed to ${plan.name}.`,
+        description: `You have successfully subscribed to the ${plan.name} plan.`,
       });
 
       return { success: true, data };
@@ -123,61 +143,19 @@ export const useSubscriptionPlans = () => {
     }
   };
 
-  const cancelSubscription = async () => {
-    if (!userSubscription) return { success: false, error: 'No active subscription' };
-
-    setLoading(true);
-    try {
-      const { data, error } = await supabase
-        .from('user_subscriptions')
-        .update({
-          status: 'cancelled',
-          auto_renewal: false,
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', userSubscription.id)
-        .select(`
-          *,
-          plan:subscription_plans(*)
-        `)
-        .single();
-
-      if (error) throw error;
-
-      setUserSubscription(data);
-      toast({
-        title: 'Subscription cancelled',
-        description: 'Your subscription has been cancelled.',
-      });
-
-      return { success: true, data };
-    } catch (error) {
-      console.error('Error cancelling subscription:', error);
-      toast({
-        title: 'Cancellation failed',
-        description: 'Failed to cancel subscription.',
-        variant: 'destructive',
-      });
-      return { success: false, error };
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
     fetchPlans();
-    fetchUserSubscription();
-  }, []);
+    if (user?.id) {
+      fetchUserSubscription();
+    }
+  }, [user?.id]);
 
   return {
     plans,
     userSubscription,
     loading,
-    subscribe,
-    cancelSubscription,
-    refetch: () => {
-      fetchPlans();
-      fetchUserSubscription();
-    }
+    subscribeToPlan,
+    refetchPlans: fetchPlans,
+    refetchUserSubscription: fetchUserSubscription
   };
 };

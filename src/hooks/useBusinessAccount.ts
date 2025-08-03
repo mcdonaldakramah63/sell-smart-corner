@@ -37,7 +37,13 @@ export const useBusinessAccount = () => {
         .single();
 
       if (error && error.code !== 'PGRST116') throw error;
-      setBusinessAccount(data);
+      
+      if (data) {
+        setBusinessAccount({
+          ...data,
+          verification_status: data.verification_status as 'pending' | 'verified' | 'rejected'
+        });
+      }
     } catch (error) {
       console.error('Error fetching business account:', error);
     } finally {
@@ -54,14 +60,29 @@ export const useBusinessAccount = () => {
         .from('business_accounts')
         .insert({
           user_id: user.id,
-          ...accountData
+          business_name: accountData.business_name || '',
+          business_type: accountData.business_type || '',
+          registration_number: accountData.registration_number,
+          tax_id: accountData.tax_id,
+          business_address: accountData.business_address,
+          business_phone: accountData.business_phone,
+          business_email: accountData.business_email,
+          website_url: accountData.website_url,
+          verification_status: accountData.verification_status || 'pending',
+          subscription_plan: accountData.subscription_plan || 'basic'
         })
         .select()
         .single();
 
       if (error) throw error;
 
-      setBusinessAccount(data);
+      if (data) {
+        setBusinessAccount({
+          ...data,
+          verification_status: data.verification_status as 'pending' | 'verified' | 'rejected'
+        });
+      }
+
       toast({
         title: 'Business account created',
         description: 'Your business account has been created successfully.',
@@ -89,7 +110,16 @@ export const useBusinessAccount = () => {
       const { data, error } = await supabase
         .from('business_accounts')
         .update({
-          ...accountData,
+          business_name: accountData.business_name,
+          business_type: accountData.business_type,
+          registration_number: accountData.registration_number,
+          tax_id: accountData.tax_id,
+          business_address: accountData.business_address,
+          business_phone: accountData.business_phone,
+          business_email: accountData.business_email,
+          website_url: accountData.website_url,
+          verification_status: accountData.verification_status,
+          subscription_plan: accountData.subscription_plan,
           updated_at: new Date().toISOString()
         })
         .eq('user_id', user.id)
@@ -98,7 +128,13 @@ export const useBusinessAccount = () => {
 
       if (error) throw error;
 
-      setBusinessAccount(data);
+      if (data) {
+        setBusinessAccount({
+          ...data,
+          verification_status: data.verification_status as 'pending' | 'verified' | 'rejected'
+        });
+      }
+
       toast({
         title: 'Business account updated',
         description: 'Your business account has been updated successfully.',

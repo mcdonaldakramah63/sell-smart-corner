@@ -1,101 +1,112 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/contexts/AuthContext';
+
+export interface UserVerification {
+  id: string;
+  verification_type: 'phone' | 'email' | 'id_document';
+  verification_data?: any;
+  status: 'pending' | 'verified' | 'rejected';
+  verified_at?: string;
+  verified_by?: string;
+  created_at: string;
+  updated_at: string;
+}
 
 export const useUserVerification = () => {
+  const [verifications, setVerifications] = useState<UserVerification[]>([]);
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
+  const { user } = useAuth();
 
-  const submitPhoneVerification = async (phoneNumber: string) => {
+  const fetchVerifications = async () => {
+    if (!user?.id) return;
+    
     setLoading(true);
-    try {
-      const { data, error } = await supabase
-        .from('user_verifications')
-        .insert({
-          user_id: (await supabase.auth.getUser()).data.user?.id,
-          verification_type: 'phone',
-          verification_data: { phone_number: phoneNumber },
-          status: 'pending'
-        });
-
-      if (error) throw error;
-
-      toast({
-        title: 'Phone verification submitted',
-        description: 'Your phone verification request has been submitted for review.',
-      });
-
-      return { success: true };
-    } catch (error) {
-      console.error('Phone verification error:', error);
-      toast({
-        title: 'Verification failed',
-        description: 'Failed to submit phone verification request.',
-        variant: 'destructive',
-      });
-      return { success: false, error };
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const submitIDVerification = async (documentType: string, documentNumber: string, documentImages: string[]) => {
-    setLoading(true);
-    try {
-      const { data, error } = await supabase
-        .from('user_verifications')
-        .insert({
-          user_id: (await supabase.auth.getUser()).data.user?.id,
-          verification_type: 'id_document',
-          verification_data: { 
-            document_type: documentType,
-            document_number: documentNumber,
-            document_images: documentImages
-          },
-          status: 'pending'
-        });
-
-      if (error) throw error;
-
-      toast({
-        title: 'ID verification submitted',
-        description: 'Your ID verification has been submitted for review.',
-      });
-
-      return { success: true };
-    } catch (error) {
-      console.error('ID verification error:', error);
-      toast({
-        title: 'Verification failed',
-        description: 'Failed to submit ID verification request.',
-        variant: 'destructive',
-      });
-      return { success: false, error };
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const getVerificationStatus = async () => {
     try {
       const { data, error } = await supabase
         .from('user_verifications')
         .select('*')
-        .eq('user_id', (await supabase.auth.getUser()).data.user?.id);
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false });
 
       if (error) throw error;
-      return data;
+      
+      if (data) {
+        setVerifications(data.map(item => ({
+          ...item,
+          verification_type: item.verification_type as 'phone' | 'email' | 'id_document',
+          status: item.status as 'pending' | 'verified' | 'rejected'
+        })));
+      }
     } catch (error) {
-      console.error('Error fetching verification status:', error);
-      return [];
+      console.error('Error fetching verifications:', error);
+    } finally {
+      setLoading(false);
     }
   };
 
+  const submitVerification = async (verificationType: 'phone' | 'email' | 'id_document', verificationData?: any) => {
+    if (!user?.id) return { success: false, error: 'User not authenticated' };
+
+    setLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from('user_verifications')
+        .insert({
+          user_id: user.id,
+          verification_type: verificationType,
+          verification_data: verificationData,
+          status: 'pending'
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      if (data) {
+        const formattedData = {
+          ...data,
+          verification_type: data.verification_type as 'phone' | 'email' | 'id_document',
+          status: data.status as 'pending' | 'verified' | 'rejected'
+        };
+        setVerifications(prev => [formattedData, ...prev]);
+      }
+
+      toast({
+        title: 'Verification submitted',
+        description: `Your ${verificationType} verification has been submitted for review.`,
+      });
+
+      return { success: true, data };
+    } catch (error) {
+      console.error('Error submitting verification:', error);
+      toast({
+        title: 'Submission failed',
+        description: 'Failed to submit verification.',
+        variant: 'destructive',
+      });
+      return { success: false, error };
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const getVerificationStatus = (verificationType: 'phone' | 'email' | 'id_document') => {
+    return verifications.find(v => v.verification_type === verificationType)?.status || null;
+  };
+
+  useEffect(() => {
+    fetchVerifications();
+  }, [user?.id]);
+
   return {
+    verifications,
     loading,
-    submitPhoneVerification,
-    submitIDVerification,
-    getVerificationStatus
+    submitVerification,
+    getVerificationStatus,
+    refetch: fetchVerifications
   };
 };
