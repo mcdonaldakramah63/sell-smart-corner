@@ -1,87 +1,58 @@
-
-import React from 'react';
-import { Link, useLocation } from 'react-router-dom';
-import { cn } from '@/lib/utils';
-import { 
-  Home, 
-  Search, 
-  Plus, 
-  MessageSquare, 
-  User, 
-  Settings,
-  Shield,
-  Building2
-} from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
+import { hasRole } from '@/utils/auth';
+import { hasBusinessAccount } from '@/utils/business';
+import { Shield, Search } from 'lucide-react';
 
 const DesktopNavigation = () => {
-  const location = useLocation();
   const { user } = useAuth();
-
-  const isActive = (path: string) => location.pathname === path;
-
-  const navItems = [
-    { href: '/', label: 'Home', icon: Home },
-    { href: '/products', label: 'Browse', icon: Search },
-    { href: '/create-product', label: 'Sell', icon: Plus, requiresAuth: true },
-    { href: '/messages', label: 'Messages', icon: MessageSquare, requiresAuth: true },
-  ];
-
-  const userNavItems = [
-    { href: '/profile', label: 'Profile', icon: User },
-    { href: '/business', label: 'Business', icon: Building2 },
-    { href: '/admin', label: 'Admin', icon: Shield, adminOnly: true },
-    { href: '/settings', label: 'Settings', icon: Settings },
-  ];
+  
+  const isAdmin = user && hasRole(user.id, 'admin');
+  const isBusiness = user && hasBusinessAccount(user.id);
 
   return (
-    <nav className="hidden md:flex items-center space-x-6">
-      {/* Main Navigation */}
-      {navItems.map((item) => {
-        if (item.requiresAuth && !user) return null;
-        
-        const Icon = item.icon;
-        return (
-          <Link
-            key={item.href}
-            to={item.href}
-            className={cn(
-              "flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-colors",
-              isActive(item.href)
-                ? "bg-primary text-primary-foreground"
-                : "text-muted-foreground hover:text-foreground hover:bg-accent"
-            )}
-          >
-            <Icon className="h-4 w-4" />
-            <span>{item.label}</span>
-          </Link>
-        );
-      })}
+    <nav className="flex items-center space-x-1">
+      <Button variant="ghost" asChild>
+        <Link to="/products">Browse</Link>
+      </Button>
+      
+      <Button variant="ghost" asChild>
+        <Link to="/search">
+          <Search className="h-4 w-4 mr-2" />
+          Advanced Search
+        </Link>
+      </Button>
 
-      {/* User Navigation */}
       {user && (
-        <div className="flex items-center space-x-4 pl-4 border-l border-border">
-          {userNavItems.map((item) => {
-            if (item.adminOnly && !user) return null; // Add role check here later
-            
-            const Icon = item.icon;
-            return (
-              <Link
-                key={item.href}
-                to={item.href}
-                className={cn(
-                  "flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-colors",
-                  isActive(item.href)
-                    ? "bg-primary text-primary-foreground"
-                    : "text-muted-foreground hover:text-foreground hover:bg-accent"
-                )}
-              >
-                <Icon className="h-4 w-4" />
-                <span>{item.label}</span>
-              </Link>
-            );
-          })}
-        </div>
+        <>
+          <Button variant="ghost" asChild>
+            <Link to="/dashboard">Dashboard</Link>
+          </Button>
+          
+          <Button variant="ghost" asChild>
+            <Link to="/messages">Messages</Link>
+          </Button>
+
+          <Button variant="ghost" asChild>
+            <Link to="/security">
+              <Shield className="h-4 w-4 mr-2" />
+              Security
+            </Link>
+          </Button>
+
+          {isBusiness && (
+            <Button variant="ghost" asChild>
+              <Link to="/business">Business</Link>
+            </Button>
+          )}
+
+          {isAdmin && (
+            <Button variant="ghost" asChild>
+              <Link to="/admin">Admin</Link>
+            </Button>
+          )}
+        </>
       )}
     </nav>
   );

@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -29,6 +28,8 @@ import UpdatePasswordPage from "./pages/UpdatePasswordPage";
 import SavedSearchesPage from "./pages/SavedSearchesPage";
 import AnalyticsPage from "./pages/AnalyticsPage";
 import NotFound from "./pages/NotFound";
+import AdvancedSearchPage from "./pages/AdvancedSearchPage";
+import SecurityPage from "./pages/SecurityPage";
 
 const App = () => (
   <TooltipProvider>
@@ -61,6 +62,8 @@ const App = () => (
           <Route path="/update-password" element={<UpdatePasswordPage />} />
           <Route path="/saved-searches" element={<SavedSearchesPage />} />
           <Route path="/analytics" element={<AnalyticsPage />} />
+          <Route path="/search" element={<AdvancedSearchPage />} />
+          <Route path="/security" element={<SecurityPage />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
