@@ -5,22 +5,32 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Search, Plus, Menu, X } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
-import UserMenu from './UserMenu';
+import { UserMenu } from './UserMenu';
 import MobileMenu from './MobileMenu';
 import DesktopNavigation from './DesktopNavigation';
 import { NotificationCenter } from '@/components/notifications/NotificationCenter';
+import { useRealTimeNotifications } from '@/hooks/useRealTimeNotifications';
 
 const Header = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { user, isAuthenticated } = useAuth();
   const navigate = useNavigate();
+  const { unreadCount } = useRealTimeNotifications();
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (searchQuery.trim()) {
       navigate(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
     }
+  };
+
+  const handleLogin = () => {
+    navigate('/auth');
+  };
+
+  const handleRegister = () => {
+    navigate('/auth');
   };
 
   return (
@@ -86,7 +96,11 @@ const Header = () => {
                 </Button>
 
                 {/* User Menu */}
-                <UserMenu />
+                <UserMenu 
+                  unreadNotifications={unreadCount}
+                  onLogin={handleLogin}
+                  onRegister={handleRegister}
+                />
               </>
             ) : (
               <div className="hidden sm:flex items-center space-x-2">
@@ -137,7 +151,7 @@ const Header = () => {
 
       {/* Mobile Menu */}
       {isMobileMenuOpen && (
-        <MobileMenu onClose={() => setIsMobileMenuOpen(false)} />
+        <MobileMenu />
       )}
     </header>
   );

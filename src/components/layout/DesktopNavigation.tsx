@@ -1,15 +1,29 @@
+
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
+import { Shield, Search } from 'lucide-react';
+import { useState, useEffect } from 'react';
 import { hasRole } from '@/utils/auth';
 import { hasBusinessAccount } from '@/utils/business';
-import { Shield, Search } from 'lucide-react';
 
 const DesktopNavigation = () => {
   const { user } = useAuth();
-  
-  const isAdmin = user && hasRole(user.id, 'admin');
-  const isBusiness = user && hasBusinessAccount(user.id);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [isBusiness, setIsBusiness] = useState(false);
+
+  useEffect(() => {
+    const checkUserRoles = async () => {
+      if (user?.id) {
+        const adminCheck = await hasRole(user.id, 'admin');
+        const businessCheck = await hasBusinessAccount(user.id);
+        setIsAdmin(adminCheck);
+        setIsBusiness(businessCheck);
+      }
+    };
+
+    checkUserRoles();
+  }, [user?.id]);
 
   return (
     <nav className="flex items-center space-x-1">

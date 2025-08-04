@@ -22,6 +22,15 @@ interface TrustedDevice {
   is_current: boolean;
 }
 
+interface DeviceInfo {
+  userAgent?: string;
+  fingerprint?: string;
+  eventType?: string;
+  deviceName?: string;
+  trusted?: boolean;
+  details?: any;
+}
+
 export const useSecurityFeatures = () => {
   const [securityEvents, setSecurityEvents] = useState<SecurityEvent[]>([]);
   const [trustedDevices, setTrustedDevices] = useState<TrustedDevice[]>([]);
@@ -91,15 +100,18 @@ export const useSecurityFeatures = () => {
 
       if (error) throw error;
       
-      const events: SecurityEvent[] = (data || []).map(session => ({
-        id: session.id,
-        user_id: session.user_id,
-        event_type: session.device_info?.eventType || 'login',
-        ip_address: session.ip_address,
-        user_agent: session.device_info?.userAgent,
-        created_at: session.created_at,
-        details: session.device_info?.details
-      }));
+      const events: SecurityEvent[] = (data || []).map(session => {
+        const deviceInfo = session.device_info as DeviceInfo | null;
+        return {
+          id: session.id,
+          user_id: session.user_id,
+          event_type: deviceInfo?.eventType || 'login',
+          ip_address: session.ip_address || undefined,
+          user_agent: deviceInfo?.userAgent || undefined,
+          created_at: session.created_at,
+          details: deviceInfo?.details || undefined
+        };
+      });
 
       setSecurityEvents(events);
     } catch (error) {

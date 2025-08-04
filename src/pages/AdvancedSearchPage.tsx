@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import Layout from '@/components/layout/Layout';
 import { AdvancedSearchModal } from '@/components/search/AdvancedSearchModal';
-import { ProductGrid } from '@/components/products/ProductGrid';
+import ProductGrid from '@/components/products/ProductGrid';
 import { useAdvancedSearch } from '@/hooks/useAdvancedSearch';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';

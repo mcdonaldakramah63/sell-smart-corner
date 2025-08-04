@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -35,7 +34,7 @@ export const AdvancedSearchModal = ({ onSearch, initialFilters = {} }: AdvancedS
   const [open, setOpen] = useState(false);
   const [filters, setFilters] = useState<AdvancedSearchFilters>(initialFilters);
   const [priceRange, setPriceRange] = useState([filters.priceMin || 0, filters.priceMax || 10000]);
-  const { categories } = useCategories();
+  const { data: categories = [] } = useCategories();
 
   const handleFilterChange = (key: keyof AdvancedSearchFilters, value: any) => {
     setFilters(prev => ({ ...prev, [key]: value }));
