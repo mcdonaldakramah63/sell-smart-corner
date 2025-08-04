@@ -150,14 +150,17 @@ const AdvancedSearchPage = () => {
               title: result.title,
               description: result.description,
               price: result.price,
+              images: result.images.map(img => img.image_url),
+              category: result.category_name || 'Uncategorized',
+              condition: result.condition || 'good',
+              seller: {
+                id: result.user_id,
+                name: result.seller_name || 'Unknown Seller',
+                avatar: result.seller_avatar
+              },
+              createdAt: result.created_at,
               location: result.location,
-              created_at: result.created_at,
-              view_count: result.view_count,
-              user_id: result.user_id,
-              product_images: result.images,
-              premium_ad_type: result.premium_ad_type,
-              seller_rating: result.seller_rating,
-              is_verified_seller: result.is_verified_seller
+              is_sold: result.is_sold
             }))} />
 
             {/* Load More */}

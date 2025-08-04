@@ -4,13 +4,14 @@ import { supabase } from '@/integrations/supabase/client';
 export const hasRole = async (userId: string, role: string): Promise<boolean> => {
   try {
     const { data, error } = await supabase
-      .from('profiles')
+      .from('user_roles')
       .select('role')
-      .eq('id', userId)
+      .eq('user_id', userId)
+      .eq('role', role)
       .single();
 
     if (error) return false;
-    return data?.role === role;
+    return !!data;
   } catch (error) {
     return false;
   }

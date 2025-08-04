@@ -105,11 +105,11 @@ export const useSecurityFeatures = () => {
         return {
           id: session.id,
           user_id: session.user_id,
-          event_type: deviceInfo?.eventType || 'login',
-          ip_address: session.ip_address || undefined,
-          user_agent: deviceInfo?.userAgent || undefined,
+          event_type: (deviceInfo as any)?.eventType || 'login',
+          ip_address: session.ip_address ? String(session.ip_address) : undefined,
+          user_agent: (deviceInfo as any)?.userAgent || undefined,
           created_at: session.created_at,
-          details: deviceInfo?.details || undefined
+          details: (deviceInfo as any)?.details || undefined
         };
       });
 
