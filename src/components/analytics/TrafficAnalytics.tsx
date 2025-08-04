@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
@@ -74,7 +73,7 @@ export default function TrafficAnalytics({ userId }: TrafficAnalyticsProps) {
         analyticsData = analytics || [];
       }
 
-      const totalViews = products?.reduce((sum, p) => sum + (p.view_count || 0), 0) || 0;
+      const totalViews = products?.reduce((sum, p) => sum + (Number(p.view_count) || 0), 0) || 0;
       
       // Calculate unique views (approximate - count unique user_ids)
       const uniqueViewers = new Set(analyticsData.filter(a => a.user_id).map(a => a.user_id));
@@ -122,9 +121,9 @@ export default function TrafficAnalytics({ userId }: TrafficAnalyticsProps) {
         return acc;
       }, {});
 
-      const totalReferrerViews = Object.values(referrerCounts).reduce((sum: number, count) => sum + count, 0);
+      const totalReferrerViews = Object.values(referrerCounts).reduce((sum: number, count: number) => sum + count, 0);
       const topReferrers = Object.entries(referrerCounts)
-        .map(([source, views]) => ({
+        .map(([source, views]: [string, number]) => ({
           source,
           views,
           percentage: totalReferrerViews > 0 ? (views / totalReferrerViews) * 100 : 0,

@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import {
   Home,
@@ -20,7 +21,13 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Link } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 
-export default function MobileMenu() {
+interface MobileMenuProps {
+  unreadNotifications?: number;
+  onLogin?: () => void;
+  onRegister?: () => void;
+}
+
+export default function MobileMenu({ unreadNotifications, onLogin, onRegister }: MobileMenuProps) {
   const { user } = useAuth();
 
   const navigationItems = [

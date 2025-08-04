@@ -1,12 +1,12 @@
+
 import React from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { Toaster } from 'sonner';
 import { AuthProvider } from './contexts/AuthContext';
-import HomePage from './pages/HomePage';
+import Index from './pages/Index';
 import ProductsPage from './pages/ProductsPage';
 import ProductDetailPage from './pages/ProductDetailPage';
 import CreateProductPage from './pages/CreateProductPage';
-import UpdateProductPage from './pages/UpdateProductPage';
 import DashboardPage from './pages/DashboardPage';
 import ProfilePage from './pages/ProfilePage';
 import MessagesPage from './pages/MessagesPage';
@@ -19,11 +19,10 @@ function App() {
       <Toaster />
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<HomePage />} />
+          <Route path="/" element={<Index />} />
           <Route path="/products" element={<ProductsPage />} />
           <Route path="/products/:productId" element={<ProductDetailPage />} />
           <Route path="/create-product" element={<CreateProductPage />} />
-          <Route path="/update-product/:productId" element={<UpdateProductPage />} />
           <Route path="/dashboard" element={<DashboardPage />} />
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/messages" element={<MessagesPage />} />

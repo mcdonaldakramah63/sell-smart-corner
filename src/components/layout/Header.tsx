@@ -1,10 +1,9 @@
-
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
-import { MobileMenu } from './MobileMenu';
-import { DesktopNavigation } from './DesktopNavigation';
+import MobileMenu from './MobileMenu';
+import DesktopNavigation from './DesktopNavigation';
 import { UserMenu } from './UserMenu';
 
 const Header = () => {
