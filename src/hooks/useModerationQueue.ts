@@ -32,7 +32,14 @@ export const useModerationQueue = () => {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setItems(data || []);
+      
+      // Type cast the data to ensure status matches our union type
+      const typedData = (data || []).map(item => ({
+        ...item,
+        status: item.status as 'pending' | 'approved' | 'rejected'
+      }));
+      
+      setItems(typedData);
     } catch (error) {
       console.error('Error fetching moderation queue:', error);
       toast({
