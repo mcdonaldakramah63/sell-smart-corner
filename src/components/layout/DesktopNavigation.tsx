@@ -1,115 +1,90 @@
-import { Home, Search, LayoutDashboard, MessageCircle, Plus, BarChart3 } from 'lucide-react';
-import { Link } from 'react-router-dom';
+
+import React from 'react';
+import { Link, useLocation } from 'react-router-dom';
+import { cn } from '@/lib/utils';
+import { 
+  Home, 
+  Search, 
+  Plus, 
+  MessageSquare, 
+  User, 
+  Settings,
+  Shield,
+  Building2
+} from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
-import { Button } from '@/components/ui/button';
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip"
-import { useEffect, useState } from 'react';
-import { supabase } from '@/integrations/supabase/client';
 
-export default function DesktopNavigation() {
-  const { user, signOut } = useAuth();
-  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+const DesktopNavigation = () => {
+  const location = useLocation();
+  const { user } = useAuth();
 
-  useEffect(() => {
-    if (user?.avatar) {
-      setAvatarUrl(user.avatar);
-    }
-  }, [user?.avatar]);
+  const isActive = (path: string) => location.pathname === path;
 
-  const navigationItems = [
-    { name: 'Home', href: '/', icon: Home },
-    { name: 'Browse', href: '/products', icon: Search },
-    ...(user ? [
-      { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
-      { name: 'Messages', href: '/messages', icon: MessageCircle },
-      { name: 'Analytics', href: '/analytics', icon: BarChart3 },
-      { name: 'Sell', href: '/create-product', icon: Plus },
-    ] : []),
+  const navItems = [
+    { href: '/', label: 'Home', icon: Home },
+    { href: '/products', label: 'Browse', icon: Search },
+    { href: '/create-product', label: 'Sell', icon: Plus, requiresAuth: true },
+    { href: '/messages', label: 'Messages', icon: MessageSquare, requiresAuth: true },
+  ];
+
+  const userNavItems = [
+    { href: '/profile', label: 'Profile', icon: User },
+    { href: '/business', label: 'Business', icon: Building2 },
+    { href: '/admin', label: 'Admin', icon: Shield, adminOnly: true },
+    { href: '/settings', label: 'Settings', icon: Settings },
   ];
 
   return (
-    <div className="hidden lg:flex lg:w-full lg:items-center lg:justify-between">
-      <nav>
-        <ul className="flex items-center gap-6">
-          {navigationItems.map((item) => (
-            <li key={item.name}>
+    <nav className="hidden md:flex items-center space-x-6">
+      {/* Main Navigation */}
+      {navItems.map((item) => {
+        if (item.requiresAuth && !user) return null;
+        
+        const Icon = item.icon;
+        return (
+          <Link
+            key={item.href}
+            to={item.href}
+            className={cn(
+              "flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-colors",
+              isActive(item.href)
+                ? "bg-primary text-primary-foreground"
+                : "text-muted-foreground hover:text-foreground hover:bg-accent"
+            )}
+          >
+            <Icon className="h-4 w-4" />
+            <span>{item.label}</span>
+          </Link>
+        );
+      })}
+
+      {/* User Navigation */}
+      {user && (
+        <div className="flex items-center space-x-4 pl-4 border-l border-border">
+          {userNavItems.map((item) => {
+            if (item.adminOnly && !user) return null; // Add role check here later
+            
+            const Icon = item.icon;
+            return (
               <Link
+                key={item.href}
                 to={item.href}
-                className="flex items-center text-sm font-medium text-muted-foreground hover:text-foreground"
+                className={cn(
+                  "flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-colors",
+                  isActive(item.href)
+                    ? "bg-primary text-primary-foreground"
+                    : "text-muted-foreground hover:text-foreground hover:bg-accent"
+                )}
               >
-                <item.icon className="mr-2 h-4 w-4" />
-                {item.name}
+                <Icon className="h-4 w-4" />
+                <span>{item.label}</span>
               </Link>
-            </li>
-          ))}
-        </ul>
-      </nav>
-      {user ? (
-        <TooltipProvider>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <TooltipProvider delayDuration={50}>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      className="relative h-8 w-8 rounded-full"
-                    >
-                      <Avatar className="h-8 w-8">
-                        {avatarUrl ? (
-                          <AvatarImage src={avatarUrl} alt={user.name || "Avatar"} />
-                        ) : (
-                          <AvatarFallback>{user.name?.charAt(0).toUpperCase() || "U"}</AvatarFallback>
-                        )}
-                      </Avatar>
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent className="bg-white text-black">
-                    {user.name}
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-56" align="end" forceMount>
-              <DropdownMenuLabel>My Account</DropdownMenuLabel>
-              <DropdownMenuItem asChild>
-                <Link to="/profile">Profile</Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild>
-                <Link to="/dashboard">Dashboard</Link>
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={() => signOut()}>
-                Logout
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </TooltipProvider>
-      ) : (
-        <div className="flex items-center gap-4">
-          <Button variant="outline" asChild>
-            <Link to="/login">Log In</Link>
-          </Button>
-          <Button asChild>
-            <Link to="/register">Sign Up</Link>
-          </Button>
+            );
+          })}
         </div>
       )}
-    </div>
+    </nav>
   );
-}
+};
+
+export default DesktopNavigation;

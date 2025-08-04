@@ -58,6 +58,77 @@ export type Database = {
           },
         ]
       }
+      admin_settings: {
+        Row: {
+          created_at: string
+          id: string
+          setting_key: string
+          setting_value: Json
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          setting_key: string
+          setting_value: Json
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          setting_key?: string
+          setting_value?: Json
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      auto_renewal_settings: {
+        Row: {
+          ad_type: Database["public"]["Enums"]["premium_ad_type"]
+          created_at: string
+          current_renewals: number
+          id: string
+          is_enabled: boolean
+          max_renewals: number | null
+          product_id: string
+          renewal_frequency: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          ad_type: Database["public"]["Enums"]["premium_ad_type"]
+          created_at?: string
+          current_renewals?: number
+          id?: string
+          is_enabled?: boolean
+          max_renewals?: number | null
+          product_id: string
+          renewal_frequency?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          ad_type?: Database["public"]["Enums"]["premium_ad_type"]
+          created_at?: string
+          current_renewals?: number
+          id?: string
+          is_enabled?: boolean
+          max_renewals?: number | null
+          product_id?: string
+          renewal_frequency?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "auto_renewal_settings_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       business_accounts: {
         Row: {
           business_address: string | null
@@ -112,6 +183,54 @@ export type Database = {
         }
         Relationships: []
       }
+      business_inventory: {
+        Row: {
+          auto_renewal_enabled: boolean
+          business_id: string
+          created_at: string
+          id: string
+          low_stock_threshold: number
+          product_id: string
+          stock_quantity: number
+          updated_at: string
+        }
+        Insert: {
+          auto_renewal_enabled?: boolean
+          business_id: string
+          created_at?: string
+          id?: string
+          low_stock_threshold?: number
+          product_id: string
+          stock_quantity?: number
+          updated_at?: string
+        }
+        Update: {
+          auto_renewal_enabled?: boolean
+          business_id?: string
+          created_at?: string
+          id?: string
+          low_stock_threshold?: number
+          product_id?: string
+          stock_quantity?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "business_inventory_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "business_accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "business_inventory_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       categories: {
         Row: {
           created_at: string
@@ -133,6 +252,42 @@ export type Database = {
           id?: string
           name?: string
           slug?: string
+        }
+        Relationships: []
+      }
+      cms_pages: {
+        Row: {
+          content: string
+          created_at: string
+          created_by: string
+          id: string
+          is_published: boolean
+          meta_description: string | null
+          slug: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          created_by: string
+          id?: string
+          is_published?: boolean
+          meta_description?: string | null
+          slug: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          created_by?: string
+          id?: string
+          is_published?: boolean
+          meta_description?: string | null
+          slug?: string
+          title?: string
+          updated_at?: string
         }
         Relationships: []
       }
@@ -272,6 +427,48 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      moderation_queue: {
+        Row: {
+          created_at: string
+          id: string
+          item_id: string
+          item_type: string
+          moderator_id: string | null
+          notes: string | null
+          reason: string
+          reporter_id: string | null
+          reviewed_at: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          item_id: string
+          item_type: string
+          moderator_id?: string | null
+          notes?: string | null
+          reason: string
+          reporter_id?: string | null
+          reviewed_at?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          item_id?: string
+          item_type?: string
+          moderator_id?: string | null
+          notes?: string | null
+          reason?: string
+          reporter_id?: string | null
+          reviewed_at?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
       notifications: {
         Row: {
@@ -680,6 +877,45 @@ export type Database = {
           reviewed_by?: string | null
           status?: Database["public"]["Enums"]["report_status"]
           updated_at?: string
+        }
+        Relationships: []
+      }
+      revenue_tracking: {
+        Row: {
+          amount: number
+          created_at: string
+          currency: string
+          id: string
+          payment_reference: string | null
+          premium_ad_id: string | null
+          product_id: string | null
+          subscription_id: string | null
+          transaction_type: string
+          user_id: string | null
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          currency?: string
+          id?: string
+          payment_reference?: string | null
+          premium_ad_id?: string | null
+          product_id?: string | null
+          subscription_id?: string | null
+          transaction_type: string
+          user_id?: string | null
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          currency?: string
+          id?: string
+          payment_reference?: string | null
+          premium_ad_id?: string | null
+          product_id?: string | null
+          subscription_id?: string | null
+          transaction_type?: string
+          user_id?: string | null
         }
         Relationships: []
       }
