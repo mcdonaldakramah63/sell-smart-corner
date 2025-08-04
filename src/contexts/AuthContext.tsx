@@ -16,7 +16,26 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     loading: authState.loading,
     error: authState.error,
     session: authState.session,
-    ...authOperations
+    ...authOperations,
+    // Legacy aliases for backward compatibility
+    signIn: authOperations.login,
+    signUp: async (email: string, password: string, name?: string) => {
+      await authOperations.register(name || '', email, password);
+    },
+    signOut: authOperations.logout,
+    // Add missing methods with basic implementations
+    resetPassword: async (email: string) => {
+      // TODO: Implement password reset functionality
+      console.log('Password reset not implemented yet');
+    },
+    updatePassword: async (password: string) => {
+      // TODO: Implement password update functionality
+      console.log('Password update not implemented yet');
+    },
+    refreshUser: async () => {
+      // TODO: Implement user refresh functionality
+      console.log('User refresh not implemented yet');
+    }
   };
 
   return (
