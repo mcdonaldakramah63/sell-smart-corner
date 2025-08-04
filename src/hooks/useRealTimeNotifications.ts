@@ -158,12 +158,7 @@ export const useRealTimeNotifications = () => {
           // Show toast notification
           toast({
             title: 'New Notification',
-            description: newNotification.content,
-            action: newNotification.action_url ? (
-              <button onClick={() => window.location.href = newNotification.action_url!}>
-                View
-              </button>
-            ) : undefined
+            description: newNotification.content
           });
         }
       )
