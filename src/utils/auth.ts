@@ -7,7 +7,7 @@ export const hasRole = async (userId: string, role: string): Promise<boolean> =>
       .from('user_roles')
       .select('role')
       .eq('user_id', userId)
-      .eq('role', role)
+      .eq('role', role as 'admin' | 'moderator' | 'user')
       .single();
 
     if (error) return false;

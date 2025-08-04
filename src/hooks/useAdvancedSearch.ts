@@ -30,6 +30,10 @@ interface SearchResult {
   view_count: number;
   user_id: string;
   category_id: string;
+  category_name?: string;
+  seller_name?: string;
+  seller_avatar?: string;
+  is_sold?: boolean;
   images: Array<{ image_url: string; is_primary: boolean }>;
   premium_ad_type?: string;
   seller_rating?: number;
@@ -59,9 +63,11 @@ export const useAdvancedSearch = () => {
           view_count,
           user_id,
           category_id,
+          is_sold,
           product_images!inner(image_url, is_primary),
           premium_ads(ad_type, expires_at),
-          profiles!inner(average_rating, verification_level)
+          profiles!inner(average_rating, verification_level, full_name, avatar_url),
+          categories(name)
         `, { count: 'exact' })
         .eq('status', 'approved');
 
@@ -130,10 +136,14 @@ export const useAdvancedSearch = () => {
         view_count: item.view_count || 0,
         user_id: item.user_id,
         category_id: item.category_id || '',
+        category_name: (item.categories as any)?.name,
+        seller_name: (item.profiles as any)?.full_name,
+        seller_avatar: (item.profiles as any)?.avatar_url,
+        is_sold: item.is_sold,
         images: item.product_images || [],
-        premium_ad_type: item.premium_ads?.[0]?.ad_type,
-        seller_rating: item.profiles?.average_rating,
-        is_verified_seller: (item.profiles?.verification_level || 0) > 0
+        premium_ad_type: (item.premium_ads as any)?.[0]?.ad_type,
+        seller_rating: (item.profiles as any)?.average_rating,
+        is_verified_seller: ((item.profiles as any)?.verification_level || 0) > 0
       }));
 
       setResults(transformedResults);

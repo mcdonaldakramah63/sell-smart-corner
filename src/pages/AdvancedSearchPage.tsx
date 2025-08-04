@@ -152,7 +152,7 @@ const AdvancedSearchPage = () => {
               price: result.price,
               images: result.images.map(img => img.image_url),
               category: result.category_name || 'Uncategorized',
-              condition: result.condition || 'good',
+              condition: (result.condition || 'good') as 'new' | 'like-new' | 'good' | 'fair' | 'poor',
               seller: {
                 id: result.user_id,
                 name: result.seller_name || 'Unknown Seller',
@@ -160,7 +160,7 @@ const AdvancedSearchPage = () => {
               },
               createdAt: result.created_at,
               location: result.location,
-              is_sold: result.is_sold
+              is_sold: result.is_sold || false
             }))} />
 
             {/* Load More */}
