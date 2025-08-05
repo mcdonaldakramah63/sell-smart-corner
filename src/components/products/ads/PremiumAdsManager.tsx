@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -79,7 +78,7 @@ export function PremiumAdsManager({ productId, currentUserId }: PremiumAdsManage
           .insert({
             product_id: productId,
             user_id: currentUserId,
-            ad_type: tier.type as any, // Type assertion to handle enum mismatch
+            ad_type: tier.type,
             expires_at: expiresAt.toISOString(),
             amount: tier.price,
             status: 'active'
@@ -130,7 +129,7 @@ export function PremiumAdsManager({ productId, currentUserId }: PremiumAdsManage
         .insert({
           product_id: productId,
           user_id: currentUserId,
-          ad_type: tier.type as any, // Type assertion to handle enum mismatch
+          ad_type: tier.type,
           expires_at: expiresAt.toISOString(),
           amount: 0, // Using package credit
           status: 'active'
