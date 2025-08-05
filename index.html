@@ -3,10 +3,23 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no" />
     <title>Used Market - Buy and Sell Items</title>
     <meta name="description" content="A secure marketplace platform for buying and selling used items" />
     <meta name="author" content="Used Market" />
+
+    <!-- PWA Meta Tags -->
+    <meta name="theme-color" content="#2563eb" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="Used Market" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    
+    <!-- Preconnect for performance -->
+    <link rel="preconnect" href="https://d3616aa2-da41-4916-957d-8d8533d680a4.lovableproject.com" />
+
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="/manifest.json" />
 
     <meta property="og:title" content="Used Market - Buy and Sell Items" />
     <meta property="og:description" content="A secure marketplace platform for buying and selling used items" />
@@ -19,10 +32,71 @@
     
     <link rel="icon" href="/lovable-uploads/4e530486-e6cb-4ca6-8a3f-9658a5975dee.png" type="image/png">
     <link rel="apple-touch-icon" href="/lovable-uploads/4e530486-e6cb-4ca6-8a3f-9658a5975dee.png">
+    <link rel="apple-touch-icon" sizes="152x152" href="/lovable-uploads/4e530486-e6cb-4ca6-8a3f-9658a5975dee.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/lovable-uploads/4e530486-e6cb-4ca6-8a3f-9658a5975dee.png">
+
+    <style>
+      /* Critical CSS for mobile optimization */
+      body {
+        -webkit-tap-highlight-color: transparent;
+        -webkit-touch-callout: none;
+        -webkit-user-select: none;
+        user-select: none;
+      }
+      
+      /* Safe area handling for devices with notches */
+      .safe-area-pb {
+        padding-bottom: env(safe-area-inset-bottom);
+      }
+      
+      .safe-area-pt {
+        padding-top: env(safe-area-inset-top);
+      }
+      
+      /* Prevent zoom on input focus */
+      input, select, textarea {
+        font-size: 16px;
+      }
+      
+      /* Loading screen */
+      #loading-screen {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: #ffffff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 9999;
+      }
+    </style>
   </head>
 
   <body>
+    <div id="loading-screen">
+      <div style="text-align: center;">
+        <img src="/lovable-uploads/4e530486-e6cb-4ca6-8a3f-9658a5975dee.png" alt="Loading..." style="width: 64px; height: 64px; margin-bottom: 16px;">
+        <div style="color: #2563eb; font-weight: 600;">Loading Used Market...</div>
+      </div>
+    </div>
     <div id="root"></div>
+    
+    <!-- Remove loading screen when app loads -->
+    <script>
+      window.addEventListener('DOMContentLoaded', () => {
+        setTimeout(() => {
+          const loadingScreen = document.getElementById('loading-screen');
+          if (loadingScreen) {
+            loadingScreen.style.opacity = '0';
+            loadingScreen.style.transition = 'opacity 0.3s ease-out';
+            setTimeout(() => loadingScreen.remove(), 300);
+          }
+        }, 1000);
+      });
+    </script>
+    
     <!-- IMPORTANT: DO NOT REMOVE THIS SCRIPT TAG OR THIS VERY COMMENT! -->
     <script src="https://cdn.gpteng.co/gptengineer.js" type="module"></script>
     <script type="module" src="/src/main.tsx"></script>

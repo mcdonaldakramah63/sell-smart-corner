@@ -1,0 +1,60 @@
+
+{
+  "name": "Used Market - Buy and Sell Items",
+  "short_name": "Used Market",
+  "description": "A secure marketplace platform for buying and selling used items",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#2563eb",
+  "orientation": "portrait-primary",
+  "categories": ["shopping", "business"],
+  "icons": [
+    {
+      "src": "/lovable-uploads/4e530486-e6cb-4ca6-8a3f-9658a5975dee.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/lovable-uploads/4e530486-e6cb-4ca6-8a3f-9658a5975dee.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable any"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/lovable-uploads/4e530486-e6cb-4ca6-8a3f-9658a5975dee.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "form_factor": "wide"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Browse Products",
+      "short_name": "Browse",
+      "description": "Browse marketplace items",
+      "url": "/products",
+      "icons": [
+        {
+          "src": "/lovable-uploads/4e530486-e6cb-4ca6-8a3f-9658a5975dee.png",
+          "sizes": "96x96"
+        }
+      ]
+    },
+    {
+      "name": "Sell Item",
+      "short_name": "Sell",
+      "description": "Create new listing",
+      "url": "/create-product",
+      "icons": [
+        {
+          "src": "/lovable-uploads/4e530486-e6cb-4ca6-8a3f-9658a5975dee.png",
+          "sizes": "96x96"
+        }
+      ]
+    }
+  ]
+}
