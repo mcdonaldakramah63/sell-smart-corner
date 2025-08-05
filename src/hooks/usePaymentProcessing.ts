@@ -11,7 +11,7 @@ export interface PaymentTransaction {
   currency: string;
   payment_method_id: string;
   status: 'pending' | 'processing' | 'completed' | 'failed' | 'cancelled' | 'refunded';
-  transaction_type: 'subscription' | 'premium_ad' | 'featured_ad' | 'top_ad' | 'urgent_ad';
+  transaction_type: 'subscription' | 'premium_ad' | 'featured_ad' | 'top_ad' | 'urgent_ad' | 'spotlight_ad' | 'vip_ad' | 'bump_ad';
   reference_id?: string;
   external_reference?: string;
   payment_data?: any;
@@ -64,10 +64,11 @@ export const usePaymentProcessing = () => {
 
       if (methodError) throw methodError;
 
-      // Type cast the transaction data
+      // Type cast the transaction data properly
       const typedTransaction: PaymentTransaction = {
         ...transaction,
-        status: transaction.status as PaymentTransaction['status']
+        status: transaction.status as PaymentTransaction['status'],
+        transaction_type: transaction.transaction_type as PaymentTransaction['transaction_type']
       };
 
       // Process based on payment method type

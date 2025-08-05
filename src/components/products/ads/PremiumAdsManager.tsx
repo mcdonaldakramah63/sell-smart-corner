@@ -14,8 +14,6 @@ import { PaymentMethodSelector } from '@/components/payments/PaymentMethodSelect
 import type { PaymentMethod } from '@/hooks/usePaymentMethods';
 import type { PromotionTier } from '@/hooks/usePromotionTiers';
 
-type PremiumAdType = 'featured' | 'vip' | 'spotlight' | 'bump' | 'top' | 'urgent';
-
 interface PremiumAdsManagerProps {
   productId: string;
   currentUserId: string;
@@ -76,16 +74,18 @@ export function PremiumAdsManager({ productId, currentUserId }: PremiumAdsManage
         const expiresAt = new Date();
         expiresAt.setHours(expiresAt.getHours() + tier.duration_hours);
 
-        await supabase
+        const { error: insertError } = await supabase
           .from('premium_ads')
           .insert({
             product_id: productId,
             user_id: currentUserId,
-            ad_type: tier.type,
+            ad_type: tier.type as any, // Type assertion to handle enum mismatch
             expires_at: expiresAt.toISOString(),
             amount: tier.price,
             status: 'active'
           });
+
+        if (insertError) throw insertError;
 
         toast({
           title: "Premium ad activated!",
@@ -125,22 +125,26 @@ export function PremiumAdsManager({ productId, currentUserId }: PremiumAdsManage
       const expiresAt = new Date();
       expiresAt.setHours(expiresAt.getHours() + tier.duration_hours);
 
-      await supabase
+      const { error: insertError } = await supabase
         .from('premium_ads')
         .insert({
           product_id: productId,
           user_id: currentUserId,
-          ad_type: tier.type,
+          ad_type: tier.type as any, // Type assertion to handle enum mismatch
           expires_at: expiresAt.toISOString(),
           amount: 0, // Using package credit
           status: 'active'
         });
 
+      if (insertError) throw insertError;
+
       // Deduct one credit from the package
-      await supabase
+      const { error: updateError } = await supabase
         .from('user_package_purchases')
         .update({ ads_remaining: availablePackage.ads_remaining - 1 })
         .eq('id', availablePackage.id);
+
+      if (updateError) throw updateError;
 
       toast({
         title: "Premium ad activated!",
