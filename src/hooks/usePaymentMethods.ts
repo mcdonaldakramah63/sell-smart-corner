@@ -27,7 +27,14 @@ export const usePaymentMethods = () => {
         .order('name');
 
       if (error) throw error;
-      setPaymentMethods(data || []);
+      
+      // Type cast the data to match our interface
+      const typedData = (data || []).map(method => ({
+        ...method,
+        type: method.type as 'mobile_money' | 'card' | 'bank'
+      }));
+      
+      setPaymentMethods(typedData);
     } catch (error) {
       console.error('Error fetching payment methods:', error);
       toast({

@@ -2,7 +2,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Star, Zap, TrendingUp, ArrowUp, Crown, Spotlight } from "lucide-react";
+import { Star, Zap, TrendingUp, ArrowUp, Crown, Search } from "lucide-react";
 import type { PromotionTier } from '@/hooks/usePromotionTiers';
 
 interface PromotionTierCardProps {
@@ -18,7 +18,7 @@ export function PromotionTierCard({ tier, onPurchase, loading }: PromotionTierCa
       case 'top': return <TrendingUp className="h-5 w-5" />;
       case 'urgent': return <ArrowUp className="h-5 w-5" />;
       case 'vip': return <Crown className="h-5 w-5" />;
-      case 'spotlight': return <Spotlight className="h-5 w-5" />;
+      case 'spotlight': return <Search className="h-5 w-5" />;
       default: return <Zap className="h-5 w-5" />;
     }
   };

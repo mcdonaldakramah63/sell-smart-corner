@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Zap, Star, TrendingUp, ArrowUp, Crown, Spotlight, Package } from "lucide-react";
+import { Zap, Star, TrendingUp, ArrowUp, Crown, Search, Package } from "lucide-react";
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { usePromotionTiers } from '@/hooks/usePromotionTiers';
@@ -81,7 +81,7 @@ export function PremiumAdsManager({ productId, currentUserId }: PremiumAdsManage
           .insert({
             product_id: productId,
             user_id: currentUserId,
-            ad_type: tier.type as PremiumAdType,
+            ad_type: tier.type,
             expires_at: expiresAt.toISOString(),
             amount: tier.price,
             status: 'active'
@@ -130,7 +130,7 @@ export function PremiumAdsManager({ productId, currentUserId }: PremiumAdsManage
         .insert({
           product_id: productId,
           user_id: currentUserId,
-          ad_type: tier.type as PremiumAdType,
+          ad_type: tier.type,
           expires_at: expiresAt.toISOString(),
           amount: 0, // Using package credit
           status: 'active'
@@ -164,7 +164,7 @@ export function PremiumAdsManager({ productId, currentUserId }: PremiumAdsManage
     switch (type) {
       case 'featured': return <Star className="h-4 w-4" />;
       case 'vip': return <Crown className="h-4 w-4" />;
-      case 'spotlight': return <Spotlight className="h-4 w-4" />;
+      case 'spotlight': return <Search className="h-4 w-4" />;
       case 'top': return <TrendingUp className="h-4 w-4" />;
       case 'urgent': return <ArrowUp className="h-4 w-4" />;
       case 'bump': return <Zap className="h-4 w-4" />;

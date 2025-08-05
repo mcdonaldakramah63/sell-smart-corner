@@ -30,7 +30,14 @@ export const usePromotionTiers = () => {
         .order('priority_score', { ascending: false });
 
       if (error) throw error;
-      setPromotionTiers(data || []);
+      
+      // Type cast the data to match our interface
+      const typedData = (data || []).map(tier => ({
+        ...tier,
+        type: tier.type as PromotionTier['type']
+      }));
+      
+      setPromotionTiers(typedData);
     } catch (error) {
       console.error('Error fetching promotion tiers:', error);
       toast({

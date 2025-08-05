@@ -64,11 +64,17 @@ export const usePaymentProcessing = () => {
 
       if (methodError) throw methodError;
 
+      // Type cast the transaction data
+      const typedTransaction: PaymentTransaction = {
+        ...transaction,
+        status: transaction.status as PaymentTransaction['status']
+      };
+
       // Process based on payment method type
       if (paymentMethod.type === 'mobile_money') {
-        return await processMobileMoneyPayment(transaction, paymentMethod, amount);
+        return await processMobileMoneyPayment(typedTransaction, paymentMethod, amount);
       } else if (paymentMethod.type === 'card') {
-        return await processCardPayment(transaction, paymentMethod, amount);
+        return await processCardPayment(typedTransaction, paymentMethod, amount);
       }
 
       return { success: false, error: 'Unsupported payment method' };
