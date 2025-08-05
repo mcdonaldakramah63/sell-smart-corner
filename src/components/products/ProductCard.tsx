@@ -1,156 +1,162 @@
 
-import { Product } from '@/lib/types';
-import { Card, CardContent, CardFooter } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Heart, MessageCircle } from "lucide-react";
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useAuth } from '@/contexts/AuthContext';
-import { useToast } from '@/hooks/use-toast';
-import { createOrFindConversation } from '@/utils/conversationUtils';
+import React from 'react';
+import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Heart, MapPin, Clock, Eye, MessageCircle } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { QRCodeGenerator } from './QRCodeGenerator';
+import { SocialShareButtons } from '../shared/SocialShareButtons';
+import { useCurrency } from '@/hooks/useCurrency';
 
 interface ProductCardProps {
-  product: Product;
+  product: {
+    id: string;
+    title: string;
+    description?: string;
+    price: number;
+    location?: string;
+    created_at: string;
+    view_count: number;
+    contact_count: number;
+    images?: Array<{ image_url: string; is_primary: boolean }>;
+    category?: { name: string };
+    condition?: string;
+  };
+  onSave?: (productId: string) => void;
+  isSaved?: boolean;
 }
 
-const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
-  const [liked, setLiked] = useState(false);
-  const [isCreatingConversation, setIsCreatingConversation] = useState(false);
-  const navigate = useNavigate();
-  const { user } = useAuth();
-  const { toast } = useToast();
+export const ProductCard: React.FC<ProductCardProps> = ({
+  product,
+  onSave,
+  isSaved = false
+}) => {
+  const { formatPrice } = useCurrency();
   
-  const handleLike = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    setLiked(!liked);
-  };
-  
-  const handleMessage = async (e: React.MouseEvent) => {
-    e.stopPropagation();
-    
-    console.log('=== MESSAGE SELLER CLICKED ===');
-    console.log('User:', user);
-    console.log('Product:', product);
-    console.log('Seller ID:', product.seller.id);
-    
-    if (!user) {
-      console.log('No user found, redirecting to auth');
-      toast({
-        title: 'Login required',
-        description: 'Please log in to message the seller',
-        variant: 'destructive'
-      });
-      return;
-    }
+  const primaryImage = product.images?.find(img => img.is_primary)?.image_url || 
+                      product.images?.[0]?.image_url;
 
-    if (user.id === product.seller.id) {
-      console.log('User trying to message themselves');
-      toast({
-        title: 'Cannot message yourself',
-        description: 'You cannot start a conversation with yourself',
-        variant: 'destructive'
-      });
-      return;
-    }
+  const productUrl = `${window.location.origin}/products/${product.id}`;
 
-    try {
-      setIsCreatingConversation(true);
-      const conversationId = await createOrFindConversation(product, user.id);
-      navigate(`/conversation/${conversationId}`);
-    } catch (error) {
-      console.error('=== CONVERSATION CREATION ERROR ===');
-      console.error('Error details:', error);
-      toast({
-        title: 'Error',
-        description: error instanceof Error ? error.message : 'Failed to start conversation. Please try again.',
-        variant: 'destructive'
-      });
-    } finally {
-      setIsCreatingConversation(false);
-    }
-  };
-  
-  const handleClick = () => {
-    navigate(`/products/${product.id}`);
+  const timeAgo = (date: string) => {
+    const now = new Date();
+    const posted = new Date(date);
+    const diffInHours = Math.floor((now.getTime() - posted.getTime()) / (1000 * 60 * 60));
+    
+    if (diffInHours < 1) return 'Just now';
+    if (diffInHours < 24) return `${diffInHours}h ago`;
+    const diffInDays = Math.floor(diffInHours / 24);
+    if (diffInDays < 7) return `${diffInDays}d ago`;
+    return `${Math.floor(diffInDays / 7)}w ago`;
   };
 
   return (
-    <Card 
-      className="overflow-hidden transition-all duration-300 hover:shadow-lg cursor-pointer animate-fade-in" 
-      onClick={handleClick}
-    >
-      <div className="aspect-square overflow-hidden relative bg-gray-50">
-        {product.images && product.images.length > 0 ? (
-          <img 
-            src={product.images[0]} 
-            alt={product.title}
-            className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
-            loading="lazy"
-            onError={(e) => {
-              const target = e.target as HTMLImageElement;
-              target.style.objectFit = 'cover';
-            }}
-          />
-        ) : (
-          <div className="w-full h-full bg-muted flex items-center justify-center">
-            <span className="text-muted-foreground text-sm">No image</span>
-          </div>
-        )}
-        <Badge className="absolute top-2 right-2 bg-marketplace-accent">
-          ${product.price.toFixed(2)}
-        </Badge>
-      </div>
-      <CardContent className="p-4">
-        <div className="flex justify-between items-start mb-2">
-          <h3 className="font-semibold text-lg line-clamp-1">{product.title}</h3>
-          <Badge variant="outline" className="ml-2 text-xs">
-            {product.condition}
-          </Badge>
+    <Card className="group hover:shadow-lg transition-all duration-200 h-full flex flex-col">
+      <CardHeader className="p-0">
+        <div className="relative aspect-[4/3] overflow-hidden rounded-t-lg">
+          {primaryImage ? (
+            <img
+              src={primaryImage}
+              alt={product.title}
+              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+            />
+          ) : (
+            <div className="w-full h-full bg-muted flex items-center justify-center">
+              <span className="text-muted-foreground">No image</span>
+            </div>
+          )}
+          
+          {product.condition && (
+            <Badge className="absolute top-2 left-2" variant="secondary">
+              {product.condition}
+            </Badge>
+          )}
+          
+          {product.category && (
+            <Badge className="absolute top-2 right-2" variant="outline">
+              {product.category.name}
+            </Badge>
+          )}
+          
+          <Button
+            variant="ghost"
+            size="sm"
+            className={`absolute bottom-2 right-2 rounded-full ${
+              isSaved ? 'text-red-500' : 'text-white'
+            }`}
+            onClick={() => onSave?.(product.id)}
+          >
+            <Heart className={`h-4 w-4 ${isSaved ? 'fill-current' : ''}`} />
+          </Button>
         </div>
-        <p className="text-muted-foreground text-sm line-clamp-2 mb-2">
-          {product.description}
-        </p>
-        <div className="flex items-center text-xs text-muted-foreground">
-          <span>{product.location}</span>
-          <span className="mx-1">•</span>
-          <span>
-            {new Date(product.createdAt).toLocaleDateString()}
-          </span>
+      </CardHeader>
+
+      <CardContent className="p-4 flex-grow">
+        <div className="space-y-2">
+          <Link 
+            to={`/products/${product.id}`}
+            className="block group-hover:text-primary transition-colors"
+          >
+            <h3 className="font-semibold text-lg line-clamp-2 leading-tight">
+              {product.title}
+            </h3>
+          </Link>
+          
+          {product.description && (
+            <p className="text-sm text-muted-foreground line-clamp-2">
+              {product.description}
+            </p>
+          )}
+          
+          <div className="text-2xl font-bold text-primary">
+            {formatPrice(product.price)}
+          </div>
+          
+          {product.location && (
+            <div className="flex items-center text-sm text-muted-foreground">
+              <MapPin className="h-4 w-4 mr-1" />
+              {product.location}
+            </div>
+          )}
         </div>
       </CardContent>
-      <CardFooter className="p-4 pt-0 flex justify-between">
-        <div className="flex items-center space-x-1">
-          <img 
-            src={product.seller.avatar || "https://via.placeholder.com/24"} 
-            alt={product.seller.name}
-            className="w-5 h-5 rounded-full object-cover"
-          />
-          <span className="text-xs">{product.seller.name}</span>
+
+      <CardFooter className="p-4 pt-0 space-y-3">
+        <div className="flex items-center justify-between text-sm text-muted-foreground w-full">
+          <div className="flex items-center gap-4">
+            <div className="flex items-center">
+              <Eye className="h-4 w-4 mr-1" />
+              {product.view_count}
+            </div>
+            <div className="flex items-center">
+              <MessageCircle className="h-4 w-4 mr-1" />
+              {product.contact_count}
+            </div>
+          </div>
+          
+          <div className="flex items-center">
+            <Clock className="h-4 w-4 mr-1" />
+            {timeAgo(product.created_at)}
+          </div>
         </div>
-        <div className="flex space-x-1">
-          <Button size="icon" variant="ghost" onClick={handleLike}>
-            <Heart 
-              size={18} 
-              className={liked ? "fill-red-500 text-red-500" : ""}
-            />
-          </Button>
-          <Button 
-            size="icon" 
-            variant="ghost" 
-            onClick={handleMessage}
-            disabled={isCreatingConversation}
-          >
-            {isCreatingConversation ? (
-              <div className="h-4 w-4 border-t-2 border-r-2 border-gray-600 rounded-full animate-spin" />
-            ) : (
-              <MessageCircle size={18} />
-            )}
-          </Button>
+        
+        <div className="flex items-center justify-between gap-2 w-full">
+          <QRCodeGenerator
+            productId={product.id}
+            productTitle={product.title}
+            productUrl={productUrl}
+          />
+          
+          <SocialShareButtons
+            url={productUrl}
+            title={product.title}
+            description={product.description}
+            productId={product.id}
+            variant="compact"
+          />
         </div>
       </CardFooter>
     </Card>
   );
 };
-
-export default ProductCard;
