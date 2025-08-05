@@ -9,6 +9,15 @@ interface OfflineData {
   type: 'product' | 'message' | 'profile';
 }
 
+// Extend ServiceWorkerRegistration to include sync
+declare global {
+  interface ServiceWorkerRegistration {
+    sync?: {
+      register(tag: string): Promise<void>;
+    };
+  }
+}
+
 export const useOfflineStorage = () => {
   const [isSupported, setIsSupported] = useState(false);
   const [storageSize, setStorageSize] = useState(0);
@@ -87,10 +96,16 @@ export const useOfflineStorage = () => {
         request.onerror = () => reject(request.error);
       });
 
-      // Register for background sync
-      if ('serviceWorker' in navigator && 'sync' in window.ServiceWorkerRegistration.prototype) {
-        const registration = await navigator.serviceWorker.ready;
-        await registration.sync.register(`background-sync-${storeName}`);
+      // Try to register for background sync if supported
+      if ('serviceWorker' in navigator) {
+        try {
+          const registration = await navigator.serviceWorker.ready;
+          if (registration.sync) {
+            await registration.sync.register(`background-sync-${storeName}`);
+          }
+        } catch (syncError) {
+          console.log('Background sync not supported:', syncError);
+        }
       }
 
       toast({
