@@ -58,6 +58,44 @@ export type Database = {
           },
         ]
       }
+      ad_geographic_targeting: {
+        Row: {
+          city: string | null
+          coordinates: unknown | null
+          created_at: string
+          id: string
+          premium_ad_id: string | null
+          radius_km: number | null
+          region: string
+        }
+        Insert: {
+          city?: string | null
+          coordinates?: unknown | null
+          created_at?: string
+          id?: string
+          premium_ad_id?: string | null
+          radius_km?: number | null
+          region: string
+        }
+        Update: {
+          city?: string | null
+          coordinates?: unknown | null
+          created_at?: string
+          id?: string
+          premium_ad_id?: string | null
+          radius_km?: number | null
+          region?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ad_geographic_targeting_premium_ad_id_fkey"
+            columns: ["premium_ad_id"]
+            isOneToOne: false
+            referencedRelation: "premium_ads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       admin_settings: {
         Row: {
           created_at: string
@@ -128,6 +166,48 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      bulk_promotion_packages: {
+        Row: {
+          ad_count: number
+          created_at: string
+          discount_percentage: number | null
+          duration_days: number
+          features: Json
+          id: string
+          is_active: boolean | null
+          name: string
+          package_type: string
+          total_price: number
+          updated_at: string
+        }
+        Insert: {
+          ad_count: number
+          created_at?: string
+          discount_percentage?: number | null
+          duration_days: number
+          features?: Json
+          id?: string
+          is_active?: boolean | null
+          name: string
+          package_type: string
+          total_price: number
+          updated_at?: string
+        }
+        Update: {
+          ad_count?: number
+          created_at?: string
+          discount_percentage?: number | null
+          duration_days?: number
+          features?: Json
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          package_type?: string
+          total_price?: number
+          updated_at?: string
+        }
+        Relationships: []
       }
       business_accounts: {
         Row: {
@@ -500,6 +580,92 @@ export type Database = {
         }
         Relationships: []
       }
+      payment_methods: {
+        Row: {
+          configuration: Json | null
+          created_at: string
+          id: string
+          is_active: boolean | null
+          name: string
+          provider: string
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          configuration?: Json | null
+          created_at?: string
+          id?: string
+          is_active?: boolean | null
+          name: string
+          provider: string
+          type: string
+          updated_at?: string
+        }
+        Update: {
+          configuration?: Json | null
+          created_at?: string
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          provider?: string
+          type?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      payment_transactions: {
+        Row: {
+          amount: number
+          created_at: string
+          currency: string
+          external_reference: string | null
+          id: string
+          payment_data: Json | null
+          payment_method_id: string | null
+          reference_id: string | null
+          status: string
+          transaction_type: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          currency?: string
+          external_reference?: string | null
+          id?: string
+          payment_data?: Json | null
+          payment_method_id?: string | null
+          reference_id?: string | null
+          status?: string
+          transaction_type: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          currency?: string
+          external_reference?: string | null
+          id?: string
+          payment_data?: Json | null
+          payment_method_id?: string | null
+          reference_id?: string | null
+          status?: string
+          transaction_type?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payment_transactions_payment_method_id_fkey"
+            columns: ["payment_method_id"]
+            isOneToOne: false
+            referencedRelation: "payment_methods"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       premium_ad_prices: {
         Row: {
           ad_type: Database["public"]["Enums"]["premium_ad_type"]
@@ -838,6 +1004,48 @@ export type Database = {
         }
         Relationships: []
       }
+      promotion_tiers: {
+        Row: {
+          boost_multiplier: number | null
+          created_at: string
+          duration_hours: number
+          features: Json
+          id: string
+          is_active: boolean | null
+          name: string
+          price: number
+          priority_score: number | null
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          boost_multiplier?: number | null
+          created_at?: string
+          duration_hours: number
+          features?: Json
+          id?: string
+          is_active?: boolean | null
+          name: string
+          price: number
+          priority_score?: number | null
+          type: string
+          updated_at?: string
+        }
+        Update: {
+          boost_multiplier?: number | null
+          created_at?: string
+          duration_hours?: number
+          features?: Json
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          price?: number
+          priority_score?: number | null
+          type?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       reports: {
         Row: {
           created_at: string
@@ -879,6 +1087,41 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      revenue_shares: {
+        Row: {
+          advertiser_share: number | null
+          commission_rate: number
+          created_at: string
+          id: string
+          platform_share: number
+          transaction_id: string | null
+        }
+        Insert: {
+          advertiser_share?: number | null
+          commission_rate: number
+          created_at?: string
+          id?: string
+          platform_share: number
+          transaction_id?: string | null
+        }
+        Update: {
+          advertiser_share?: number | null
+          commission_rate?: number
+          created_at?: string
+          id?: string
+          platform_share?: number
+          transaction_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "revenue_shares_transaction_id_fkey"
+            columns: ["transaction_id"]
+            isOneToOne: false
+            referencedRelation: "payment_transactions"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       revenue_tracking: {
         Row: {
@@ -977,6 +1220,45 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      seasonal_campaigns: {
+        Row: {
+          created_at: string
+          description: string | null
+          discount_percentage: number | null
+          end_date: string
+          id: string
+          is_active: boolean | null
+          name: string
+          start_date: string
+          target_categories: Json | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          discount_percentage?: number | null
+          end_date: string
+          id?: string
+          is_active?: boolean | null
+          name: string
+          start_date: string
+          target_categories?: Json | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          discount_percentage?: number | null
+          end_date?: string
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          start_date?: string
+          target_categories?: Json | null
+          updated_at?: string
+        }
+        Relationships: []
       }
       seller_ratings: {
         Row: {
@@ -1138,6 +1420,51 @@ export type Database = {
           id?: string
         }
         Relationships: []
+      }
+      user_package_purchases: {
+        Row: {
+          ads_remaining: number
+          created_at: string
+          expires_at: string
+          id: string
+          package_id: string | null
+          transaction_id: string | null
+          user_id: string
+        }
+        Insert: {
+          ads_remaining: number
+          created_at?: string
+          expires_at: string
+          id?: string
+          package_id?: string | null
+          transaction_id?: string | null
+          user_id: string
+        }
+        Update: {
+          ads_remaining?: number
+          created_at?: string
+          expires_at?: string
+          id?: string
+          package_id?: string | null
+          transaction_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_package_purchases_package_id_fkey"
+            columns: ["package_id"]
+            isOneToOne: false
+            referencedRelation: "bulk_promotion_packages"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_package_purchases_transaction_id_fkey"
+            columns: ["transaction_id"]
+            isOneToOne: false
+            referencedRelation: "payment_transactions"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_roles: {
         Row: {
