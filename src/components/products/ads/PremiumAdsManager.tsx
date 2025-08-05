@@ -78,7 +78,7 @@ export function PremiumAdsManager({ productId, currentUserId }: PremiumAdsManage
           .insert({
             product_id: productId,
             user_id: currentUserId,
-            ad_type: tier.type,
+            ad_type: tier.type as any, // Type assertion needed until Supabase types are regenerated
             expires_at: expiresAt.toISOString(),
             amount: tier.price,
             status: 'active'
@@ -129,7 +129,7 @@ export function PremiumAdsManager({ productId, currentUserId }: PremiumAdsManage
         .insert({
           product_id: productId,
           user_id: currentUserId,
-          ad_type: tier.type,
+          ad_type: tier.type as any, // Type assertion needed until Supabase types are regenerated
           expires_at: expiresAt.toISOString(),
           amount: 0, // Using package credit
           status: 'active'
