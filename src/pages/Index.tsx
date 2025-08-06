@@ -1,4 +1,3 @@
-
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import Layout from '@/components/layout/Layout';
@@ -17,7 +16,7 @@ const Index = () => {
   // Fetch featured products
   const { data: products = [], isLoading: productsLoading } = useQuery({
     queryKey: ['featured-products'],
-    queryFn: async () => {
+    queryFn: async (): Promise<Product[]> => {
       const { data, error } = await supabase
         .from('products')
         .select(`
@@ -30,7 +29,7 @@ const Index = () => {
 
       if (error) throw error;
 
-      return data?.map((product: any) => ({
+      const mappedData = data?.map((product: any) => ({
         id: product.id,
         title: product.title,
         description: product.description,
@@ -47,13 +46,15 @@ const Index = () => {
         },
         is_sold: product.is_sold
       })) || [];
+
+      return mappedData as Product[];
     }
   });
 
   // Fetch categories
   const { data: categories = [], isLoading: categoriesLoading } = useQuery({
     queryKey: ['categories'],
-    queryFn: async () => {
+    queryFn: async (): Promise<Category[]> => {
       const { data, error } = await supabase
         .from('categories')
         .select('*')
@@ -62,17 +63,19 @@ const Index = () => {
 
       if (error) throw error;
 
-      return data?.map((category: any) => ({
+      const mappedData = data?.map((category: any) => ({
         id: category.id,
         name: category.name,
         slug: category.slug,
         icon: category.icon
       })) || [];
+
+      return mappedData as Category[];
     }
   });
 
-  const filteredProducts = products.filter((product: any) => 
-    !selectedCategory || product.category === categories.find((c: any) => c.id === selectedCategory)?.name
+  const filteredProducts = products.filter((product: Product) => 
+    !selectedCategory || product.category === categories.find((c: Category) => c.id === selectedCategory)?.name
   );
 
   const stats = [
@@ -117,7 +120,7 @@ const Index = () => {
               <div>
                 <h2 className="text-2xl font-bold text-gray-800 mb-2">
                   {selectedCategory 
-                    ? `${categories.find((c: any) => c.id === selectedCategory)?.name} Items` 
+                    ? `${categories.find((c: Category) => c.id === selectedCategory)?.name} Items` 
                     : 'Latest Items'}
                 </h2>
                 <p className="text-gray-600">
