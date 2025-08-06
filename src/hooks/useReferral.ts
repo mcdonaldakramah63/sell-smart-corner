@@ -49,7 +49,7 @@ export const useReferral = () => {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      if (data) setReferralCodes(data);
+      if (data) setReferralCodes(data as ReferralCode[]);
     } catch (error) {
       console.error('Error fetching referral codes:', error);
     } finally {
@@ -69,7 +69,13 @@ export const useReferral = () => {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      if (data) setTransactions(data);
+      if (data) {
+        const typedData = data.map(transaction => ({
+          ...transaction,
+          commission_status: transaction.commission_status as 'pending' | 'paid' | 'cancelled'
+        })) as ReferralTransaction[];
+        setTransactions(typedData);
+      }
     } catch (error) {
       console.error('Error fetching referral transactions:', error);
     } finally {
@@ -101,14 +107,14 @@ export const useReferral = () => {
       if (error) throw error;
 
       if (data) {
-        setReferralCodes(prev => [data, ...prev]);
+        setReferralCodes(prev => [data as ReferralCode, ...prev]);
         toast({
           title: 'Referral code created',
           description: `Your referral code "${code}" has been created`,
         });
       }
 
-      return data;
+      return data as ReferralCode;
     } catch (error) {
       console.error('Error creating referral code:', error);
       toast({
@@ -135,14 +141,14 @@ export const useReferral = () => {
       if (error) throw error;
 
       if (data) {
-        setReferralCodes(prev => prev.map(code => code.id === codeId ? data : code));
+        setReferralCodes(prev => prev.map(code => code.id === codeId ? data as ReferralCode : code));
         toast({
           title: 'Referral code updated',
           description: 'Your referral code has been updated',
         });
       }
 
-      return data;
+      return data as ReferralCode;
     } catch (error) {
       console.error('Error updating referral code:', error);
       toast({
@@ -176,7 +182,7 @@ export const useReferral = () => {
         return null;
       }
 
-      return data;
+      return data as ReferralCode;
     } catch (error) {
       console.error('Error validating referral code:', error);
       return null;

@@ -6,12 +6,12 @@ import { Input } from '@/components/ui/input';
 import { Search, Menu, Plus, MessageSquare, Bell, User } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { UserMenu } from './UserMenu';
-import { MobileMenu } from './MobileMenu';
+import MobileMenu from './MobileMenu';
 import { NotificationCenter } from '../notifications/NotificationCenter';
 import { LanguageSwitcher } from '../shared/LanguageSwitcher';
 import { CurrencySwitcher } from '../shared/CurrencySwitcher';
 
-export const Header: React.FC = () => {
+const Header: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { user, isAuthenticated } = useAuth();
@@ -22,6 +22,14 @@ export const Header: React.FC = () => {
     if (searchQuery.trim()) {
       navigate(`/products?search=${encodeURIComponent(searchQuery.trim())}`);
     }
+  };
+
+  const handleLogin = () => {
+    navigate('/auth');
+  };
+
+  const handleRegister = () => {
+    navigate('/auth?tab=register');
   };
 
   return (
@@ -93,7 +101,11 @@ export const Header: React.FC = () => {
                 <NotificationCenter />
 
                 {/* User Menu */}
-                <UserMenu />
+                <UserMenu 
+                  unreadNotifications={0}
+                  onLogin={handleLogin}
+                  onRegister={handleRegister}
+                />
               </>
             ) : (
               <div className="hidden sm:flex items-center space-x-2">
@@ -135,9 +147,12 @@ export const Header: React.FC = () => {
       </div>
 
       <MobileMenu 
-        isOpen={isMobileMenuOpen} 
-        onClose={() => setIsMobileMenuOpen(false)} 
+        unreadNotifications={0}
+        onLogin={handleLogin}
+        onRegister={handleRegister}
       />
     </header>
   );
 };
+
+export default Header;

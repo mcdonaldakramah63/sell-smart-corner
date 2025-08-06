@@ -80,12 +80,19 @@ export const useQRCode = () => {
 
   const incrementScanCount = async (productId: string) => {
     try {
-      const { error } = await supabase
+      // Get current scan count and increment by 1
+      const { data: currentQR } = await supabase
         .from('product_qr_codes')
-        .update({ scan_count: supabase.rpc('increment', { column: 'scan_count' }) })
-        .eq('product_id', productId);
+        .select('scan_count')
+        .eq('product_id', productId)
+        .single();
 
-      if (error) console.error('Error incrementing scan count:', error);
+      if (currentQR) {
+        await supabase
+          .from('product_qr_codes')
+          .update({ scan_count: (currentQR.scan_count || 0) + 1 })
+          .eq('product_id', productId);
+      }
     } catch (error) {
       console.error('Error incrementing scan count:', error);
     }

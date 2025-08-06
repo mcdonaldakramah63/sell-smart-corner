@@ -68,7 +68,14 @@ export const useBlog = () => {
       const { data, error } = await query;
 
       if (error) throw error;
-      if (data) setPosts(data);
+      if (data) {
+        // Cast data to match our interface
+        const typedData = data.map(post => ({
+          ...post,
+          status: post.status as 'draft' | 'published' | 'archived'
+        })) as BlogPost[];
+        setPosts(typedData);
+      }
     } catch (error) {
       console.error('Error fetching blog posts:', error);
     } finally {
@@ -86,7 +93,7 @@ export const useBlog = () => {
         .single();
 
       if (error) throw error;
-      return data;
+      return data as BlogPost;
     } catch (error) {
       console.error('Error fetching blog post:', error);
       return null;
@@ -94,43 +101,56 @@ export const useBlog = () => {
   };
 
   const createPost = async (postData: Partial<BlogPost>) => {
-    if (!user?.id) return null;
+    if (!user?.id || !postData.title || !postData.content) return null;
 
     setLoading(true);
     try {
       // Generate slug from title
-      const slug = postData.title?.toLowerCase()
+      const slug = postData.title.toLowerCase()
         .replace(/[^\w\s-]/g, '')
         .replace(/\s+/g, '-')
-        .trim() || '';
+        .trim();
 
       // Calculate reading time (average 200 words per minute)
-      const wordCount = postData.content?.split(/\s+/).length || 0;
+      const wordCount = postData.content.split(/\s+/).length;
       const readingTime = Math.ceil(wordCount / 200);
+
+      const insertData = {
+        author_id: user.id,
+        title: postData.title,
+        content: postData.content,
+        slug: `${slug}-${Date.now()}`,
+        reading_time: readingTime,
+        excerpt: postData.excerpt || '',
+        featured_image_url: postData.featured_image_url || '',
+        status: postData.status || 'draft' as const,
+        published_at: postData.status === 'published' ? new Date().toISOString() : null,
+        meta_title: postData.meta_title || '',
+        meta_description: postData.meta_description || '',
+        tags: postData.tags || [],
+        comments_enabled: postData.comments_enabled !== false,
+        view_count: 0,
+        likes_count: 0
+      };
 
       const { data, error } = await supabase
         .from('blog_posts')
-        .insert({
-          ...postData,
-          author_id: user.id,
-          slug: `${slug}-${Date.now()}`,
-          reading_time: readingTime,
-          published_at: postData.status === 'published' ? new Date().toISOString() : null
-        })
+        .insert(insertData)
         .select()
         .single();
 
       if (error) throw error;
 
       if (data) {
-        setPosts(prev => [data, ...prev]);
+        const typedData = { ...data, status: data.status as 'draft' | 'published' | 'archived' } as BlogPost;
+        setPosts(prev => [typedData, ...prev]);
         toast({
           title: 'Blog post created',
           description: `Your blog post "${data.title}" has been created`,
         });
       }
 
-      return data;
+      return data as BlogPost;
     } catch (error) {
       console.error('Error creating blog post:', error);
       toast({
@@ -148,19 +168,20 @@ export const useBlog = () => {
     setLoading(true);
     try {
       // Update reading time if content changed
+      const updateData: any = { ...updates };
       if (updates.content) {
         const wordCount = updates.content.split(/\s+/).length;
-        updates.reading_time = Math.ceil(wordCount / 200);
+        updateData.reading_time = Math.ceil(wordCount / 200);
       }
 
       // Set published_at if status changed to published
       if (updates.status === 'published' && !updates.published_at) {
-        updates.published_at = new Date().toISOString();
+        updateData.published_at = new Date().toISOString();
       }
 
       const { data, error } = await supabase
         .from('blog_posts')
-        .update(updates)
+        .update(updateData)
         .eq('id', postId)
         .select()
         .single();
@@ -168,14 +189,15 @@ export const useBlog = () => {
       if (error) throw error;
 
       if (data) {
-        setPosts(prev => prev.map(post => post.id === postId ? data : post));
+        const typedData = { ...data, status: data.status as 'draft' | 'published' | 'archived' } as BlogPost;
+        setPosts(prev => prev.map(post => post.id === postId ? typedData : post));
         toast({
           title: 'Blog post updated',
           description: 'Your blog post has been updated',
         });
       }
 
-      return data;
+      return data as BlogPost;
     } catch (error) {
       console.error('Error updating blog post:', error);
       toast({
@@ -218,12 +240,19 @@ export const useBlog = () => {
 
   const incrementViewCount = async (postId: string) => {
     try {
-      const { error } = await supabase
+      // Get current view count and increment by 1
+      const { data: currentPost } = await supabase
         .from('blog_posts')
-        .update({ view_count: supabase.rpc('increment') })
-        .eq('id', postId);
+        .select('view_count')
+        .eq('id', postId)
+        .single();
 
-      if (error) console.error('Error incrementing view count:', error);
+      if (currentPost) {
+        await supabase
+          .from('blog_posts')
+          .update({ view_count: (currentPost.view_count || 0) + 1 })
+          .eq('id', postId);
+      }
     } catch (error) {
       console.error('Error incrementing view count:', error);
     }
