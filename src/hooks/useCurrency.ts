@@ -87,7 +87,7 @@ export const useCurrency = () => {
     // Fallback: convert through GHS if direct rate not available
     if (fromCurrency !== 'GHS' && toCurrency !== 'GHS') {
       const toGHSRate = exchangeRates[`${fromCurrency}_GHS`] || (1 / exchangeRates[`GHS_${fromCurrency}`]);
-      const fromGHSRate = exchangeRates[`GHS_${toCurrency`] || (1 / exchangeRates[`${toCurrency}_GHS`]);
+      const fromGHSRate = exchangeRates[`GHS_${toCurrency}`] || (1 / exchangeRates[`${toCurrency}_GHS`]);
       
       if (toGHSRate && fromGHSRate) {
         return amount * toGHSRate * fromGHSRate;
