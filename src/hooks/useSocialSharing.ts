@@ -94,21 +94,23 @@ export const useSocialSharing = () => {
 
   const getShareStats = async (productId?: string, blogPostId?: string) => {
     try {
-      const query = supabase
+      let query = supabase
         .from('social_shares')
-        .select('platform, count(*)')
-        .is('user_id', null); // Anonymous shares
+        .select('platform');
 
-      if (productId) query.eq('product_id', productId);
-      if (blogPostId) query.eq('blog_post_id', blogPostId);
+      if (productId) query = query.eq('product_id', productId);
+      if (blogPostId) query = query.eq('blog_post_id', blogPostId);
 
       const { data, error } = await query;
       if (error) throw error;
 
-      return data?.reduce((acc, item) => {
-        acc[item.platform] = item.count;
-        return acc;
-      }, {} as Record<string, number>) || {};
+      // Count shares by platform
+      const stats: Record<string, number> = {};
+      data?.forEach(share => {
+        stats[share.platform] = (stats[share.platform] || 0) + 1;
+      });
+
+      return stats;
     } catch (error) {
       console.error('Error fetching share stats:', error);
       return {};
