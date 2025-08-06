@@ -1,6 +1,4 @@
-
 import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
 import Layout from '@/components/layout/Layout';
 import HeroSection from '@/components/layout/HeroSection';
 import ProductGrid from '@/components/products/ProductGrid';
@@ -18,6 +16,9 @@ const Index = () => {
   const { data: products = [], isLoading: productsLoading } = useQuery({
     queryKey: ['featured-products'],
     queryFn: async () => {
+      // Import supabase inside the function to avoid type issues
+      const { supabase } = await import('@/integrations/supabase/client');
+      
       const { data, error } = await supabase
         .from('products')
         .select(`
@@ -30,7 +31,7 @@ const Index = () => {
 
       if (error) throw error;
 
-      const mappedData = data?.map((product: any): Product => ({
+      const products: Product[] = data?.map((product: any) => ({
         id: product.id,
         title: product.title,
         description: product.description,
@@ -48,7 +49,7 @@ const Index = () => {
         is_sold: product.is_sold
       })) || [];
 
-      return mappedData;
+      return products;
     }
   });
 
@@ -56,6 +57,9 @@ const Index = () => {
   const { data: categories = [], isLoading: categoriesLoading } = useQuery({
     queryKey: ['categories'],
     queryFn: async () => {
+      // Import supabase inside the function to avoid type issues
+      const { supabase } = await import('@/integrations/supabase/client');
+      
       const { data, error } = await supabase
         .from('categories')
         .select('*')
@@ -64,14 +68,14 @@ const Index = () => {
 
       if (error) throw error;
 
-      const mappedData = data?.map((category: any): Category => ({
+      const categories: Category[] = data?.map((category: any) => ({
         id: category.id,
         name: category.name,
         slug: category.slug,
         icon: category.icon
       })) || [];
 
-      return mappedData;
+      return categories;
     }
   });
 
