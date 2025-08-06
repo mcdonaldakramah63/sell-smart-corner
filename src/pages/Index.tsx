@@ -1,4 +1,3 @@
-
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import Layout from '@/components/layout/Layout';
@@ -15,9 +14,9 @@ const Index = () => {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
   // Fetch featured products
-  const { data: products = [], isLoading: productsLoading } = useQuery({
+  const { data: products = [], isLoading: productsLoading } = useQuery<Product[]>({
     queryKey: ['featured-products'],
-    queryFn: async () => {
+    queryFn: async (): Promise<Product[]> => {
       const { data, error } = await supabase
         .from('products')
         .select(`
@@ -45,15 +44,15 @@ const Index = () => {
           name: 'Anonymous',
           avatar: ''
         },
-        isSold: product.is_sold
+        is_sold: product.is_sold
       })) || [];
     }
   });
 
   // Fetch categories
-  const { data: categories = [], isLoading: categoriesLoading } = useQuery({
+  const { data: categories = [], isLoading: categoriesLoading } = useQuery<Category[]>({
     queryKey: ['categories'],
-    queryFn: async () => {
+    queryFn: async (): Promise<Category[]> => {
       const { data, error } = await supabase
         .from('categories')
         .select('*')
