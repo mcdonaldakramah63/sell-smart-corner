@@ -8,11 +8,14 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Loader2, Eye, EyeOff, Check, X } from "lucide-react";
-import { validateEmail, validatePassword } from '@/utils/authUtils';
+import { validateEmail, validatePassword, validatePhone } from '@/utils/authUtils';
+import { PhoneVerificationStep } from './PhoneVerificationStep';
 
 const RegisterForm = () => {
+  const [step, setStep] = useState<'register' | 'phone-verification'>('register');
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -21,6 +24,7 @@ const RegisterForm = () => {
   const [fieldErrors, setFieldErrors] = useState<{ 
     name?: string; 
     email?: string; 
+    phone?: string;
     password?: string; 
     confirmPassword?: string;
     terms?: string;
@@ -39,6 +43,11 @@ const RegisterForm = () => {
       errors.email = 'Email is required';
     } else if (!validateEmail(email)) {
       errors.email = 'Please enter a valid email address';
+    }
+
+    const phoneValidation = validatePhone(phone);
+    if (!phoneValidation.isValid) {
+      errors.phone = phoneValidation.errors?.[0] || 'Please enter a valid phone number';
     }
     
     const passwordValidation = validatePassword(password);
@@ -65,7 +74,21 @@ const RegisterForm = () => {
       return;
     }
     
-    await register(name.trim(), email.trim(), password);
+    // Register user first, then proceed to phone verification
+    try {
+      await register(name.trim(), email.trim(), password);
+      setStep('phone-verification');
+    } catch (error) {
+      // Error is already handled by the register function
+    }
+  };
+
+  const handlePhoneVerificationComplete = () => {
+    navigate('/dashboard');
+  };
+
+  const handleBackToRegister = () => {
+    setStep('register');
   };
 
   // Password strength indicator
@@ -96,6 +119,16 @@ const RegisterForm = () => {
       </div>
     );
   };
+
+  if (step === 'phone-verification') {
+    return (
+      <PhoneVerificationStep
+        phone={phone}
+        onVerificationComplete={handlePhoneVerificationComplete}
+        onBack={handleBackToRegister}
+      />
+    );
+  }
 
   return (
     <Card className="w-full max-w-md mx-auto">
@@ -145,6 +178,28 @@ const RegisterForm = () => {
             />
             {fieldErrors.email && (
               <p className="text-red-500 text-sm">{fieldErrors.email}</p>
+            )}
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="phone">Phone Number</Label>
+            <Input
+              id="phone"
+              type="tel"
+              placeholder="+1 (555) 123-4567"
+              value={phone}
+              onChange={(e) => {
+                setPhone(e.target.value);
+                if (fieldErrors.phone && validatePhone(e.target.value).isValid) {
+                  setFieldErrors(prev => ({ ...prev, phone: undefined }));
+                }
+              }}
+              required
+              autoComplete="tel"
+              className={fieldErrors.phone ? "border-red-500" : ""}
+            />
+            {fieldErrors.phone && (
+              <p className="text-red-500 text-sm">{fieldErrors.phone}</p>
             )}
           </div>
           

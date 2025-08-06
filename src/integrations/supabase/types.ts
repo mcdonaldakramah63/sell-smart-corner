@@ -1266,6 +1266,10 @@ export type Database = {
           is_business_account: boolean | null
           location: string | null
           phone: string | null
+          phone_verification_attempts: number | null
+          phone_verification_code: string | null
+          phone_verification_expires_at: string | null
+          phone_verified: boolean | null
           response_rate: number | null
           response_time_hours: number | null
           total_ratings: number | null
@@ -1287,6 +1291,10 @@ export type Database = {
           is_business_account?: boolean | null
           location?: string | null
           phone?: string | null
+          phone_verification_attempts?: number | null
+          phone_verification_code?: string | null
+          phone_verification_expires_at?: string | null
+          phone_verified?: boolean | null
           response_rate?: number | null
           response_time_hours?: number | null
           total_ratings?: number | null
@@ -1308,6 +1316,10 @@ export type Database = {
           is_business_account?: boolean | null
           location?: string | null
           phone?: string | null
+          phone_verification_attempts?: number | null
+          phone_verification_code?: string | null
+          phone_verification_expires_at?: string | null
+          phone_verified?: boolean | null
           response_rate?: number | null
           response_time_hours?: number | null
           total_ratings?: number | null
