@@ -4,7 +4,10 @@ import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { ConversationCard } from '@/components/messages/ConversationCard';
 import { EmptyMessagesState } from '@/components/messages/EmptyMessagesState';
-import { MessageSquare } from 'lucide-react';
+import { MessageSquare, Search, Filter } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import Layout from '@/components/layout/Layout';
 
 interface ConversationPreview {
@@ -31,6 +34,8 @@ export default function MessagesPage() {
   const { user } = useAuth();
   const [conversations, setConversations] = useState<ConversationPreview[]>([]);
   const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filterUnread, setFilterUnread] = useState(false);
 
   useEffect(() => {
     const fetchConversations = async () => {
@@ -50,7 +55,8 @@ export default function MessagesPage() {
               id,
               title
             )
-          `);
+          `)
+          .order('updated_at', { ascending: false });
         
         if (conversationsError) throw conversationsError;
         
@@ -63,7 +69,6 @@ export default function MessagesPage() {
         const userConversations = [];
         
         for (const conversation of allConversations) {
-          // Check if user is participant in this conversation using the security definer function
           const { data: participants, error: participantsError } = await supabase
             .rpc('get_conversation_participants', { conversation_uuid: conversation.id });
           
@@ -82,21 +87,18 @@ export default function MessagesPage() {
         // Process conversation data
         const conversationPreviews = await Promise.all(
           userConversations.map(async (conversation) => {
-            // Get the other participant using the security definer function
             const { data: participants } = await supabase
               .rpc('get_conversation_participants', { conversation_uuid: conversation.id });
             
             const participantIds = participants?.map(p => p.user_id) || [];
             const otherParticipantId = participantIds.find(pid => pid !== user.id);
             
-            // Get profile data for the other participant
             const { data: profileData } = await supabase
               .from('profiles')
               .select('full_name, username, avatar_url')
               .eq('id', otherParticipantId)
               .maybeSingle();
             
-            // Get the most recent message
             const { data: lastMessageData } = await supabase
               .from('messages')
               .select('*')
@@ -105,7 +107,6 @@ export default function MessagesPage() {
               .limit(1)
               .maybeSingle();
             
-            // Get product image
             const { data: productImageData } = await supabase
               .from('product_images')
               .select('image_url')
@@ -143,14 +144,6 @@ export default function MessagesPage() {
           })
         );
         
-        // Sort by most recent message
-        conversationPreviews.sort((a, b) => {
-          if (!a.lastMessage && !b.lastMessage) return 0;
-          if (!a.lastMessage) return 1;
-          if (!b.lastMessage) return -1;
-          return new Date(b.lastMessage.timestamp).getTime() - new Date(a.lastMessage.timestamp).getTime();
-        });
-        
         setConversations(conversationPreviews);
       } catch (error) {
         console.error('Error fetching conversations:', error);
@@ -162,31 +155,105 @@ export default function MessagesPage() {
     fetchConversations();
   }, [user?.id]);
 
+  const filteredConversations = conversations.filter(conversation => {
+    const matchesSearch = !searchQuery || 
+      conversation.product.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      conversation.otherUser.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (conversation.lastMessage?.content.toLowerCase().includes(searchQuery.toLowerCase()));
+    
+    const matchesFilter = !filterUnread || 
+      (conversation.lastMessage && !conversation.lastMessage.read && !conversation.lastMessage.isFromUser);
+    
+    return matchesSearch && matchesFilter;
+  });
+
+  const unreadCount = conversations.filter(c => 
+    c.lastMessage && !c.lastMessage.read && !c.lastMessage.isFromUser
+  ).length;
+
   return (
     <Layout>
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
-        <div className="container mx-auto px-4 py-8">
+      <div className="min-h-screen bg-slate-50">
+        <div className="max-w-4xl mx-auto py-6 px-4">
+          {/* Header */}
           <div className="mb-8">
-            <div className="flex items-center gap-3 mb-2">
-              <div className="p-2 bg-gradient-to-r from-blue-500 to-purple-500 rounded-lg">
-                <MessageSquare className="h-6 w-6 text-white" />
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center space-x-3">
+                <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-500 rounded-lg flex items-center justify-center">
+                  <MessageSquare className="h-5 w-5 text-white" />
+                </div>
+                <div>
+                  <h1 className="text-2xl font-bold text-slate-900">Messages</h1>
+                  <p className="text-slate-600">
+                    {conversations.length} conversation{conversations.length !== 1 ? 's' : ''}
+                    {unreadCount > 0 && (
+                      <Badge variant="default" className="ml-2 bg-blue-500">
+                        {unreadCount} unread
+                      </Badge>
+                    )}
+                  </p>
+                </div>
               </div>
-              <h1 className="text-3xl font-bold bg-gradient-to-r from-slate-800 to-slate-600 bg-clip-text text-transparent">
-                Messages
-              </h1>
             </div>
-            <p className="text-slate-600">Stay connected with buyers and sellers</p>
+            
+            {/* Search and Filter */}
+            <div className="flex gap-3 mb-4">
+              <div className="flex-1 relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
+                <Input
+                  placeholder="Search conversations..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
+              
+              <Button
+                variant={filterUnread ? "default" : "outline"}
+                onClick={() => setFilterUnread(!filterUnread)}
+                className="flex items-center gap-2"
+              >
+                <Filter className="h-4 w-4" />
+                Unread
+                {unreadCount > 0 && (
+                  <Badge variant={filterUnread ? "secondary" : "default"} className="text-xs">
+                    {unreadCount}
+                  </Badge>
+                )}
+              </Button>
+            </div>
           </div>
           
           {loading ? (
             <div className="flex justify-center py-12">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+              <div className="flex flex-col items-center space-y-3">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+                <p className="text-slate-500">Loading conversations...</p>
+              </div>
             </div>
-          ) : conversations.length > 0 ? (
-            <div className="space-y-4">
-              {conversations.map((conversation) => (
+          ) : filteredConversations.length > 0 ? (
+            <div className="space-y-3">
+              {filteredConversations.map((conversation) => (
                 <ConversationCard key={conversation.id} conversation={conversation} />
               ))}
+            </div>
+          ) : searchQuery || filterUnread ? (
+            <div className="text-center py-12">
+              <MessageSquare className="h-12 w-12 text-slate-400 mx-auto mb-4" />
+              <h3 className="text-lg font-semibold text-slate-700 mb-2">No conversations found</h3>
+              <p className="text-slate-500">
+                {searchQuery ? 'Try adjusting your search query' : 'No unread conversations'}
+              </p>
+              <Button 
+                variant="outline" 
+                onClick={() => {
+                  setSearchQuery('');
+                  setFilterUnread(false);
+                }}
+                className="mt-4"
+              >
+                Clear filters
+              </Button>
             </div>
           ) : (
             <EmptyMessagesState />
