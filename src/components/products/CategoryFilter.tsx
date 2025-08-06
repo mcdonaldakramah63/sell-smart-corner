@@ -10,21 +10,14 @@ import {
   ShoppingBag,
   Star,
   Gamepad2,
-  Wand2,
   Tag,
-  User,
   LucideIcon
 } from 'lucide-react';
 
-/**
- * Utility to map category icon slugs/names from DB to lucide icons.
- * Add to this mapping as your category icon set grows!
- */
 const iconMap: Record<string, LucideIcon> = {
   car: Car,
   home: Home,
   mobile: Smartphone,
-  // Example mappings for new categories:
   computers: Monitor,
   'computer-accessories': Monitor,
   fashion: ShoppingBag,
@@ -36,11 +29,9 @@ const iconMap: Record<string, LucideIcon> = {
   default: Tag,
 };
 
-/** Fallback for unknown icon names. */
 function getIconForCategory(iconName: string | undefined) {
-  // fallback to "default" icon if not mapped
   const LucideIcon = (iconName && iconMap[iconName]) ? iconMap[iconName] : iconMap["default"] || Tag;
-  return <LucideIcon size={18} className="inline-block" />;
+  return <LucideIcon size={16} className="inline-block" />;
 }
 
 interface CategoryFilterProps {
@@ -50,7 +41,6 @@ interface CategoryFilterProps {
   loading?: boolean;
 }
 
-/** Renders clickable badges for all categories */
 const CategoryFilter: React.FC<CategoryFilterProps> = ({
   categories,
   selectedCategory,
@@ -58,41 +48,55 @@ const CategoryFilter: React.FC<CategoryFilterProps> = ({
   loading,
 }) => {
   return (
-    <div className="flex flex-wrap gap-2 my-4 min-h-8">
-      <Badge
-        variant={selectedCategory === null ? "default" : "outline"}
-        className={cn(
-          "cursor-pointer hover:bg-primary/90 px-3 py-1",
-          selectedCategory === null
-            ? "bg-marketplace-primary text-white"
-            : "hover:bg-marketplace-primary/10"
-        )}
-        onClick={() => onSelectCategory(null)}
-        aria-label="Show all categories"
-      >
-        All
-      </Badge>
-      {loading ? (
-        <div className="flex items-center text-muted-foreground ml-2 text-sm">Loading categories…</div>
-      ) : (
-        categories.map((category) => (
+    <div className="bg-white border-b border-gray-200 sticky top-16 z-40">
+      <div className="container mx-auto px-4 py-4">
+        <div className="flex flex-wrap gap-2">
           <Badge
-            key={category.id}
-            variant={selectedCategory === category.id ? "default" : "outline"}
+            variant={selectedCategory === null ? "default" : "outline"}
             className={cn(
-              "cursor-pointer px-3 py-1 flex items-center gap-1",
-              selectedCategory === category.id
-                ? "bg-marketplace-primary text-white"
-                : "hover:bg-marketplace-primary/10"
+              "cursor-pointer px-4 py-2 text-sm font-medium transition-colors",
+              selectedCategory === null
+                ? "bg-blue-600 text-white hover:bg-blue-700"
+                : "text-gray-600 hover:bg-blue-50 hover:text-blue-600 border-gray-300"
             )}
-            onClick={() => onSelectCategory(category.id)}
-            aria-label={category.name}
+            onClick={() => onSelectCategory(null)}
           >
-            {getIconForCategory(category.icon)}
-            {category.name}
+            All Categories
           </Badge>
-        ))
-      )}
+          
+          {loading ? (
+            <div className="flex items-center text-gray-500 ml-2 text-sm">
+              Loading categories...
+            </div>
+          ) : (
+            categories.slice(0, 8).map((category) => (
+              <Badge
+                key={category.id}
+                variant={selectedCategory === category.id ? "default" : "outline"}
+                className={cn(
+                  "cursor-pointer px-4 py-2 text-sm font-medium flex items-center gap-2 transition-colors",
+                  selectedCategory === category.id
+                    ? "bg-blue-600 text-white hover:bg-blue-700"
+                    : "text-gray-600 hover:bg-blue-50 hover:text-blue-600 border-gray-300"
+                )}
+                onClick={() => onSelectCategory(category.id)}
+              >
+                {getIconForCategory(category.icon)}
+                {category.name}
+              </Badge>
+            ))
+          )}
+          
+          {categories.length > 8 && (
+            <Badge
+              variant="outline"
+              className="cursor-pointer px-4 py-2 text-sm font-medium text-gray-600 hover:bg-blue-50 hover:text-blue-600 border-gray-300"
+            >
+              More Categories
+            </Badge>
+          )}
+        </div>
+      </div>
     </div>
   );
 };
