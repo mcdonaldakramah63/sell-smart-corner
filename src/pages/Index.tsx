@@ -30,7 +30,7 @@ const Index = () => {
 
       if (error) throw error;
 
-      return data?.map((product): Product => ({
+      return data?.map((product: any): Product => ({
         id: product.id,
         title: product.title,
         description: product.description,
@@ -39,7 +39,12 @@ const Index = () => {
         createdAt: product.created_at,
         images: product.product_images?.map((img: any) => img.image_url) || [],
         category: product.categories?.name,
-        condition: product.condition,
+        condition: product.condition as 'new' | 'like-new' | 'good' | 'fair' | 'poor',
+        seller: {
+          id: product.user_id,
+          name: 'Anonymous',
+          avatar: ''
+        },
         isSold: product.is_sold
       })) || [];
     }
@@ -57,11 +62,11 @@ const Index = () => {
 
       if (error) throw error;
 
-      return data?.map((category): Category => ({
+      return data?.map((category: any): Category => ({
         id: category.id,
         name: category.name,
-        icon: category.icon,
-        description: category.description
+        slug: category.slug,
+        icon: category.icon
       })) || [];
     }
   });
