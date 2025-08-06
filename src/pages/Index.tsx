@@ -1,3 +1,4 @@
+
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import Layout from '@/components/layout/Layout';
@@ -14,9 +15,9 @@ const Index = () => {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
   // Fetch featured products
-  const { data: products = [], isLoading: productsLoading } = useQuery<Product[]>({
+  const { data: products = [], isLoading: productsLoading } = useQuery({
     queryKey: ['featured-products'],
-    queryFn: async (): Promise<Product[]> => {
+    queryFn: async () => {
       const { data, error } = await supabase
         .from('products')
         .select(`
@@ -29,7 +30,7 @@ const Index = () => {
 
       if (error) throw error;
 
-      return data?.map((product: any): Product => ({
+      return data?.map((product: any) => ({
         id: product.id,
         title: product.title,
         description: product.description,
@@ -50,9 +51,9 @@ const Index = () => {
   });
 
   // Fetch categories
-  const { data: categories = [], isLoading: categoriesLoading } = useQuery<Category[]>({
+  const { data: categories = [], isLoading: categoriesLoading } = useQuery({
     queryKey: ['categories'],
-    queryFn: async (): Promise<Category[]> => {
+    queryFn: async () => {
       const { data, error } = await supabase
         .from('categories')
         .select('*')
@@ -61,7 +62,7 @@ const Index = () => {
 
       if (error) throw error;
 
-      return data?.map((category: any): Category => ({
+      return data?.map((category: any) => ({
         id: category.id,
         name: category.name,
         slug: category.slug,
@@ -70,8 +71,8 @@ const Index = () => {
     }
   });
 
-  const filteredProducts = products.filter(product => 
-    !selectedCategory || product.category === categories.find(c => c.id === selectedCategory)?.name
+  const filteredProducts = products.filter((product: any) => 
+    !selectedCategory || product.category === categories.find((c: any) => c.id === selectedCategory)?.name
   );
 
   const stats = [
@@ -116,7 +117,7 @@ const Index = () => {
               <div>
                 <h2 className="text-2xl font-bold text-gray-800 mb-2">
                   {selectedCategory 
-                    ? `${categories.find(c => c.id === selectedCategory)?.name} Items` 
+                    ? `${categories.find((c: any) => c.id === selectedCategory)?.name} Items` 
                     : 'Latest Items'}
                 </h2>
                 <p className="text-gray-600">
