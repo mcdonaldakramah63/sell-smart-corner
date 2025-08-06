@@ -9,74 +9,101 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { Eye, TrendingUp, Star } from 'lucide-react';
 
-const Index = () => {
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+// Simplified fetch function without complex Supabase types
+const fetchFeaturedProducts = async (): Promise<Product[]> => {
+  try {
+    const { supabase } = await import('@/integrations/supabase/client');
+    
+    // Simple query without joins to avoid type issues
+    const { data: productsData, error: productsError } = await supabase
+      .from('products')
+      .select('*')
+      .eq('status', 'approved')
+      .limit(20);
 
-  // Fetch featured products
-  const { data: products = [], isLoading: productsLoading } = useQuery({
-    queryKey: ['featured-products'],
-    queryFn: async () => {
-      // Import supabase inside the function to avoid type issues
-      const { supabase } = await import('@/integrations/supabase/client');
+    if (productsError) throw productsError;
+
+    // Fetch images separately to avoid complex joins
+    const productIds = productsData?.map(p => p.id) || [];
+    const { data: imagesData } = await supabase
+      .from('product_images')
+      .select('*')
+      .in('product_id', productIds);
+
+    // Fetch categories separately
+    const categoryIds = productsData?.map(p => p.category_id).filter(Boolean) || [];
+    const { data: categoriesData } = await supabase
+      .from('categories')
+      .select('*')
+      .in('id', categoryIds);
+
+    // Map the data manually
+    const products: Product[] = productsData?.map((product: any) => {
+      const productImages = imagesData?.filter(img => img.product_id === product.id) || [];
+      const category = categoriesData?.find(cat => cat.id === product.category_id);
       
-      const { data, error } = await supabase
-        .from('products')
-        .select(`
-          *,
-          product_images(image_url, is_primary),
-          categories(name)
-        `)
-        .eq('is_active', true)
-        .limit(20);
-
-      if (error) throw error;
-
-      const products: Product[] = data?.map((product: any) => ({
+      return {
         id: product.id,
-        title: product.title,
-        description: product.description,
-        price: Number(product.price),
-        location: product.location,
+        title: product.title || '',
+        description: product.description || '',
+        price: Number(product.price) || 0,
+        location: product.location || '',
         createdAt: product.created_at,
-        images: product.product_images?.map((img: any) => img.image_url) || [],
-        category: product.categories?.name,
+        images: productImages.map(img => img.image_url),
+        category: category?.name || '',
         condition: product.condition as 'new' | 'like-new' | 'good' | 'fair' | 'poor',
         seller: {
           id: product.user_id,
           name: 'Anonymous',
           avatar: ''
         },
-        is_sold: product.is_sold
-      })) || [];
+        is_sold: product.is_sold || false
+      };
+    }) || [];
 
-      return products;
-    }
+    return products;
+  } catch (error) {
+    console.error('Error fetching products:', error);
+    return [];
+  }
+};
+
+const fetchCategories = async (): Promise<Category[]> => {
+  try {
+    const { supabase } = await import('@/integrations/supabase/client');
+    
+    const { data, error } = await supabase
+      .from('categories')
+      .select('id, name, slug, icon');
+
+    if (error) throw error;
+
+    const categories: Category[] = data?.map((category: any) => ({
+      id: category.id,
+      name: category.name,
+      slug: category.slug,
+      icon: category.icon || ''
+    })) || [];
+
+    return categories;
+  } catch (error) {
+    console.error('Error fetching categories:', error);
+    return [];
+  }
+};
+
+const Index = () => {
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+
+  // Simplified useQuery calls
+  const { data: products = [], isLoading: productsLoading } = useQuery({
+    queryKey: ['featured-products'],
+    queryFn: fetchFeaturedProducts
   });
 
-  // Fetch categories
   const { data: categories = [], isLoading: categoriesLoading } = useQuery({
     queryKey: ['categories'],
-    queryFn: async () => {
-      // Import supabase inside the function to avoid type issues
-      const { supabase } = await import('@/integrations/supabase/client');
-      
-      const { data, error } = await supabase
-        .from('categories')
-        .select('*')
-        .eq('is_active', true)
-        .order('name');
-
-      if (error) throw error;
-
-      const categories: Category[] = data?.map((category: any) => ({
-        id: category.id,
-        name: category.name,
-        slug: category.slug,
-        icon: category.icon
-      })) || [];
-
-      return categories;
-    }
+    queryFn: fetchCategories
   });
 
   const filteredProducts = products.filter((product: Product) => 
