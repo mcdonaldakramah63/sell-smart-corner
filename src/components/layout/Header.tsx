@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Search, Menu, Plus, MessageSquare, Bell, User } from 'lucide-react';
+import { Search, Menu, Plus, MessageSquare, Bell, User, ShoppingCart, Heart } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { UserMenu } from './UserMenu';
 import MobileMenu from './MobileMenu';
@@ -33,74 +33,80 @@ const Header: React.FC = () => {
   };
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container mx-auto px-4">
-        <div className="flex h-16 items-center justify-between gap-4">
-          {/* Logo */}
-          <Link to="/" className="flex items-center space-x-2">
-            <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center">
-              <span className="text-primary-foreground font-bold text-sm">M</span>
+    <header className="sticky top-0 z-50 w-full bg-white shadow-sm border-b">
+      {/* Top Bar */}
+      <div className="bg-orange-500 text-white py-1">
+        <div className="container mx-auto px-4">
+          <div className="flex items-center justify-between text-sm">
+            <div className="flex items-center space-x-4">
+              <span>Free Shipping on orders over $50</span>
+              <span>•</span>
+              <Link to="/help" className="hover:underline">Customer Service</Link>
             </div>
-            <span className="hidden sm:inline-block font-bold text-xl">
-              MarketHub
-            </span>
-          </Link>
-
-          {/* Search Bar - Hidden on mobile */}
-          <form onSubmit={handleSearch} className="hidden md:flex flex-1 max-w-md mx-4">
-            <div className="relative w-full">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-              <Input
-                placeholder="Search products..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10 pr-4"
-              />
-            </div>
-          </form>
-
-          {/* Navigation Links - Hidden on mobile */}
-          <nav className="hidden lg:flex items-center space-x-1">
-            <Button variant="ghost" asChild>
-              <Link to="/products">Browse</Link>
-            </Button>
-            <Button variant="ghost" asChild>
-              <Link to="/categories">Categories</Link>
-            </Button>
-            <Button variant="ghost" asChild>
-              <Link to="/blog">Blog</Link>
-            </Button>
-          </nav>
-
-          {/* Action Buttons */}
-          <div className="flex items-center space-x-2">
-            {/* Language and Currency Switchers */}
-            <div className="hidden sm:flex items-center space-x-1">
+            <div className="flex items-center space-x-4">
               <LanguageSwitcher />
               <CurrencySwitcher />
             </div>
+          </div>
+        </div>
+      </div>
 
+      {/* Main Header */}
+      <div className="container mx-auto px-4">
+        <div className="flex h-16 items-center justify-between gap-4">
+          {/* Logo */}
+          <Link to="/" className="flex items-center space-x-2 flex-shrink-0">
+            <div className="h-10 w-10 rounded-lg bg-orange-500 flex items-center justify-center">
+              <span className="text-white font-bold text-lg">M</span>
+            </div>
+            <div className="hidden sm:block">
+              <span className="font-bold text-2xl text-orange-500">Market</span>
+              <span className="font-bold text-2xl text-gray-800">Hub</span>
+            </div>
+          </Link>
+
+          {/* Search Bar */}
+          <form onSubmit={handleSearch} className="flex-1 max-w-2xl mx-4">
+            <div className="relative">
+              <Input
+                placeholder="Search for products, brands and categories..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-4 pr-12 h-12 rounded-lg border-2 border-orange-200 focus:border-orange-400"
+              />
+              <Button 
+                type="submit" 
+                size="icon" 
+                className="absolute right-1 top-1 h-10 w-10 bg-orange-500 hover:bg-orange-600 rounded-md"
+              >
+                <Search className="h-5 w-5" />
+              </Button>
+            </div>
+          </form>
+
+          {/* Right Actions */}
+          <div className="flex items-center space-x-2 flex-shrink-0">
             {isAuthenticated ? (
               <>
-                {/* Create Product Button */}
-                <Button size="sm" asChild className="hidden sm:flex">
-                  <Link to="/products/create">
-                    <Plus className="h-4 w-4 mr-2" />
-                    Sell
-                  </Link>
+                <Button variant="ghost" size="sm" className="flex flex-col items-center p-2 h-auto">
+                  <Heart className="h-5 w-5" />
+                  <span className="text-xs">Wishlist</span>
                 </Button>
 
-                {/* Messages */}
-                <Button variant="ghost" size="sm" asChild>
+                <Button variant="ghost" size="sm" className="flex flex-col items-center p-2 h-auto">
+                  <ShoppingCart className="h-5 w-5" />
+                  <span className="text-xs">Cart</span>
+                </Button>
+
+                <Button variant="ghost" size="sm" asChild className="flex flex-col items-center p-2 h-auto">
                   <Link to="/messages">
-                    <MessageSquare className="h-4 w-4" />
+                    <MessageSquare className="h-5 w-5" />
+                    <span className="text-xs">Messages</span>
                   </Link>
                 </Button>
 
-                {/* Notifications */}
                 <NotificationCenter />
 
-                {/* User Menu */}
                 <UserMenu 
                   unreadNotifications={0}
                   onLogin={handleLogin}
@@ -112,13 +118,12 @@ const Header: React.FC = () => {
                 <Button variant="ghost" size="sm" asChild>
                   <Link to="/auth">Sign In</Link>
                 </Button>
-                <Button size="sm" asChild>
-                  <Link to="/auth?tab=register">Sign Up</Link>
+                <Button size="sm" className="bg-orange-500 hover:bg-orange-600" asChild>
+                  <Link to="/auth?tab=register">Join Free</Link>
                 </Button>
               </div>
             )}
 
-            {/* Mobile Menu Button */}
             <Button
               variant="ghost"
               size="sm"
@@ -130,20 +135,40 @@ const Header: React.FC = () => {
           </div>
         </div>
 
-        {/* Mobile Search Bar */}
-        <div className="md:hidden pb-4">
-          <form onSubmit={handleSearch} className="w-full">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-              <Input
-                placeholder="Search products..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10 pr-4 w-full"
-              />
-            </div>
-          </form>
-        </div>
+        {/* Navigation Menu */}
+        <nav className="hidden lg:flex items-center space-x-6 py-2 border-t">
+          <Button variant="ghost" className="text-sm font-medium" asChild>
+            <Link to="/categories">All Categories</Link>
+          </Button>
+          <Button variant="ghost" className="text-sm font-medium" asChild>
+            <Link to="/products?category=electronics">Electronics</Link>
+          </Button>
+          <Button variant="ghost" className="text-sm font-medium" asChild>
+            <Link to="/products?category=fashion">Fashion</Link>
+          </Button>
+          <Button variant="ghost" className="text-sm font-medium" asChild>
+            <Link to="/products?category=home">Home & Garden</Link>
+          </Button>
+          <Button variant="ghost" className="text-sm font-medium" asChild>
+            <Link to="/products?category=sports">Sports</Link>
+          </Button>
+          <Button variant="ghost" className="text-sm font-medium" asChild>
+            <Link to="/products?category=automotive">Automotive</Link>
+          </Button>
+          {isAuthenticated && (
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="ml-auto border-orange-500 text-orange-500 hover:bg-orange-50"
+              asChild
+            >
+              <Link to="/create-product">
+                <Plus className="h-4 w-4 mr-2" />
+                Sell Now
+              </Link>
+            </Button>
+          )}
+        </nav>
       </div>
 
       <MobileMenu 

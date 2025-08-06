@@ -1,34 +1,92 @@
 
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
+import { Badge } from "@/components/ui/badge";
+import { Truck, Shield, Star, Zap } from 'lucide-react';
 
 const HeroSection = () => {
   return (
-    <div className="relative bg-gradient-to-r from-marketplace-primary to-blue-700 text-white py-8 sm:py-12 md:py-16 lg:py-24">
-      <div className="container mx-auto px-4 relative z-10">
-        <div className="max-w-4xl mx-auto text-center lg:text-left">
-          <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold mb-4 sm:mb-6 animate-fade-in leading-tight">
-            Buy and Sell with Confidence
-          </h1>
-          <p className="text-sm sm:text-base md:text-lg lg:text-xl mb-6 sm:mb-8 text-white/90 animate-slide-in max-w-2xl mx-auto lg:mx-0">
-            Join our trusted marketplace community and discover amazing deals or sell your items easily and securely.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 animate-slide-in justify-center lg:justify-start" style={{ animationDelay: "0.2s" }}>
-            <Button asChild size="lg" className="bg-white text-marketplace-primary hover:bg-white/90 text-sm sm:text-base px-6 sm:px-8 py-3 sm:py-4">
-              <Link to="/products">Browse Products</Link>
-            </Button>
-            <Button asChild size="lg" variant="secondary" className="bg-white/10 text-white hover:bg-white/20 border-white/20 text-sm sm:text-base px-6 sm:px-8 py-3 sm:py-4">
-              <Link to="/create-product">Start Selling</Link>
-            </Button>
+    <div className="relative bg-gradient-to-r from-orange-400 via-red-500 to-pink-500">
+      {/* Main Hero Banner */}
+      <div className="container mx-auto px-4 py-12">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
+          {/* Left Content */}
+          <div className="text-white space-y-6">
+            <div className="space-y-2">
+              <Badge className="bg-yellow-400 text-black px-3 py-1 text-sm font-semibold">
+                <Zap className="h-4 w-4 mr-1" />
+                Flash Sale - Up to 70% Off
+              </Badge>
+              <h1 className="text-4xl md:text-6xl font-bold leading-tight">
+                Shop Smart, Save More
+              </h1>
+              <p className="text-lg text-white/90 max-w-lg">
+                Discover millions of products at unbeatable prices. From electronics to fashion, find everything you need in one place.
+              </p>
+            </div>
+
+            <div className="flex flex-col sm:flex-row gap-4">
+              <Button 
+                size="lg" 
+                className="bg-white text-orange-500 hover:bg-gray-100 px-8 py-4 text-lg font-semibold"
+                asChild
+              >
+                <Link to="/products">Shop Now</Link>
+              </Button>
+              <Button 
+                size="lg" 
+                variant="outline" 
+                className="border-2 border-white text-white hover:bg-white hover:text-orange-500 px-8 py-4 text-lg"
+                asChild
+              >
+                <Link to="/create-product">Start Selling</Link>
+              </Button>
+            </div>
+
+            {/* Features */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-8">
+              <div className="flex items-center space-x-2">
+                <Truck className="h-5 w-5" />
+                <span className="text-sm">Free Shipping</span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Shield className="h-5 w-5" />
+                <span className="text-sm">Buyer Protection</span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Star className="h-5 w-5" />
+                <span className="text-sm">Top Rated</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Right Content - Hero Image/Graphic */}
+          <div className="hidden lg:block">
+            <div className="relative">
+              <div className="w-full h-96 bg-white/10 backdrop-blur-sm rounded-2xl flex items-center justify-center">
+                <div className="text-center text-white">
+                  <div className="text-8xl font-bold opacity-20">SALE</div>
+                  <div className="text-2xl font-semibold">Up to 70% OFF</div>
+                </div>
+              </div>
+              
+              {/* Floating Elements */}
+              <div className="absolute -top-4 -right-4 bg-yellow-400 text-black px-4 py-2 rounded-full font-bold text-sm animate-bounce">
+                Hot Deals!
+              </div>
+              <div className="absolute -bottom-4 -left-4 bg-green-400 text-white px-4 py-2 rounded-full font-bold text-sm">
+                New Arrivals
+              </div>
+            </div>
           </div>
         </div>
       </div>
-      
-      {/* Abstract shapes for background */}
-      <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute -top-10 right-0 w-48 h-48 sm:w-72 sm:h-72 lg:w-96 lg:h-96 bg-white/5 rounded-full blur-3xl"></div>
-        <div className="absolute bottom-10 left-10 w-36 h-36 sm:w-48 sm:h-48 lg:w-72 lg:h-72 bg-white/5 rounded-full blur-2xl"></div>
-        <div className="absolute top-1/2 left-1/2 w-32 h-32 sm:w-40 sm:h-40 lg:w-60 lg:h-60 bg-white/5 rounded-full blur-xl"></div>
+
+      {/* Bottom Wave */}
+      <div className="absolute bottom-0 left-0 w-full overflow-hidden leading-none">
+        <svg className="relative block w-full h-12" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 120" preserveAspectRatio="none">
+          <path d="M321.39,56.44c58-10.79,114.16-30.13,172-41.86,82.39-16.72,168.19-17.73,250.45-.39C823.78,31,906.67,72,985.66,92.83c70.05,18.48,146.53,26.09,214.34,3V0H0V27.35A600.21,600.21,0,0,0,321.39,56.44Z" className="fill-white"></path>
+        </svg>
       </div>
     </div>
   );
