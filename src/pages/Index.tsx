@@ -1,3 +1,4 @@
+
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import Layout from '@/components/layout/Layout';
@@ -16,7 +17,7 @@ const Index = () => {
   // Fetch featured products
   const { data: products = [], isLoading: productsLoading } = useQuery({
     queryKey: ['featured-products'],
-    queryFn: async (): Promise<Product[]> => {
+    queryFn: async () => {
       const { data, error } = await supabase
         .from('products')
         .select(`
@@ -29,7 +30,7 @@ const Index = () => {
 
       if (error) throw error;
 
-      const mappedData = data?.map((product: any) => ({
+      const mappedData = data?.map((product: any): Product => ({
         id: product.id,
         title: product.title,
         description: product.description,
@@ -47,14 +48,14 @@ const Index = () => {
         is_sold: product.is_sold
       })) || [];
 
-      return mappedData as Product[];
+      return mappedData;
     }
   });
 
   // Fetch categories
   const { data: categories = [], isLoading: categoriesLoading } = useQuery({
     queryKey: ['categories'],
-    queryFn: async (): Promise<Category[]> => {
+    queryFn: async () => {
       const { data, error } = await supabase
         .from('categories')
         .select('*')
@@ -63,14 +64,14 @@ const Index = () => {
 
       if (error) throw error;
 
-      const mappedData = data?.map((category: any) => ({
+      const mappedData = data?.map((category: any): Category => ({
         id: category.id,
         name: category.name,
         slug: category.slug,
         icon: category.icon
       })) || [];
 
-      return mappedData as Category[];
+      return mappedData;
     }
   });
 
