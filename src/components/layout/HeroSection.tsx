@@ -18,30 +18,32 @@ const HeroSection = () => {
   };
 
   return (
-    <div className="bg-gradient-to-r from-blue-600 to-blue-800 text-white">
-      <div className="container mx-auto px-4 py-16">
-        <div className="text-center max-w-4xl mx-auto">
-          {/* Main Heading - Jiji Style */}
-          <h1 className="text-4xl md:text-6xl font-bold mb-6">
+    <div className="gradient-hero text-white relative overflow-hidden">
+      <div className="absolute inset-0 bg-gradient-to-br from-primary/30 via-transparent to-accent/20"></div>
+      <div className="container mx-auto px-4 py-24 relative z-10">
+        <div className="text-center max-w-5xl mx-auto">
+          {/* Main Heading */}
+          <h1 className="text-5xl md:text-7xl font-bold mb-8 drop-shadow-lg">
             Buy, Sell, Connect
           </h1>
-          <p className="text-xl md:text-2xl mb-8 text-blue-100">
-            Nigeria's largest marketplace. Find anything you need.
+          <p className="text-xl md:text-2xl mb-12 text-white/90 font-medium max-w-3xl mx-auto">
+            Your trusted marketplace for buying and selling products with confidence and ease
           </p>
 
           {/* Search Bar */}
-          <form onSubmit={handleSearch} className="max-w-2xl mx-auto mb-12">
-            <div className="relative">
+          <form onSubmit={handleSearch} className="max-w-3xl mx-auto mb-16">
+            <div className="relative marketplace-surface rounded-2xl p-2 backdrop-blur-lg">
               <Input
                 placeholder="What are you looking for today?"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full h-16 pl-6 pr-16 text-lg border-0 rounded-full text-gray-800"
+                className="w-full h-16 pl-6 pr-20 text-lg border-0 rounded-xl bg-white/95 text-foreground shadow-soft"
               />
               <Button 
                 type="submit" 
                 size="lg"
-                className="absolute right-2 top-2 h-12 px-6 bg-blue-600 hover:bg-blue-700 rounded-full"
+                variant="marketplace"
+                className="absolute right-2 top-2 h-12 px-8 rounded-xl"
               >
                 <Search className="h-5 w-5" />
               </Button>
@@ -49,10 +51,10 @@ const HeroSection = () => {
           </form>
 
           {/* Action Buttons */}
-          <div className="flex flex-col sm:flex-row gap-4 justify-center mb-16">
+          <div className="flex flex-col sm:flex-row gap-6 justify-center mb-20">
             <Button 
               size="lg" 
-              className="bg-white text-blue-600 hover:bg-gray-100 px-8 py-4 text-lg font-semibold"
+              className="bg-white text-primary hover:bg-white/90 px-10 py-4 text-lg font-semibold shadow-elegant hover:shadow-glow transform hover:scale-105"
               asChild
             >
               <Link to="/products">Start Shopping</Link>
@@ -60,29 +62,29 @@ const HeroSection = () => {
             <Button 
               size="lg" 
               variant="outline" 
-              className="border-2 border-white text-white hover:bg-white hover:text-blue-600 px-8 py-4 text-lg"
+              className="border-2 border-white/40 bg-white/10 text-white hover:bg-white hover:text-primary px-10 py-4 text-lg backdrop-blur-sm"
               asChild
             >
               <Link to="/create-product">Sell Something</Link>
             </Button>
           </div>
 
-          {/* Trust Indicators - Jiji Style */}
+          {/* Trust Indicators */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
-            <div className="flex flex-col items-center">
-              <Shield className="h-12 w-12 mb-4 text-blue-200" />
-              <h3 className="text-xl font-semibold mb-2">Safe & Secure</h3>
-              <p className="text-blue-100">Verified sellers and secure transactions</p>
+            <div className="flex flex-col items-center marketplace-surface rounded-2xl p-8 backdrop-blur-sm">
+              <Shield className="h-16 w-16 mb-6 text-primary-glow" />
+              <h3 className="text-xl font-semibold mb-3 text-white">Safe & Secure</h3>
+              <p className="text-white/80">Verified sellers and secure transactions</p>
             </div>
-            <div className="flex flex-col items-center">
-              <Users className="h-12 w-12 mb-4 text-blue-200" />
-              <h3 className="text-xl font-semibold mb-2">Millions of Users</h3>
-              <p className="text-blue-100">Join Nigeria's largest marketplace</p>
+            <div className="flex flex-col items-center marketplace-surface rounded-2xl p-8 backdrop-blur-sm">
+              <Users className="h-16 w-16 mb-6 text-primary-glow" />
+              <h3 className="text-xl font-semibold mb-3 text-white">Millions of Users</h3>
+              <p className="text-white/80">Join our trusted marketplace community</p>
             </div>
-            <div className="flex flex-col items-center">
-              <CheckCircle className="h-12 w-12 mb-4 text-blue-200" />
-              <h3 className="text-xl font-semibold mb-2">Easy to Use</h3>
-              <p className="text-blue-100">Post ads in minutes, sell faster</p>
+            <div className="flex flex-col items-center marketplace-surface rounded-2xl p-8 backdrop-blur-sm">
+              <CheckCircle className="h-16 w-16 mb-6 text-primary-glow" />
+              <h3 className="text-xl font-semibold mb-3 text-white">Easy to Use</h3>
+              <p className="text-white/80">Post ads in minutes, sell faster</p>
             </div>
           </div>
         </div>

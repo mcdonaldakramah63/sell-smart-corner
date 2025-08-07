@@ -32,61 +32,65 @@ const Header: React.FC = () => {
   };
 
   return (
-    <header className="bg-white shadow-sm border-b sticky top-0 z-50">
-      {/* Top Bar - Minimal like Jiji */}
-      <div className="bg-blue-50 py-1">
+    <header className="bg-white/95 backdrop-blur-md shadow-elegant border-b border-border sticky top-0 z-50">
+      {/* Top Bar */}
+      <div className="bg-gradient-to-r from-primary/10 to-accent/10 py-2">
         <div className="container mx-auto px-4">
-          <div className="flex items-center justify-between text-sm text-blue-600">
+          <div className="flex items-center justify-between text-sm text-marketplace-secondary">
             <div className="flex items-center space-x-4">
               <div className="flex items-center">
                 <MapPin className="h-4 w-4 mr-1" />
-                <span>All Nigeria</span>
+                <span>All Locations</span>
               </div>
             </div>
             <div className="flex items-center space-x-4">
               <LanguageSwitcher />
-              <Link to="/help" className="hover:underline">Help</Link>
+              <Link to="/help" className="hover:text-primary transition-colors">Help</Link>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Main Header - Clean Jiji Style */}
+      {/* Main Header */}
       <div className="container mx-auto px-4">
-        <div className="flex h-16 items-center justify-between">
-          {/* Logo - Simple like Jiji */}
-          <Link to="/" className="flex items-center">
-            <div className="text-2xl font-bold text-blue-600">MarketHub</div>
+        <div className="flex h-18 items-center justify-between">
+          {/* Logo */}
+          <Link to="/" className="flex items-center space-x-3 hover:scale-105 transition-transform duration-300">
+            <div className="w-12 h-12 gradient-primary rounded-xl flex items-center justify-center shadow-soft">
+              <span className="text-white font-bold text-xl">M</span>
+            </div>
+            <div className="text-2xl font-bold text-marketplace-secondary">MarketHub</div>
           </Link>
 
-          {/* Search Bar - Prominent like Jiji */}
+          {/* Search Bar */}
           <form onSubmit={handleSearch} className="flex-1 max-w-2xl mx-8">
             <div className="relative">
               <Input
                 placeholder="I am looking for..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full h-12 pl-4 pr-12 border-2 border-blue-200 rounded-lg focus:border-blue-400 focus:ring-0"
+                className="w-full h-12 pl-4 pr-14 border border-border rounded-xl bg-white shadow-soft focus:ring-2 focus:ring-primary/20 focus:border-primary"
               />
               <Button 
                 type="submit" 
-                className="absolute right-2 top-2 h-8 px-4 bg-blue-600 hover:bg-blue-700 text-white rounded"
+                variant="marketplace"
+                className="absolute right-2 top-2 h-8 px-4 rounded-lg"
               >
                 <Search className="h-4 w-4" />
               </Button>
             </div>
           </form>
 
-          {/* Right Actions - Clean Layout */}
-          <div className="flex items-center space-x-4">
+          {/* Right Actions */}
+          <div className="flex items-center space-x-3">
             {isAuthenticated ? (
               <>
-                <Button variant="ghost" size="sm" className="text-gray-600 hover:text-blue-600">
+                <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-primary">
                   <Heart className="h-5 w-5" />
                   <span className="hidden sm:inline ml-1">Saved</span>
                 </Button>
 
-                <Button variant="ghost" size="sm" asChild className="text-gray-600 hover:text-blue-600">
+                <Button variant="ghost" size="sm" asChild className="text-muted-foreground hover:text-primary">
                   <Link to="/messages">
                     <MessageSquare className="h-5 w-5" />
                     <span className="hidden sm:inline ml-1">Messages</span>
@@ -103,10 +107,10 @@ const Header: React.FC = () => {
               </>
             ) : (
               <div className="flex items-center space-x-3">
-                <Button variant="ghost" size="sm" asChild className="text-gray-600">
+                <Button variant="ghost" size="sm" asChild>
                   <Link to="/auth">Login</Link>
                 </Button>
-                <Button size="sm" className="bg-blue-600 hover:bg-blue-700" asChild>
+                <Button size="sm" variant="marketplace" asChild>
                   <Link to="/auth?tab=register">Register</Link>
                 </Button>
               </div>
@@ -124,12 +128,12 @@ const Header: React.FC = () => {
         </div>
       </div>
 
-      {/* Post Ad Button - Prominent like Jiji */}
+      {/* Post Ad Button */}
       {isAuthenticated && (
-        <div className="bg-blue-600 py-2">
+        <div className="gradient-primary py-3">
           <div className="container mx-auto px-4">
             <Button 
-              className="w-full bg-white text-blue-600 hover:bg-gray-50 font-semibold"
+              className="w-full bg-white text-primary hover:bg-white/90 font-semibold shadow-soft hover:shadow-elegant transform hover:scale-[1.02] transition-all duration-300"
               asChild
             >
               <Link to="/create-product">
