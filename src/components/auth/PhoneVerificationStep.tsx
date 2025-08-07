@@ -33,6 +33,26 @@ export const PhoneVerificationStep = ({ phone, onVerificationComplete, onBack }:
       // Generate a 6-digit verification code
       const code = Math.floor(100000 + Math.random() * 900000).toString();
       
+      // First check if profile exists, if not create it
+      const { data: existingProfile } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('id', user.id)
+        .single();
+
+      if (!existingProfile) {
+        // Create profile if it doesn't exist
+        const { error: createError } = await supabase
+          .from('profiles')
+          .insert({
+            id: user.id,
+            email: user.email,
+            full_name: user.user_metadata?.full_name || user.user_metadata?.name
+          });
+        
+        if (createError) throw createError;
+      }
+      
       // Store verification code in user profile (in real app, send via SMS)
       const { error } = await supabase
         .from('profiles')
