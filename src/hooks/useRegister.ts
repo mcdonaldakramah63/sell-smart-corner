@@ -61,6 +61,7 @@ export const useRegister = (
             name: sanitizedName,
             full_name: sanitizedName,
           },
+          emailRedirectTo: `${window.location.origin}/`
         }
       });
       
@@ -72,17 +73,21 @@ export const useRegister = (
           description: errorMessage,
           variant: "destructive",
         });
+        throw new Error(errorMessage);
       } else {
-        toast({
-          title: "Registration successful",
-          description: data.session ? "Account created!" : "Please check your email to verify your account.",
-        });
+        // Check if user has a session (immediate access) or needs email verification
+        const hasSession = !!data.session;
         
-        // If there's a session, redirect after a short delay
-        if (data.session) {
-          setTimeout(() => {
-            window.location.href = '/';
-          }, 1000);
+        if (hasSession && data.user) {
+          toast({
+            title: "Registration successful",
+            description: "Account created! Please verify your phone number.",
+          });
+        } else {
+          toast({
+            title: "Registration successful",
+            description: "Please check your email to verify your account first.",
+          });
         }
       }
     } catch (error: any) {

@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -29,7 +30,7 @@ const RegisterForm = () => {
     confirmPassword?: string;
     terms?: string;
   }>({});
-  const { register, loading, error } = useAuth();
+  const { register, loading, error, isAuthenticated } = useAuth();
   const navigate = useNavigate();
 
   const validateForm = () => {
@@ -77,7 +78,11 @@ const RegisterForm = () => {
     // Register user first, then proceed to phone verification
     try {
       await register(name.trim(), email.trim(), password);
-      setStep('phone-verification');
+      // Check if user is authenticated after registration
+      if (isAuthenticated) {
+        setStep('phone-verification');
+      }
+      // If not authenticated, user needs to verify email first (handled by register function toast)
     } catch (error) {
       // Error is already handled by the register function
     }

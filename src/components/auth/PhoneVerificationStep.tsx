@@ -27,7 +27,13 @@ export const PhoneVerificationStep = ({ phone, onVerificationComplete, onBack }:
       const { data: { user }, error: userError } = await supabase.auth.getUser();
       
       if (userError || !user) {
-        throw new Error('User not authenticated');
+        toast({
+          title: "Authentication Required",
+          description: "Please complete email verification first before verifying your phone number.",
+          variant: "destructive",
+        });
+        onBack(); // Go back to registration
+        return;
       }
 
       // Generate a 6-digit verification code
