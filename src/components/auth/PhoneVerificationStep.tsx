@@ -23,6 +23,13 @@ export const PhoneVerificationStep = ({ phone, onVerificationComplete, onBack }:
   const sendVerificationCode = async () => {
     setSendingCode(true);
     try {
+      // Get current user
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      
+      if (userError || !user) {
+        throw new Error('User not authenticated');
+      }
+
       // Generate a 6-digit verification code
       const code = Math.floor(100000 + Math.random() * 900000).toString();
       
@@ -34,7 +41,7 @@ export const PhoneVerificationStep = ({ phone, onVerificationComplete, onBack }:
           phone_verification_expires_at: new Date(Date.now() + 10 * 60 * 1000).toISOString(), // 10 minutes
           phone_verification_attempts: 0
         })
-        .eq('id', (await supabase.auth.getUser()).data.user?.id);
+        .eq('id', user.id);
 
       if (error) throw error;
 
