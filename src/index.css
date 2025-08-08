@@ -178,6 +178,7 @@
   
   .marketplace-surface {
     background-color: hsl(var(--marketplace-surface) / 0.5);
-    @apply backdrop-blur-sm border border-marketplace-border;
+    border-color: hsl(var(--marketplace-border));
+    @apply backdrop-blur-sm border;
   }
 }
