@@ -8,6 +8,8 @@ import { useAuth } from '@/contexts/AuthContext';
 import { UserMenu } from './UserMenu';
 import { LanguageSwitcher } from '../shared/LanguageSwitcher';
 
+const MobileMenu = () => null;
+
 const Header: React.FC = () => {
   const { user, isAuthenticated } = useAuth();
   const navigate = useNavigate();
