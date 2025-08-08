@@ -177,6 +177,7 @@
   }
   
   .marketplace-surface {
-    @apply bg-marketplace-surface/50 backdrop-blur-sm border border-marketplace-border;
+    background-color: hsl(var(--marketplace-surface) / 0.5);
+    @apply backdrop-blur-sm border border-marketplace-border;
   }
 }
