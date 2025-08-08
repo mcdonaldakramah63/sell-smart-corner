@@ -1,15 +1,14 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Menu, Plus, Heart, MapPin } from 'lucide-react';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator, DropdownMenuLabel } from '@/components/ui/dropdown-menu';
+import { Menu, Plus, Heart, MapPin, Home, List, SlidersHorizontal, HelpCircle } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { UserMenu } from './UserMenu';
-import MobileMenu from './MobileMenu';
 import { LanguageSwitcher } from '../shared/LanguageSwitcher';
 
 const Header: React.FC = () => {
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { user, isAuthenticated } = useAuth();
   const navigate = useNavigate();
 
@@ -88,24 +87,70 @@ const Header: React.FC = () => {
               </div>
             )}
 
-            <Button
-              variant="ghost"
-              size="sm"
-              className="lg:hidden"
-              onClick={() => setIsMobileMenuOpen(true)}
-            >
-              <Menu className="h-5 w-5" />
-            </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="sm" aria-label="Open menu">
+                  <Menu className="h-5 w-5" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-64 bg-popover text-popover-foreground border shadow-elegant rounded-xl z-[60]">
+                <DropdownMenuLabel>Main Navigation</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem asChild>
+                  <Link to="/" className="flex items-center gap-2">
+                    <Home className="h-4 w-4" />
+                    Home
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link to="/products" className="flex items-center gap-2">
+                    <List className="h-4 w-4" />
+                    Browse Products
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link to="/search" className="flex items-center gap-2">
+                    <SlidersHorizontal className="h-4 w-4" />
+                    Advanced Search
+                  </Link>
+                </DropdownMenuItem>
+                {isAuthenticated && (
+                  <>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem asChild>
+                      <Link to="/dashboard" className="flex items-center gap-2">
+                        <Home className="h-4 w-4" />
+                        Dashboard
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link to="/messages" className="flex items-center gap-2">
+                        <List className="h-4 w-4" />
+                        Messages
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link to="/security" className="flex items-center gap-2">
+                        <HelpCircle className="h-4 w-4" />
+                        Security
+                      </Link>
+                    </DropdownMenuItem>
+                  </>
+                )}
+                <DropdownMenuSeparator />
+                <DropdownMenuItem asChild>
+                  <Link to="/help" className="flex items-center gap-2">
+                    <HelpCircle className="h-4 w-4" />
+                    Help Center
+                  </Link>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </div>
       </div>
 
 
-      <MobileMenu 
-        unreadNotifications={0}
-        onLogin={handleLogin}
-        onRegister={handleRegister}
-      />
     </header>
   );
 };
