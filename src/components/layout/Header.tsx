@@ -8,8 +8,6 @@ import { useAuth } from '@/contexts/AuthContext';
 import { UserMenu } from './UserMenu';
 import { LanguageSwitcher } from '../shared/LanguageSwitcher';
 
-const MobileMenu = () => null;
-
 const Header: React.FC = () => {
   const { user, isAuthenticated } = useAuth();
   const navigate = useNavigate();
@@ -95,57 +93,97 @@ const Header: React.FC = () => {
                   <Menu className="h-5 w-5" />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-64 bg-popover text-popover-foreground border shadow-elegant rounded-xl z-[60]">
-                <DropdownMenuLabel>Main Navigation</DropdownMenuLabel>
+              <DropdownMenuContent
+                align="end"
+                sideOffset={8}
+                className="w-[88vw] max-w-sm p-2 sm:p-3 rounded-xl border z-[60] bg-popover text-popover-foreground backdrop-blur supports-[backdrop-filter]:bg-popover/95 shadow-elegant animate-enter"
+              >
+                <div className="px-2 pb-2">
+                  <p className="text-sm font-medium text-muted-foreground">Quick access</p>
+                </div>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem asChild>
-                  <Link to="/" className="flex items-center gap-2">
+
+                <DropdownMenuLabel className="text-xs tracking-wide text-muted-foreground">Discover</DropdownMenuLabel>
+                <DropdownMenuItem asChild className="rounded-lg hover:bg-muted/70 cursor-pointer">
+                  <Link to="/" className="flex items-center gap-3 py-2.5 hover-scale">
                     <Home className="h-4 w-4" />
-                    Home
+                    <div className="flex flex-col">
+                      <span className="text-sm">Home</span>
+                      <span className="text-xs text-muted-foreground">Back to homepage</span>
+                    </div>
                   </Link>
                 </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link to="/products" className="flex items-center gap-2">
+                <DropdownMenuItem asChild className="rounded-lg hover:bg-muted/70 cursor-pointer">
+                  <Link to="/products" className="flex items-center gap-3 py-2.5 hover-scale">
                     <List className="h-4 w-4" />
-                    Browse Products
+                    <div className="flex flex-col">
+                      <span className="text-sm">Browse Products</span>
+                      <span className="text-xs text-muted-foreground">Explore latest listings</span>
+                    </div>
                   </Link>
                 </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link to="/search" className="flex items-center gap-2">
+                <DropdownMenuItem asChild className="rounded-lg hover:bg-muted/70 cursor-pointer">
+                  <Link to="/search" className="flex items-center gap-3 py-2.5 hover-scale">
                     <SlidersHorizontal className="h-4 w-4" />
-                    Advanced Search
+                    <div className="flex flex-col">
+                      <span className="text-sm">Advanced Search</span>
+                      <span className="text-xs text-muted-foreground">Filter by price, location</span>
+                    </div>
                   </Link>
                 </DropdownMenuItem>
+
                 {isAuthenticated && (
                   <>
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem asChild>
-                      <Link to="/dashboard" className="flex items-center gap-2">
+                    <DropdownMenuLabel className="text-xs tracking-wide text-muted-foreground">My account</DropdownMenuLabel>
+                    <DropdownMenuItem asChild className="rounded-lg hover:bg-muted/70 cursor-pointer">
+                      <Link to="/dashboard" className="flex items-center gap-3 py-2.5 hover-scale">
                         <Home className="h-4 w-4" />
-                        Dashboard
+                        <div className="flex flex-col">
+                          <span className="text-sm">Dashboard</span>
+                          <span className="text-xs text-muted-foreground">Manage your activity</span>
+                        </div>
                       </Link>
                     </DropdownMenuItem>
-                    <DropdownMenuItem asChild>
-                      <Link to="/messages" className="flex items-center gap-2">
+                    <DropdownMenuItem asChild className="rounded-lg hover:bg-muted/70 cursor-pointer">
+                      <Link to="/messages" className="flex items-center gap-3 py-2.5 hover-scale">
                         <List className="h-4 w-4" />
-                        Messages
+                        <div className="flex flex-col">
+                          <span className="text-sm">Messages</span>
+                          <span className="text-xs text-muted-foreground">Chat with buyers & sellers</span>
+                        </div>
                       </Link>
                     </DropdownMenuItem>
-                    <DropdownMenuItem asChild>
-                      <Link to="/security" className="flex items-center gap-2">
+                    <DropdownMenuItem asChild className="rounded-lg hover:bg-muted/70 cursor-pointer">
+                      <Link to="/security" className="flex items-center gap-3 py-2.5 hover-scale">
                         <HelpCircle className="h-4 w-4" />
-                        Security
+                        <div className="flex flex-col">
+                          <span className="text-sm">Security</span>
+                          <span className="text-xs text-muted-foreground">Account protection</span>
+                        </div>
                       </Link>
                     </DropdownMenuItem>
                   </>
                 )}
+
                 <DropdownMenuSeparator />
-                <DropdownMenuItem asChild>
-                  <Link to="/help" className="flex items-center gap-2">
+                <DropdownMenuLabel className="text-xs tracking-wide text-muted-foreground">Support</DropdownMenuLabel>
+                <DropdownMenuItem asChild className="rounded-lg hover:bg-muted/70 cursor-pointer">
+                  <Link to="/help" className="flex items-center gap-3 py-2.5 hover-scale">
                     <HelpCircle className="h-4 w-4" />
-                    Help Center
+                    <div className="flex flex-col">
+                      <span className="text-sm">Help Center</span>
+                      <span className="text-xs text-muted-foreground">FAQs & contact</span>
+                    </div>
                   </Link>
                 </DropdownMenuItem>
+
+                <div className="px-2 pt-2">
+                  <div className="flex items-center justify-between p-2 rounded-lg bg-muted/60">
+                    <span className="text-xs text-muted-foreground">Language</span>
+                    <LanguageSwitcher />
+                  </div>
+                </div>
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
