@@ -2,26 +2,16 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Search, Menu, Plus, MessageSquare, Bell, User, Heart, MapPin } from 'lucide-react';
+import { Menu, Plus, Heart, MapPin } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { UserMenu } from './UserMenu';
 import MobileMenu from './MobileMenu';
-import { NotificationCenter } from '../notifications/NotificationCenter';
 import { LanguageSwitcher } from '../shared/LanguageSwitcher';
 
 const Header: React.FC = () => {
-  const [searchQuery, setSearchQuery] = useState('');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { user, isAuthenticated } = useAuth();
   const navigate = useNavigate();
-
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (searchQuery.trim()) {
-      navigate(`/products?search=${encodeURIComponent(searchQuery.trim())}`);
-    }
-  };
 
   const handleLogin = () => {
     navigate('/auth');
@@ -62,24 +52,8 @@ const Header: React.FC = () => {
             <div className="text-2xl font-bold text-marketplace-secondary">MarketHub</div>
           </Link>
 
-          {/* Search Bar */}
-          <form onSubmit={handleSearch} className="flex-1 max-w-2xl mx-8">
-            <div className="relative">
-              <Input
-                placeholder="I am looking for..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full h-12 pl-4 pr-14 border border-border rounded-xl bg-white shadow-soft focus:ring-2 focus:ring-primary/20 focus:border-primary"
-              />
-              <Button 
-                type="submit" 
-                variant="marketplace"
-                className="absolute right-2 top-2 h-8 px-4 rounded-lg"
-              >
-                <Search className="h-4 w-4" />
-              </Button>
-            </div>
-          </form>
+          {/* Spacer */}
+          <div className="flex-1" />
 
           {/* Right Actions */}
           <div className="flex items-center space-x-3">
@@ -90,14 +64,12 @@ const Header: React.FC = () => {
                   <span className="hidden sm:inline ml-1">Saved</span>
                 </Button>
 
-                <Button variant="ghost" size="sm" asChild className="text-muted-foreground hover:text-primary">
-                  <Link to="/messages">
-                    <MessageSquare className="h-5 w-5" />
-                    <span className="hidden sm:inline ml-1">Messages</span>
+                <Button size="sm" variant="marketplace" asChild>
+                  <Link to="/create-product">
+                    <Plus className="h-4 w-4 mr-2" />
+                    Post a FREE Ad
                   </Link>
                 </Button>
-
-                <NotificationCenter />
 
                 <UserMenu 
                   unreadNotifications={0}
@@ -128,22 +100,6 @@ const Header: React.FC = () => {
         </div>
       </div>
 
-      {/* Post Ad Button */}
-      {isAuthenticated && (
-        <div className="gradient-primary py-3">
-          <div className="container mx-auto px-4">
-            <Button 
-              className="w-full bg-white text-primary hover:bg-white/90 font-semibold shadow-soft hover:shadow-elegant transform hover:scale-[1.02] transition-all duration-300"
-              asChild
-            >
-              <Link to="/create-product">
-                <Plus className="h-4 w-4 mr-2" />
-                Post a FREE Ad
-              </Link>
-            </Button>
-          </div>
-        </div>
-      )}
 
       <MobileMenu 
         unreadNotifications={0}
