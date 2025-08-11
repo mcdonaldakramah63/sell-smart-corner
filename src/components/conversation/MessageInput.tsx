@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Send, Smile, Paperclip, Mic } from 'lucide-react';
@@ -9,13 +9,24 @@ interface MessageInputProps {
   onSendMessage: (message: string) => Promise<void>;
   disabled?: boolean;
   conversationId?: string;
+  prefillText?: string;
+  onPrefillConsumed?: () => void;
 }
 
-export const MessageInput = ({ onSendMessage, disabled = false, conversationId }: MessageInputProps) => {
+export const MessageInput = ({ onSendMessage, disabled = false, conversationId, prefillText, onPrefillConsumed }: MessageInputProps) => {
   const [newMessage, setNewMessage] = useState('');
   const [sending, setSending] = useState(false);
   const { startTyping, stopTyping } = useTypingIndicator({ conversationId });
+  const inputRef = useRef<HTMLInputElement>(null);
 
+  useEffect(() => {
+    if (prefillText && !disabled) {
+      setNewMessage(prefillText);
+      inputRef.current?.focus();
+      startTyping();
+      onPrefillConsumed?.();
+    }
+  }, [prefillText, disabled, startTyping, onPrefillConsumed]);
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -53,6 +64,7 @@ export const MessageInput = ({ onSendMessage, disabled = false, conversationId }
               placeholder="Type your message..."
               disabled={disabled || sending}
               className="pr-24 py-3 rounded-full"
+              ref={inputRef}
               onBlur={stopTyping}
               maxLength={1000}
             />

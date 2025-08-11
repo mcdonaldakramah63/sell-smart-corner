@@ -1,4 +1,5 @@
 
+import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useConversationData } from '@/hooks/useConversationData';
 import { useRealtimeMessages } from '@/hooks/useRealtimeMessages';
@@ -18,6 +19,8 @@ export default function ConversationPage() {
     product, 
     otherUser 
   } = useConversationData();
+
+  const [prefillText, setPrefillText] = useState<string | undefined>(undefined);
 
   const { sendMessage } = useSendMessage({ 
     conversationId: id, 
@@ -41,10 +44,12 @@ export default function ConversationPage() {
         currentUserId={user?.id} 
         conversationId={id}
       />
-      <QuickReplies onSelect={sendMessage} />
+      <QuickReplies onSelect={setPrefillText} />
       <MessageInput 
         onSendMessage={sendMessage} 
         conversationId={id}
+        prefillText={prefillText}
+        onPrefillConsumed={() => setPrefillText(undefined)}
       />
     </ConversationLayout>
   );
