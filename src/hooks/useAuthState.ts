@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import * as React from 'react';
 import { User } from '@/lib/types';
 import { supabase } from '@/integrations/supabase/client';
 import { Session } from '@supabase/supabase-js';
@@ -7,7 +7,7 @@ import { sanitizeInput } from '@/utils/authUtils';
 import { AuthState } from '@/types/auth';
 
 export const useAuthState = () => {
-  const [authState, setAuthState] = useState<AuthState>({
+  const [authState, setAuthState] = React.useState<AuthState>({
     user: null,
     session: null,
     isAuthenticated: false,
@@ -15,7 +15,7 @@ export const useAuthState = () => {
     error: null
   });
 
-  useEffect(() => {
+  React.useEffect(() => {
     console.log('Setting up auth state listener...');
     
     // Set up auth state listener
