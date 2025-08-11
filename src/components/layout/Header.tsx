@@ -21,7 +21,7 @@ const Header: React.FC = () => {
   };
 
   return (
-    <header className="bg-white/95 backdrop-blur-md shadow-elegant border-b border-border sticky top-0 z-50">
+    <header className="bg-white/95 backdrop-blur-md shadow-elegant border-b border-border sticky top-0 z-50 safe-area-pt">
       {/* Top Bar */}
       <div className="bg-gradient-to-r from-primary/10 to-accent/10 py-2">
         <div className="container mx-auto px-4">
