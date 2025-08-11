@@ -57,21 +57,6 @@ export const UserMenu = ({ unreadNotifications, onLogin, onRegister }: UserMenuP
 
   return (
     <>
-      {!isMobile && (
-        <>
-          <Button variant="ghost" size="icon" className="relative h-8 w-8 sm:h-10 sm:w-10" onClick={() => navigate('/notifications-page')}>
-            <Bell size={16} className="sm:w-5 sm:h-5" />
-            {unreadNotifications > 0 && (
-              <Badge className="h-4 w-4 sm:h-5 sm:w-5 text-xs rounded-full p-0 flex items-center justify-center absolute -top-1 -right-1 bg-marketplace-accent">
-                {unreadNotifications}
-              </Badge>
-            )}
-          </Button>
-          <Button variant="ghost" size="icon" className="h-8 w-8 sm:h-10 sm:w-10" onClick={() => navigate('/messages')}>
-            <MessageSquare size={16} className="sm:w-5 sm:h-5" />
-          </Button>
-        </>
-      )}
       
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
