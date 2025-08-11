@@ -1,6 +1,5 @@
 
 import { useToast } from "@/components/ui/use-toast";
-import { supabase } from '@/integrations/supabase/client';
 import { sanitizeInput } from '@/utils/authUtils';
 import { User } from '@/lib/types';
 import { AuthState } from '@/types/auth';
@@ -30,17 +29,6 @@ export const useProfileUpdate = (
         return acc;
       }, {} as Partial<User>);
       
-      const { error } = await supabase
-        .from('profiles')
-        .update({
-          ...sanitizedData,
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', authState.user.id);
-      
-      if (error) {
-        throw error;
-      }
       
       // Update local user state
       setAuthState(prev => ({

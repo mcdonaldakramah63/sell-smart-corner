@@ -20,10 +20,11 @@ export function ProductDetailMobileActions({ phone, disabled, onCall, onMessage 
           variant="outline"
           className="h-11 px-5 flex-1"
           onClick={onCall}
-          disabled={disabled || !phone}
+          disabled={disabled}
+          aria-label={phone ? `Call ${phone}` : 'Call seller'}
         >
           <Phone className="h-4 w-4 mr-2" />
-          Call
+          {phone ? `Call ${phone}` : 'Call'}
         </Button>
         <Button className="h-11 px-6 flex-1" onClick={onMessage} disabled={disabled}>
           <MessageCircle className="h-4 w-4 mr-2" />
