@@ -104,12 +104,12 @@ export const ProductCard: React.FC<ProductCardProps> = ({
         </Link>
         
         {/* Location and Time */}
-        <div className="flex items-center justify-between text-sm text-muted-foreground">
-          <div className="flex items-center">
-            <MapPin className="h-3 w-3 mr-1" />
+        <div className="flex items-center justify-between text-sm text-muted-foreground gap-2 min-w-0">
+          <div className="flex items-center min-w-0 max-w-[65%]">
+            <MapPin className="h-3 w-3 mr-1 shrink-0" />
             <span className="truncate">{product.location || 'Lagos'}</span>
           </div>
-          <div className="flex items-center">
+          <div className="flex items-center shrink-0">
             <Clock className="h-3 w-3 mr-1" />
             <span>{timeAgo(product.created_at)}</span>
           </div>
@@ -120,7 +120,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
           <Button 
             size="sm" 
             variant="marketplace"
-            className="flex-1"
+            className="flex-1 whitespace-nowrap"
           >
             <Phone className="h-3 w-3 mr-1" />
             Call
@@ -128,7 +128,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
           <Button 
             size="sm" 
             variant="outline" 
-            className="flex-1"
+            className="flex-1 whitespace-nowrap"
           >
             <MessageCircle className="h-3 w-3 mr-1" />
             Chat
