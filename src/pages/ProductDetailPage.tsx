@@ -16,6 +16,8 @@ import { ReviewForm } from '@/components/reviews/ReviewForm';
 import { ReviewList } from '@/components/reviews/ReviewList';
 import { SellerContactInfo } from '@/components/seller/SellerContactInfo';
 import { Seo } from "@/components/layout/Seo";
+import ProductDetailMobileActions from "@/components/products/ProductDetailMobileActions";
+import CheckoutSheet from "@/components/payments/CheckoutSheet";
 
 interface SellerProfile {
   id: string;
@@ -41,6 +43,7 @@ export default function ProductDetailPage() {
   const [liked, setLiked] = useState(false);
   const [isCreatingConversation, setIsCreatingConversation] = useState(false);
   const [reviewRefreshTrigger, setReviewRefreshTrigger] = useState(0);
+  const [checkoutOpen, setCheckoutOpen] = useState(false);
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -309,7 +312,7 @@ export default function ProductDetailPage() {
         breadcrumbJsonLd={breadcrumbJsonLd}
         aggregateRatingJsonLd={aggregateRatingJsonLd}
       />
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-4 py-8 pb-28 safe-area-pb">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Product Images and Details */}
           <div className="lg:col-span-2 space-y-8">
@@ -354,13 +357,15 @@ export default function ProductDetailPage() {
                   </Badge>
                 </div>
                 <div className="flex gap-2">
-                  <Button size="icon" variant="outline" onClick={handleLike}>
+                  <Button size="icon" variant="outline" onClick={handleLike} aria-label={liked ? 'Unsave product' : 'Save product'}>
                     <Heart 
                       size={20} 
                       className={liked ? "fill-red-500 text-red-500" : ""}
                     />
                   </Button>
                   <Button 
+                    className="hidden md:inline-flex"
+                    variant="outline"
                     onClick={handleMessage} 
                     disabled={product.is_sold || isCreatingConversation || user?.id === product.seller.id}
                   >
@@ -370,6 +375,14 @@ export default function ProductDetailPage() {
                       <MessageCircle size={20} className="mr-2" />
                     )}
                     {user?.id === product.seller.id ? 'Your Listing' : 'Message Seller'}
+                  </Button>
+                  <Button 
+                    className="hidden md:inline-flex"
+                    variant="marketplace"
+                    onClick={() => setCheckoutOpen(true)}
+                    disabled={product.is_sold}
+                  >
+                    Buy Now
                   </Button>
                 </div>
               </div>
@@ -412,6 +425,18 @@ export default function ProductDetailPage() {
           </div>
         </div>
       </div>
+      <ProductDetailMobileActions
+        price={product.price}
+        disabled={product.is_sold}
+        onAddToCart={() => toast({ title: 'Added to cart', description: 'Cart feature coming soon' })}
+        onBuyNow={() => setCheckoutOpen(true)}
+      />
+      <CheckoutSheet
+        open={checkoutOpen}
+        onOpenChange={setCheckoutOpen}
+        product={{ title: product.title, price: product.price, image: product.images?.[0] }}
+        onConfirm={() => toast({ title: 'Checkout', description: 'Payment flow coming soon' })}
+      />
     </Layout>
   );
 }

@@ -14,7 +14,7 @@ export default function ImageGallery({ images }: ImageGalleryProps) {
   
   if (images.length === 0) {
     return (
-      <div className="aspect-video w-full bg-muted flex items-center justify-center rounded-lg">
+      <div className="aspect-square sm:aspect-video w-full bg-muted flex items-center justify-center rounded-lg">
         <p className="text-muted-foreground">No images available</p>
       </div>
     );
@@ -39,7 +39,7 @@ export default function ImageGallery({ images }: ImageGalleryProps) {
   return (
     <>
       <div className={`relative ${fullscreen ? 'fixed inset-0 z-50 bg-background' : ''}`}>
-        <div className={`relative ${fullscreen ? 'h-full' : 'aspect-video'} bg-gray-50 rounded-lg overflow-hidden`}>
+        <div className={`relative ${fullscreen ? 'h-full' : 'aspect-square sm:aspect-video'} bg-muted rounded-lg overflow-hidden`}>
           {!imageError[activeIndex] ? (
             <img
               src={images[activeIndex]}
@@ -49,8 +49,8 @@ export default function ImageGallery({ images }: ImageGalleryProps) {
               loading="lazy"
             />
           ) : (
-            <div className="w-full h-full flex items-center justify-center bg-gray-100">
-              <span className="text-gray-500">Image unavailable</span>
+            <div className="w-full h-full flex items-center justify-center bg-muted">
+              <span className="text-muted-foreground">Image unavailable</span>
             </div>
           )}
           
@@ -59,7 +59,7 @@ export default function ImageGallery({ images }: ImageGalleryProps) {
               <Button
                 variant="ghost"
                 size="icon"
-                className="absolute left-2 top-1/2 -translate-y-1/2 rounded-full bg-white/90 hover:bg-white shadow-md"
+                className="absolute left-2 top-1/2 -translate-y-1/2 rounded-full bg-background/90 hover:bg-background shadow-md"
                 onClick={prevImage}
               >
                 <ChevronLeft className="h-6 w-6" />
@@ -69,7 +69,7 @@ export default function ImageGallery({ images }: ImageGalleryProps) {
               <Button
                 variant="ghost"
                 size="icon"
-                className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full bg-white/90 hover:bg-white shadow-md"
+                className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full bg-background/90 hover:bg-background shadow-md"
                 onClick={nextImage}
               >
                 <ChevronRight className="h-6 w-6" />
@@ -81,7 +81,7 @@ export default function ImageGallery({ images }: ImageGalleryProps) {
           <Button
             variant="ghost"
             size="icon"
-            className="absolute top-2 right-2 rounded-full bg-white/90 hover:bg-white shadow-md"
+            className="absolute top-2 right-2 rounded-full bg-background/90 hover:bg-background shadow-md"
             onClick={toggleFullscreen}
           >
             <Maximize className="h-5 w-5" />
@@ -90,7 +90,7 @@ export default function ImageGallery({ images }: ImageGalleryProps) {
 
           {/* Image counter */}
           {images.length > 1 && (
-            <div className="absolute bottom-2 left-1/2 -translate-x-1/2 bg-black/70 text-white px-2 py-1 rounded text-sm">
+            <div className="absolute bottom-2 left-1/2 -translate-x-1/2 bg-foreground/80 text-background px-2 py-1 rounded text-sm">
               {activeIndex + 1} / {images.length}
             </div>
           )}
@@ -116,8 +116,8 @@ export default function ImageGallery({ images }: ImageGalleryProps) {
                     loading="lazy"
                   />
                 ) : (
-                  <div className="w-20 h-20 bg-gray-200 flex items-center justify-center">
-                    <span className="text-xs text-gray-500">N/A</span>
+                  <div className="w-20 h-20 bg-muted flex items-center justify-center">
+                    <span className="text-xs text-muted-foreground">N/A</span>
                   </div>
                 )}
               </div>
@@ -128,7 +128,7 @@ export default function ImageGallery({ images }: ImageGalleryProps) {
       
       {/* Fullscreen background overlay */}
       {fullscreen && (
-        <div className="fixed inset-0 bg-black/80 z-40" onClick={toggleFullscreen}></div>
+        <div className="fixed inset-0 bg-foreground/80 z-40" onClick={toggleFullscreen}></div>
       )}
     </>
   );
