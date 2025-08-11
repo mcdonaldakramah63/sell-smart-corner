@@ -124,7 +124,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
             className="flex-1 h-8 px-2 whitespace-nowrap"
             onClick={(e) => {
               e.stopPropagation();
-              navigate(`/products/${product.id}#contact`);
+              navigate(`/products/${product.id}`);
             }}
           >
             <Phone className="h-3 w-3 mr-1" />

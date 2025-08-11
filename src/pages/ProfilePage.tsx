@@ -5,42 +5,19 @@ import { ProfilePictureCard } from '@/components/profile/ProfilePictureCard';
 import PhoneVerificationCard from '@/components/profile/PhoneVerificationCard';
 import TwoFactorAuthCard from '@/components/profile/TwoFactorAuthCard';
 import { User } from 'lucide-react';
-import { useState } from 'react';
+import { useProfileForm } from '@/hooks/useProfileForm';
 
 export default function ProfilePage() {
-  const [formData, setFormData] = useState({
-    fullName: '',
-    username: '',
-    email: '',
-    phone: '',
-    bio: '',
-    location: '',
-    website: ''
-  });
-  const [errors, setErrors] = useState({});
-  const [loading, setLoading] = useState(false);
-  const [avatarUrl, setAvatarUrl] = useState('');
-
-  const handleInputChange = (field: string, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    console.log('Profile updated:', formData);
-  };
-
-  const handleAvatarChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      const url = URL.createObjectURL(file);
-      setAvatarUrl(url);
-    }
-  };
-
-  const handleRemovePicture = () => {
-    setAvatarUrl('');
-  };
+  const {
+    formData,
+    avatarUrl,
+    loading,
+    errors,
+    handleInputChange,
+    handleAvatarChange,
+    handleRemoveAvatar,
+    handleSubmit
+  } = useProfileForm();
 
   return (
     <Layout>
@@ -63,7 +40,7 @@ export default function ProfilePage() {
             <ProfilePictureCard 
               avatarUrl={avatarUrl}
               onAvatarChange={handleAvatarChange}
-              onRemovePicture={handleRemovePicture}
+              onRemovePicture={handleRemoveAvatar}
             />
             
             {/* Profile Information */}

@@ -72,7 +72,7 @@ export const UserMenu = ({ unreadNotifications, onLogin, onRegister }: UserMenuP
             <User className="mr-2 h-4 w-4" />
             Profile
           </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => navigate('/settings-page')} className="text-sm">
+          <DropdownMenuItem onClick={() => navigate('/settings')} className="text-sm">
             <Settings className="mr-2 h-4 w-4" />
             Settings
           </DropdownMenuItem>
