@@ -34,10 +34,10 @@ export const ConversationLayout = ({
     <div className="min-h-screen bg-slate-50">
       <div className="max-w-6xl mx-auto">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-0 min-h-screen">
-          {/* Sidebar - Product Info */}
-          <div className="lg:col-span-4 bg-white border-r border-slate-200">
-            <div className="sticky top-0 p-4 space-y-4">
-              {product && (
+          {/* Sidebar - Product Info (hidden when no product) */}
+          {product && (
+            <div className="lg:col-span-4 bg-white border-r border-slate-200">
+              <div className="sticky top-0 p-4 space-y-4">
                 <div className="space-y-4">
                   <ProductInfoCard product={product} />
                   {otherUser && (
@@ -47,13 +47,15 @@ export const ConversationLayout = ({
                     />
                   )}
                 </div>
-              )}
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Chat Area */}
-          <div className="lg:col-span-8 bg-white flex flex-col">
-            <ConversationHeader otherUser={otherUser} />
+          <div className={`bg-white flex flex-col ${product ? 'lg:col-span-8' : 'lg:col-span-12'}`}>
+            <div className="sticky top-0 z-20">
+              <ConversationHeader otherUser={otherUser} />
+            </div>
             
             {loading ? (
               <div className="flex-1 flex justify-center items-center">
@@ -63,7 +65,7 @@ export const ConversationLayout = ({
                 </div>
               </div>
             ) : (
-              <div className="flex-1 flex flex-col min-h-0 bg-slate-50">
+              <div className="flex-1 flex flex-col min-h-0 bg-slate-50 pb-24">
                 {children}
               </div>
             )}

@@ -54,7 +54,7 @@ export const MessageInput = ({ onSendMessage, disabled = false, conversationId, 
   };
 
   return (
-    <div className="border-t border-border bg-background safe-area-pb">
+    <div className="sticky bottom-0 z-30 border-t border-border bg-background safe-area-pb">
       <div className="p-3">
         <form onSubmit={handleSubmit} className="flex items-end space-x-2">
           <div className="flex-1 relative">
