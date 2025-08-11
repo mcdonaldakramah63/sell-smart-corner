@@ -118,19 +118,19 @@ export const ProductCard: React.FC<ProductCardProps> = ({
         {/* Action Buttons - Jiji Style */}
         <div className="flex gap-2 pt-2">
           <Button 
-            size="default" 
+            size="sm" 
             variant="marketplace"
             className="flex-1"
           >
-            <Phone className="h-4 w-4 mr-1" />
+            <Phone className="h-3 w-3 mr-1" />
             Call
           </Button>
           <Button 
-            size="default" 
+            size="sm" 
             variant="outline" 
             className="flex-1"
           >
-            <MessageCircle className="h-4 w-4 mr-1" />
+            <MessageCircle className="h-3 w-3 mr-1" />
             Chat
           </Button>
         </div>
