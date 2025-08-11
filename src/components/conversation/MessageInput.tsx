@@ -43,8 +43,8 @@ export const MessageInput = ({ onSendMessage, disabled = false, conversationId }
   };
 
   return (
-    <div className="border-t border-slate-200 bg-white">
-      <div className="p-4">
+    <div className="border-t border-border bg-background safe-area-pb">
+      <div className="p-3">
         <form onSubmit={handleSubmit} className="flex items-end space-x-2">
           <div className="flex-1 relative">
             <Input
@@ -52,27 +52,29 @@ export const MessageInput = ({ onSendMessage, disabled = false, conversationId }
               onChange={handleInputChange}
               placeholder="Type your message..."
               disabled={disabled || sending}
-              className="pr-20 py-3 border-slate-200 focus:border-blue-500 focus:ring-blue-500 rounded-full"
+              className="pr-24 py-3 rounded-full"
               onBlur={stopTyping}
               maxLength={1000}
             />
             
-            <div className="absolute right-3 top-1/2 transform -translate-y-1/2 flex space-x-1">
+            <div className="absolute right-2 top-1/2 transform -translate-y-1/2 flex space-x-1">
               <Button
                 type="button"
                 variant="ghost"
                 size="sm"
-                className="h-8 w-8 p-0 hover:bg-slate-100"
+                className="h-10 w-10 p-0 hover:bg-muted tap-target"
+                aria-label="Attach file"
               >
-                <Paperclip className="h-4 w-4 text-slate-500" />
+                <Paperclip className="h-5 w-5 text-muted-foreground" />
               </Button>
               <Button
                 type="button"
                 variant="ghost"
                 size="sm"
-                className="h-8 w-8 p-0 hover:bg-slate-100"
+                className="h-10 w-10 p-0 hover:bg-muted tap-target"
+                aria-label="Add emoji"
               >
-                <Smile className="h-4 w-4 text-slate-500" />
+                <Smile className="h-5 w-5 text-muted-foreground" />
               </Button>
             </div>
           </div>
@@ -93,9 +95,10 @@ export const MessageInput = ({ onSendMessage, disabled = false, conversationId }
             <Button 
               type="button"
               variant="ghost"
-              className="h-12 w-12 rounded-full hover:bg-slate-100 p-0"
+              className="h-12 w-12 rounded-full hover:bg-muted p-0 tap-target"
+              aria-label="Record audio"
             >
-              <Mic className="h-5 w-5 text-slate-500" />
+              <Mic className="h-5 w-5 text-muted-foreground" />
             </Button>
           )}
         </form>

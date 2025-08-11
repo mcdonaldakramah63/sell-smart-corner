@@ -6,6 +6,7 @@ import { useSendMessage } from '@/hooks/useSendMessage';
 import { ConversationLayout } from '@/components/conversation/ConversationLayout';
 import { MessageList } from '@/components/conversation/MessageList';
 import { MessageInput } from '@/components/conversation/MessageInput';
+import QuickReplies from '@/components/conversation/QuickReplies';
 
 export default function ConversationPage() {
   const { user } = useAuth();
@@ -40,6 +41,7 @@ export default function ConversationPage() {
         currentUserId={user?.id} 
         conversationId={id}
       />
+      <QuickReplies onSelect={sendMessage} />
       <MessageInput 
         onSendMessage={sendMessage} 
         conversationId={id}
