@@ -20,6 +20,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useTranslation } from 'react-i18next';
 
 interface UserMenuProps {
   unreadNotifications: number;
@@ -31,6 +32,7 @@ export const UserMenu = ({ unreadNotifications, onLogin, onRegister }: UserMenuP
   const { user, isAuthenticated, logout } = useAuth();
   const navigate = useNavigate();
   const isMobile = useIsMobile();
+  const { t } = useTranslation();
 
   const getInitials = (name: string) => {
     return name
@@ -45,11 +47,11 @@ export const UserMenu = ({ unreadNotifications, onLogin, onRegister }: UserMenuP
       <div className="flex items-center space-x-1 sm:space-x-2">
         {!isMobile && (
           <Button variant="ghost" onClick={onLogin} size="sm" className="hidden sm:inline-flex">
-            Login
+            {t('login')}
           </Button>
         )}
         <Button onClick={isMobile ? onLogin : onRegister} size="sm" className="text-xs sm:text-sm px-2 sm:px-4">
-          {isMobile ? 'Login' : 'Register'}
+          {isMobile ? t('login') : t('register')}
         </Button>
       </div>
     );
@@ -66,20 +68,20 @@ export const UserMenu = ({ unreadNotifications, onLogin, onRegister }: UserMenuP
           </Avatar>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-48 sm:w-56">
-          <DropdownMenuLabel className="text-sm">My Account</DropdownMenuLabel>
+          <DropdownMenuLabel className="text-sm">{t('myAccount')}</DropdownMenuLabel>
           <DropdownMenuSeparator />
           <DropdownMenuItem onClick={() => navigate('/profile')} className="text-sm">
             <User className="mr-2 h-4 w-4" />
-            Profile
+            {t('profile')}
           </DropdownMenuItem>
           <DropdownMenuItem onClick={() => navigate('/settings')} className="text-sm">
             <Settings className="mr-2 h-4 w-4" />
-            Settings
+            {t('settings')}
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem onClick={logout} className="text-sm">
             <LogOut className="mr-2 h-4 w-4" />
-            Logout
+            {t('logout')}
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
