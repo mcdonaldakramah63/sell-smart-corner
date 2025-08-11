@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import i18n from '@/lib/i18n';
 
 export interface Language {
   code: string;
@@ -42,11 +43,22 @@ export const useLanguage = () => {
     // Load saved language preference
     const savedLanguage = localStorage.getItem('preferred-language') || 'en';
     setCurrentLanguage(savedLanguage);
+    try {
+      i18n.changeLanguage(savedLanguage);
+      document.documentElement.lang = savedLanguage;
+    } catch (e) {
+      console.warn('i18n initialization issue', e);
+    }
   }, []);
 
   const changeLanguage = (languageCode: string) => {
     setCurrentLanguage(languageCode);
     localStorage.setItem('preferred-language', languageCode);
+
+    try {
+      i18n.changeLanguage(languageCode);
+      document.documentElement.lang = languageCode;
+    } catch {}
     
     toast({
       title: 'Language changed',

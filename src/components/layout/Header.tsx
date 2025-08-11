@@ -2,15 +2,15 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator, DropdownMenuLabel } from '@/components/ui/dropdown-menu';
-import { Menu, Plus, Heart, MapPin, Home, List, SlidersHorizontal, HelpCircle } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { UserMenu } from './UserMenu';
 import { LanguageSwitcher } from '../shared/LanguageSwitcher';
+import { useTranslation } from 'react-i18next';
 
 const Header: React.FC = () => {
-  const { user, isAuthenticated } = useAuth();
+  const { isAuthenticated } = useAuth();
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   const handleLogin = () => {
     navigate('/auth');
@@ -22,25 +22,7 @@ const Header: React.FC = () => {
 
   return (
     <header className="bg-white/95 backdrop-blur-md shadow-elegant border-b border-border sticky top-0 z-50 safe-area-pt">
-      {/* Top Bar */}
-      <div className="bg-gradient-to-r from-primary/10 to-accent/10 py-2">
-        <div className="container mx-auto px-4">
-          <div className="flex items-center justify-between text-sm text-marketplace-secondary">
-            <div className="flex items-center space-x-4">
-              <div className="flex items-center">
-                <MapPin className="h-4 w-4 mr-1" />
-                <span>All Locations</span>
-              </div>
-            </div>
-            <div className="flex items-center space-x-4">
-              <LanguageSwitcher />
-              <Link to="/help" className="hover:text-primary transition-colors">Help</Link>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Main Header */}
+      {/* Main Header (top bar removed) */}
       <div className="container mx-auto px-4">
         <div className="flex h-18 items-center justify-between">
           {/* Logo */}
@@ -56,6 +38,9 @@ const Header: React.FC = () => {
 
           {/* Right Actions */}
           <div className="flex items-center space-x-3">
+            {/* Language moved to main header */}
+            <LanguageSwitcher />
+
             {isAuthenticated ? (
               <UserMenu 
                 unreadNotifications={0}
@@ -65,19 +50,16 @@ const Header: React.FC = () => {
             ) : (
               <div className="flex items-center space-x-3">
                 <Button variant="ghost" size="sm" asChild>
-                  <Link to="/auth">Login</Link>
+                  <Link to="/auth">{t('common.login')}</Link>
                 </Button>
                 <Button size="sm" variant="marketplace" asChild>
-                  <Link to="/auth?tab=register">Register</Link>
+                  <Link to="/auth?tab=register">{t('common.register')}</Link>
                 </Button>
               </div>
             )}
-
           </div>
         </div>
       </div>
-
-
     </header>
   );
 };
