@@ -17,7 +17,6 @@ import { ReviewList } from '@/components/reviews/ReviewList';
 import { SellerContactInfo } from '@/components/seller/SellerContactInfo';
 import { Seo } from "@/components/layout/Seo";
 import ProductDetailMobileActions from "@/components/products/ProductDetailMobileActions";
-import CheckoutSheet from "@/components/payments/CheckoutSheet";
 
 interface SellerProfile {
   id: string;
@@ -43,7 +42,6 @@ export default function ProductDetailPage() {
   const [liked, setLiked] = useState(false);
   const [isCreatingConversation, setIsCreatingConversation] = useState(false);
   const [reviewRefreshTrigger, setReviewRefreshTrigger] = useState(0);
-  const [checkoutOpen, setCheckoutOpen] = useState(false);
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -376,14 +374,6 @@ export default function ProductDetailPage() {
                     )}
                     {user?.id === product.seller.id ? 'Your Listing' : 'Message Seller'}
                   </Button>
-                  <Button 
-                    className="hidden md:inline-flex"
-                    variant="marketplace"
-                    onClick={() => setCheckoutOpen(true)}
-                    disabled={product.is_sold}
-                  >
-                    Buy Now
-                  </Button>
                 </div>
               </div>
               
@@ -426,16 +416,16 @@ export default function ProductDetailPage() {
         </div>
       </div>
       <ProductDetailMobileActions
-        price={product.price}
+        phone={sellerProfile?.phone}
         disabled={product.is_sold}
-        onAddToCart={() => toast({ title: 'Added to cart', description: 'Cart feature coming soon' })}
-        onBuyNow={() => setCheckoutOpen(true)}
-      />
-      <CheckoutSheet
-        open={checkoutOpen}
-        onOpenChange={setCheckoutOpen}
-        product={{ title: product.title, price: product.price, image: product.images?.[0] }}
-        onConfirm={() => toast({ title: 'Checkout', description: 'Payment flow coming soon' })}
+        onCall={() => {
+          if (sellerProfile?.phone) {
+            window.location.href = `tel:${sellerProfile.phone}`;
+          } else {
+            toast({ title: 'Phone not available', description: 'This seller has no phone number listed', variant: 'destructive' });
+          }
+        }}
+        onMessage={handleMessage}
       />
     </Layout>
   );
