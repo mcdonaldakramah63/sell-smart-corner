@@ -49,10 +49,10 @@ export function SearchHeader({
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border p-4 mb-6">
+    <div className="bg-card rounded-xl shadow-soft border p-3 mb-4">
       <form onSubmit={handleSubmit} className="space-y-4">
         {/* Main Search Bar */}
-        <div className="flex gap-2">
+        <div className="flex flex-col md:flex-row gap-2">
           <div className="flex-1 relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
@@ -75,7 +75,7 @@ export function SearchHeader({
             )}
           </div>
           
-          <div className="w-64 relative">
+          <div className="relative md:w-64">
             <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
               type="text"
@@ -86,19 +86,19 @@ export function SearchHeader({
             />
           </div>
           
-          <Button type="submit" className="px-8">
+          <Button type="submit" className="px-8 w-full md:w-auto">
             Search
           </Button>
         </div>
 
         {/* Filter Toggle and Advanced Search */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2">
+          <div className="flex items-center gap-2 w-full sm:w-auto">
             <Button
               type="button"
               variant="outline"
               onClick={onToggleFilters}
-              className="flex items-center gap-2"
+              className="flex items-center gap-2 w-full sm:w-auto"
             >
               <Filter className="h-4 w-4" />
               {showFilters ? 'Hide' : 'Show'} Filters
@@ -126,7 +126,7 @@ export function SearchHeader({
             />
           </div>
 
-          <div className="text-sm text-muted-foreground">
+          <div className="hidden sm:block text-sm text-muted-foreground">
             Use filters to narrow down your search results
           </div>
         </div>

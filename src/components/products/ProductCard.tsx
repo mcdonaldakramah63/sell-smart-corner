@@ -48,19 +48,20 @@ export const ProductCard: React.FC<ProductCardProps> = ({
   };
 
   return (
-    <Card className="group hover:shadow-lg transition-all duration-300 bg-white border border-gray-200 rounded-lg overflow-hidden">
+    <Card className="group marketplace-card overflow-hidden">
       {/* Image Section - Clean Jiji Style */}
-      <div className="relative aspect-square overflow-hidden bg-gray-100">
+      <div className="relative aspect-square overflow-hidden bg-muted">
         <Link to={`/products/${product.id}`}>
           {primaryImage ? (
             <img
               src={primaryImage}
               alt={product.title}
+              loading="lazy"
               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
             />
           ) : (
-            <div className="w-full h-full bg-gray-100 flex items-center justify-center">
-              <span className="text-gray-400 text-sm">No image</span>
+            <div className="w-full h-full bg-muted flex items-center justify-center">
+              <span className="text-muted-foreground text-sm">No image</span>
             </div>
           )}
         </Link>
@@ -69,9 +70,10 @@ export const ProductCard: React.FC<ProductCardProps> = ({
         <Button
           variant="ghost"
           size="sm"
-          className={`absolute top-2 right-2 rounded-full w-8 h-8 p-0 bg-white/90 hover:bg-white shadow-sm ${
-            isSaved ? 'text-red-500' : 'text-gray-600'
+          className={`absolute top-2 right-2 rounded-full w-10 h-10 p-0 bg-background/90 hover:bg-background shadow-soft ${
+            isSaved ? 'text-red-500' : 'text-muted-foreground'
           }`}
+          aria-label={isSaved ? 'Remove from saved' : 'Save product'}
           onClick={() => onSave?.(product.id)}
         >
           <Heart className={`h-4 w-4 ${isSaved ? 'fill-current' : ''}`} />
@@ -79,7 +81,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
 
         {/* Condition Badge */}
         {product.condition && (
-          <Badge className="absolute top-2 left-2 bg-blue-600 text-white text-xs px-2 py-1">
+          <Badge className="absolute top-2 left-2 bg-primary text-primary-foreground text-xs px-2 py-1">
             {product.condition}
           </Badge>
         )}
@@ -87,22 +89,22 @@ export const ProductCard: React.FC<ProductCardProps> = ({
 
       <CardContent className="p-4 space-y-3">
         {/* Price - Prominent */}
-        <div className="text-xl font-bold text-blue-600">
+        <div className="text-xl font-semibold text-primary">
           {formatPrice(product.price)}
         </div>
         
         {/* Title */}
         <Link 
           to={`/products/${product.id}`}
-          className="block hover:text-blue-600 transition-colors"
+          className="block hover:text-primary transition-colors"
         >
-          <h3 className="font-medium text-gray-800 line-clamp-2 leading-tight">
+          <h3 className="font-medium text-foreground line-clamp-2 leading-tight">
             {product.title}
           </h3>
         </Link>
         
         {/* Location and Time */}
-        <div className="flex items-center justify-between text-sm text-gray-500">
+        <div className="flex items-center justify-between text-sm text-muted-foreground">
           <div className="flex items-center">
             <MapPin className="h-3 w-3 mr-1" />
             <span className="truncate">{product.location || 'Lagos'}</span>
@@ -116,18 +118,19 @@ export const ProductCard: React.FC<ProductCardProps> = ({
         {/* Action Buttons - Jiji Style */}
         <div className="flex gap-2 pt-2">
           <Button 
-            size="sm" 
-            className="flex-1 bg-blue-600 hover:bg-blue-700 text-white text-xs py-1.5"
+            size="default" 
+            variant="marketplace"
+            className="flex-1"
           >
-            <Phone className="h-3 w-3 mr-1" />
+            <Phone className="h-4 w-4 mr-1" />
             Call
           </Button>
           <Button 
-            size="sm" 
+            size="default" 
             variant="outline" 
-            className="flex-1 border-blue-600 text-blue-600 hover:bg-blue-50 text-xs py-1.5"
+            className="flex-1"
           >
-            <MessageCircle className="h-3 w-3 mr-1" />
+            <MessageCircle className="h-4 w-4 mr-1" />
             Chat
           </Button>
         </div>

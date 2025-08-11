@@ -15,7 +15,7 @@ export const MobileOptimizedLayout = ({ children }: MobileOptimizedLayoutProps) 
 
   return (
     <>
-      <div className={isMobile ? 'pb-20' : ''}>
+      <div className={isMobile ? 'pb-24 safe-area-pb' : ''}>
         {children}
       </div>
       
