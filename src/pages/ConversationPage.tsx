@@ -36,7 +36,7 @@ export default function ConversationPage() {
   return (
     <ConversationLayout 
       otherUser={otherUser} 
-      product={product} 
+      product={null} 
       loading={loading}
     >
       <MessageList 
