@@ -17,13 +17,13 @@ export function QuickReplies({ onSelect, suggestions = [
 
   return (
     <div className="bg-background border-t border-border px-3 py-2 overflow-x-auto no-scrollbar safe-area-pb">
-      <div className="flex gap-2 items-center">
+      <div className="flex flex-nowrap gap-2 items-center w-max">
         {suggestions.map((text) => (
           <Button
             key={text}
             variant="outline"
             size="sm"
-            className="rounded-full h-10 px-4 whitespace-nowrap tap-target"
+            className="rounded-full h-10 px-4 whitespace-nowrap text-sm leading-none tap-target"
             onClick={() => onSelect(text)}
           >
             {text}
