@@ -4,7 +4,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Heart, MapPin, Clock, Phone, MessageCircle } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useCurrency } from '@/hooks/useCurrency';
 
 interface ProductCardProps {
@@ -31,6 +31,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
   isSaved = false
 }) => {
   const { formatPrice } = useCurrency();
+  const navigate = useNavigate();
   
   const primaryImage = product.images?.find(img => img.is_primary)?.image_url || 
                       product.images?.[0]?.image_url;
@@ -120,7 +121,11 @@ export const ProductCard: React.FC<ProductCardProps> = ({
           <Button 
             size="sm" 
             variant="marketplace"
-            className="flex-1 whitespace-nowrap"
+            className="flex-1 h-8 px-2 whitespace-nowrap"
+            onClick={(e) => {
+              e.stopPropagation();
+              navigate(`/products/${product.id}#contact`);
+            }}
           >
             <Phone className="h-3 w-3 mr-1" />
             Call
@@ -128,7 +133,11 @@ export const ProductCard: React.FC<ProductCardProps> = ({
           <Button 
             size="sm" 
             variant="outline" 
-            className="flex-1 whitespace-nowrap"
+            className="flex-1 h-8 px-2 whitespace-nowrap"
+            onClick={(e) => {
+              e.stopPropagation();
+              navigate(`/messages?productId=${product.id}`);
+            }}
           >
             <MessageCircle className="h-3 w-3 mr-1" />
             Chat
