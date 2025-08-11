@@ -19,7 +19,7 @@ interface ConversationHeaderProps {
 export const ConversationHeader = ({ otherUser }: ConversationHeaderProps) => {
   return (
     <div className="border-b border-border bg-background">
-      <div className="flex items-center justify-between px-3 py-2">
+      <div className="flex items-center justify-between px-3 py-1.5">
         <div className="flex items-center space-x-3">
           <Button variant="ghost" size="sm" className="hover:bg-slate-100" asChild>
             <Link to="/messages">
@@ -30,7 +30,7 @@ export const ConversationHeader = ({ otherUser }: ConversationHeaderProps) => {
           {otherUser && (
             <>
               <div className="relative">
-                <Avatar className="h-10 w-10 ring-2 ring-slate-100">
+                <Avatar className="h-9 w-9 ring-2 ring-slate-100">
                   {otherUser.avatar ? (
                     <AvatarImage src={otherUser.avatar} />
                   ) : (
@@ -46,20 +46,21 @@ export const ConversationHeader = ({ otherUser }: ConversationHeaderProps) => {
               
               <div className="flex-1 min-w-0">
                 <div className="flex items-center space-x-2">
-                  <h2 className="font-semibold text-foreground truncate text-base md:text-lg" title={otherUser.name}>{otherUser.name}</h2>
-                  <Badge variant="secondary" className="text-xs">
+                  <h2 className="font-semibold text-foreground truncate text-sm md:text-base" title={otherUser.name}>{otherUser.name}</h2>
+                  <Badge variant="secondary" className="hidden md:inline-flex text-[10px] md:text-xs">
                     <Shield className="h-3 w-3 mr-1" />
                     Verified
                   </Badge>
                 </div>
-                <div className="flex items-center space-x-2">
-                  <OnlineStatus userId={otherUser.id} showText />
-                  <span className="text-slate-400">•</span>
-                  <div className="flex items-center space-x-1">
-                    <Star className="h-3 w-3 text-yellow-400 fill-current" />
-                    <span className="text-sm text-slate-600">4.8</span>
+                  <div className="flex items-center gap-2">
+                    <span className="md:hidden inline-flex"><OnlineStatus userId={otherUser.id} /></span>
+                    <span className="hidden md:inline-flex"><OnlineStatus userId={otherUser.id} showText /></span>
+                    <span className="text-muted-foreground hidden md:inline">•</span>
+                    <div className="hidden md:flex items-center gap-1">
+                      <Star className="h-3 w-3 text-yellow-400 fill-current" />
+                      <span className="text-xs text-muted-foreground">4.8</span>
+                    </div>
                   </div>
-                </div>
               </div>
             </>
           )}
