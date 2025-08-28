@@ -50,10 +50,10 @@ const Header: React.FC = () => {
             ) : (
               <div className="flex items-center space-x-3">
                 <Button variant="ghost" size="sm" asChild>
-                  <Link to="/auth">{t('common.login')}</Link>
+                  <Link to="/auth">Login</Link>
                 </Button>
                 <Button size="sm" variant="marketplace" asChild>
-                  <Link to="/auth?tab=register">{t('common.register')}</Link>
+                  <Link to="/auth?tab=register">Register</Link>
                 </Button>
               </div>
             )}
