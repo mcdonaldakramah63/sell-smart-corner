@@ -36,50 +36,19 @@ export const PhoneVerificationStep = ({ phone, onVerificationComplete, onBack }:
         return;
       }
 
-      // Generate a 6-digit verification code
-      const code = Math.floor(100000 + Math.random() * 900000).toString();
-      
-      // First check if profile exists, if not create it
-      const { data: existingProfile } = await supabase
-        .from('profiles')
-        .select('id')
-        .eq('id', user.id)
-        .single();
-
-      if (!existingProfile) {
-        // Create profile if it doesn't exist
-        const { error: createError } = await supabase
-          .from('profiles')
-          .insert({
-            id: user.id,
-            email: user.email,
-            full_name: user.user_metadata?.full_name || user.user_metadata?.name
-          });
-        
-        if (createError) throw createError;
-      }
-      
-      // Store verification code in user profile (in real app, send via SMS)
-      const { error } = await supabase
-        .from('profiles')
-        .update({
-          phone_verification_code: code,
-          phone_verification_expires_at: new Date(Date.now() + 10 * 60 * 1000).toISOString(), // 10 minutes
-          phone_verification_attempts: 0
-        })
-        .eq('id', user.id);
+      // Use the secure database function to generate and store hashed code
+      const { error } = await supabase.rpc('generate_phone_verification_code', {
+        user_uuid: user.id,
+        phone_number: phone
+      });
 
       if (error) throw error;
 
-      // In a real app, you would send SMS here
-      // For demo purposes, show the code in a toast
+      setCodeSent(true);
       toast({
         title: "Verification Code Sent",
-        description: `Demo code: ${code} (In production, this would be sent via SMS)`,
-        duration: 10000,
+        description: "Please check your phone for the verification code.",
       });
-
-      setCodeSent(true);
     } catch (error) {
       console.error('Error sending verification code:', error);
       toast({
@@ -107,50 +76,43 @@ export const PhoneVerificationStep = ({ phone, onVerificationComplete, onBack }:
       const user = (await supabase.auth.getUser()).data.user;
       if (!user) throw new Error('User not found');
 
-      // Get current verification data
-      const { data: profile, error: fetchError } = await supabase
-        .from('profiles')
-        .select('phone_verification_code, phone_verification_expires_at, phone_verification_attempts')
-        .eq('id', user.id)
-        .single();
+      // Use the secure database function to verify the code
+      const { data: isValid, error } = await supabase.rpc('verify_phone_code', {
+        user_uuid: user.id,
+        input_code: verificationCode
+      });
 
-      if (fetchError) throw fetchError;
-
-      // Check if code has expired
-      if (new Date() > new Date(profile.phone_verification_expires_at)) {
-        toast({
-          title: "Code Expired",
-          description: "Verification code has expired. Please request a new one.",
-          variant: "destructive",
-        });
-        return;
+      if (error) {
+        // Handle specific error messages from the function
+        if (error.message.includes('Too many verification attempts')) {
+          toast({
+            title: "Too Many Attempts",
+            description: "Too many failed attempts. Please request a new code.",
+            variant: "destructive",
+          });
+          setCodeSent(false);
+          setVerificationCode('');
+          return;
+        }
+        if (error.message.includes('expired')) {
+          toast({
+            title: "Code Expired",
+            description: "Verification code has expired. Please request a new one.",
+            variant: "destructive",
+          });
+          setCodeSent(false);
+          setVerificationCode('');
+          return;
+        }
+        throw error;
       }
 
-      // Check attempts
-      if (profile.phone_verification_attempts >= 3) {
-        toast({
-          title: "Too Many Attempts",
-          description: "Too many failed attempts. Please request a new code.",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      // Verify code
-      if (verificationCode === profile.phone_verification_code) {
-        // Update profile with verified phone
-        const { error: updateError } = await supabase
+      if (isValid) {
+        // Update the phone number in the profile
+        await supabase
           .from('profiles')
-          .update({
-            phone: phone,
-            phone_verified: true,
-            phone_verification_code: null,
-            phone_verification_expires_at: null,
-            phone_verification_attempts: 0
-          })
+          .update({ phone: phone })
           .eq('id', user.id);
-
-        if (updateError) throw updateError;
 
         toast({
           title: "Phone Verified!",
@@ -159,14 +121,6 @@ export const PhoneVerificationStep = ({ phone, onVerificationComplete, onBack }:
 
         onVerificationComplete();
       } else {
-        // Increment attempts
-        await supabase
-          .from('profiles')
-          .update({
-            phone_verification_attempts: profile.phone_verification_attempts + 1
-          })
-          .eq('id', user.id);
-
         toast({
           title: "Invalid Code",
           description: "The verification code is incorrect. Please try again.",

@@ -20,7 +20,7 @@ export default function PhoneVerificationCard() {
   const [isVerified, setIsVerified] = useState(false);
 
   const sendVerificationCode = async () => {
-    if (!phone) {
+    if (!phone || !user?.id) {
       toast({
         title: 'Error',
         description: 'Please enter a phone number',
@@ -32,12 +32,13 @@ export default function PhoneVerificationCard() {
     try {
       setIsVerifying(true);
       
-      // In a real implementation, you would integrate with SMS service
-      // For now, we'll simulate the process
-      console.log('Sending verification code to:', phone);
-      
-      // Simulate API call delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Use the secure database function to generate and store hashed code
+      const { error } = await supabase.rpc('generate_phone_verification_code', {
+        user_uuid: user.id,
+        phone_number: phone
+      });
+
+      if (error) throw error;
       
       setCodeSent(true);
       toast({
@@ -45,6 +46,7 @@ export default function PhoneVerificationCard() {
         description: 'Please check your phone for the verification code'
       });
     } catch (error) {
+      console.error('Error sending verification code:', error);
       toast({
         title: 'Error',
         description: 'Failed to send verification code',
@@ -56,7 +58,7 @@ export default function PhoneVerificationCard() {
   };
 
   const verifyCode = async () => {
-    if (!verificationCode) {
+    if (!verificationCode || !user?.id) {
       toast({
         title: 'Error',
         description: 'Please enter the verification code',
@@ -68,20 +70,42 @@ export default function PhoneVerificationCard() {
     try {
       setIsVerifying(true);
       
-      // In a real implementation, you would verify the code with your SMS service
-      // For demo purposes, accept any 4-digit code
-      if (verificationCode.length === 4) {
-        // Update profile with verified phone number
-        const { error } = await supabase
-          .from('profiles')
-          .update({ 
-            phone,
-            phone_verified: true,
-            updated_at: new Date().toISOString()
-          })
-          .eq('id', user?.id);
+      // Use the secure database function to verify the code
+      const { data: isValid, error } = await supabase.rpc('verify_phone_code', {
+        user_uuid: user.id,
+        input_code: verificationCode
+      });
 
-        if (error) throw error;
+      if (error) {
+        if (error.message.includes('Too many verification attempts')) {
+          toast({
+            title: 'Too many attempts',
+            description: 'Too many failed attempts. Please request a new code.',
+            variant: 'destructive'
+          });
+          setCodeSent(false);
+          setVerificationCode('');
+          return;
+        }
+        if (error.message.includes('expired')) {
+          toast({
+            title: 'Code expired',
+            description: 'Verification code has expired. Please request a new one.',
+            variant: 'destructive'
+          });
+          setCodeSent(false);
+          setVerificationCode('');
+          return;
+        }
+        throw error;
+      }
+
+      if (isValid) {
+        // Update the phone number in the profile
+        await supabase
+          .from('profiles')
+          .update({ phone: phone })
+          .eq('id', user.id);
 
         setIsVerified(true);
         toast({
@@ -92,9 +116,10 @@ export default function PhoneVerificationCard() {
         throw new Error('Invalid verification code');
       }
     } catch (error) {
+      console.error('Error verifying code:', error);
       toast({
         title: 'Error',
-        description: 'Invalid verification code',
+        description: 'Invalid verification code. Please try again.',
         variant: 'destructive'
       });
     } finally {
@@ -145,10 +170,10 @@ export default function PhoneVerificationCard() {
                   <Input
                     id="code"
                     type="text"
-                    placeholder="Enter 4-digit code"
+                    placeholder="Enter 6-digit code"
                     value={verificationCode}
                     onChange={(e) => setVerificationCode(e.target.value)}
-                    maxLength={4}
+                    maxLength={6}
                   />
                 </div>
                 <div className="flex space-x-2">
