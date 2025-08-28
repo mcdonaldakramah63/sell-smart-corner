@@ -54,7 +54,7 @@ const HeroSection = () => {
           <div className="flex flex-col sm:flex-row gap-6 justify-center mb-20">
             <Button 
               size="lg" 
-              className="bg-white text-primary hover:bg-white/90 px-10 py-4 text-lg font-semibold shadow-elegant hover:shadow-glow transform hover:scale-105"
+              className="hidden md:flex bg-white text-primary hover:bg-white/90 px-10 py-4 text-lg font-semibold shadow-elegant hover:shadow-glow transform hover:scale-105"
               asChild
             >
               <Link to="/products">Start Shopping</Link>
@@ -70,7 +70,7 @@ const HeroSection = () => {
           </div>
 
           {/* Trust Indicators */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
+          <div className="hidden md:grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
             <div className="flex flex-col items-center marketplace-surface rounded-2xl p-8 backdrop-blur-sm">
               <Shield className="h-16 w-16 mb-6 text-primary-glow" />
               <h3 className="text-xl font-semibold mb-3 text-white">Safe & Secure</h3>
