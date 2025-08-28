@@ -7,7 +7,7 @@ export type Json =
   | Json[]
 
 export type Database = {
-  // Allows to automatically instanciate createClient with right options
+  // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
     PostgrestVersion: "12.2.3 (519615d)"
@@ -2202,6 +2202,10 @@ export type Database = {
         Args: { product_uuid: string; user_one: string; user_two: string }
         Returns: string
       }
+      generate_phone_verification_code: {
+        Args: { phone_number: string; user_uuid: string }
+        Returns: boolean
+      }
       get_conversation_participants: {
         Args: { conversation_uuid: string }
         Returns: {
@@ -2217,15 +2221,15 @@ export type Database = {
       }
       has_active_premium_ad: {
         Args: {
-          product_uuid: string
           ad_type_filter?: Database["public"]["Enums"]["premium_ad_type"]
+          product_uuid: string
         }
         Returns: boolean
       }
       has_role: {
         Args: {
-          _user_id: string
           _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
         }
         Returns: boolean
       }
@@ -2246,12 +2250,16 @@ export type Database = {
         Returns: boolean
       }
       is_user_blocked: {
-        Args: { blocker_uuid: string; blocked_uuid: string }
+        Args: { blocked_uuid: string; blocker_uuid: string }
         Returns: boolean
       }
       make_user_admin: {
         Args: { _user_id: string }
         Returns: undefined
+      }
+      verify_phone_code: {
+        Args: { input_code: string; user_uuid: string }
+        Returns: boolean
       }
     }
     Enums: {
