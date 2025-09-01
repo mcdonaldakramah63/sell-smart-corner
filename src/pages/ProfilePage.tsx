@@ -4,8 +4,12 @@ import { ProfileForm } from '@/components/profile/ProfileForm';
 import { ProfilePictureCard } from '@/components/profile/ProfilePictureCard';
 import PhoneVerificationCard from '@/components/profile/PhoneVerificationCard';
 import TwoFactorAuthCard from '@/components/profile/TwoFactorAuthCard';
-import { User } from 'lucide-react';
+import { User, LayoutDashboard, ChevronRight } from 'lucide-react';
 import { useProfileForm } from '@/hooks/useProfileForm';
+import { useIsMobile } from '@/hooks/use-mobile';
+import { useNavigate } from 'react-router-dom';
+import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 
 export default function ProfilePage() {
   const {
@@ -18,6 +22,9 @@ export default function ProfilePage() {
     handleRemoveAvatar,
     handleSubmit
   } = useProfileForm();
+  
+  const isMobile = useIsMobile();
+  const navigate = useNavigate();
 
   return (
     <Layout>
@@ -36,6 +43,30 @@ export default function ProfilePage() {
           </div>
           
           <div className="grid gap-6 max-w-4xl">
+            {/* Mobile Dashboard Option */}
+            {isMobile && (
+              <Card>
+                <CardContent className="p-4">
+                  <Button
+                    variant="ghost"
+                    className="w-full justify-between p-4 h-auto"
+                    onClick={() => navigate('/dashboard')}
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 bg-primary/10 rounded-lg">
+                        <LayoutDashboard className="h-5 w-5 text-primary" />
+                      </div>
+                      <div className="text-left">
+                        <div className="font-medium">Dashboard</div>
+                        <div className="text-sm text-muted-foreground">View your account overview</div>
+                      </div>
+                    </div>
+                    <ChevronRight className="h-5 w-5 text-muted-foreground" />
+                  </Button>
+                </CardContent>
+              </Card>
+            )}
+            
             {/* Profile Picture */}
             <ProfilePictureCard 
               avatarUrl={avatarUrl}
