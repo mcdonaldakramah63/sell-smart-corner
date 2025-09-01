@@ -71,26 +71,26 @@ export const ProductCard: React.FC<ProductCardProps> = ({
         <Button
           variant="ghost"
           size="sm"
-          className={`absolute top-2 right-2 rounded-full w-10 h-10 p-0 bg-background/90 hover:bg-background shadow-soft ${
+          className={`absolute top-2 right-2 rounded-full w-8 h-8 md:w-10 md:h-10 p-0 bg-background/90 hover:bg-background shadow-soft ${
             isSaved ? 'text-red-500' : 'text-muted-foreground'
           }`}
           aria-label={isSaved ? 'Remove from saved' : 'Save product'}
           onClick={() => onSave?.(product.id)}
         >
-          <Heart className={`h-4 w-4 ${isSaved ? 'fill-current' : ''}`} />
+          <Heart className={`h-3 w-3 md:h-4 md:w-4 ${isSaved ? 'fill-current' : ''}`} />
         </Button>
 
         {/* Condition Badge */}
         {product.condition && (
-          <Badge className="absolute top-2 left-2 bg-primary text-primary-foreground text-xs px-2 py-1">
+          <Badge className="absolute top-2 left-2 bg-primary text-primary-foreground text-xs px-1.5 py-0.5 md:px-2 md:py-1">
             {product.condition}
           </Badge>
         )}
       </div>
 
-      <CardContent className="p-4 space-y-3">
+      <CardContent className="p-2 md:p-4 space-y-2 md:space-y-3">
         {/* Price - Prominent */}
-        <div className="text-xl font-semibold text-primary">
+        <div className="text-lg md:text-xl font-semibold text-primary">
           {formatPrice(product.price)}
         </div>
         
@@ -99,13 +99,13 @@ export const ProductCard: React.FC<ProductCardProps> = ({
           to={`/products/${product.id}`}
           className="block hover:text-primary transition-colors"
         >
-          <h3 className="font-medium text-foreground line-clamp-2 leading-tight">
+          <h3 className="font-medium text-foreground line-clamp-2 leading-tight text-sm md:text-base">
             {product.title}
           </h3>
         </Link>
         
         {/* Location and Time */}
-        <div className="flex items-center justify-between text-sm text-muted-foreground gap-2 min-w-0">
+        <div className="flex items-center justify-between text-xs md:text-sm text-muted-foreground gap-2 min-w-0">
           <div className="flex items-center min-w-0 max-w-[65%]">
             <MapPin className="h-3 w-3 mr-1 shrink-0" />
             <span className="truncate">{product.location || 'Lagos'}</span>
@@ -117,11 +117,11 @@ export const ProductCard: React.FC<ProductCardProps> = ({
         </div>
 
         {/* Action Buttons - Jiji Style */}
-        <div className="flex gap-2 pt-2">
+        <div className="flex gap-1.5 md:gap-2 pt-1 md:pt-2">
           <Button 
             size="sm" 
             variant="marketplace"
-            className="flex-1 h-8 px-2 whitespace-nowrap"
+            className="flex-1 h-7 md:h-8 px-1.5 md:px-2 text-xs md:text-sm whitespace-nowrap"
             onClick={(e) => {
               e.stopPropagation();
               navigate(`/products/${product.id}`);
@@ -133,7 +133,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
           <Button 
             size="sm" 
             variant="outline" 
-            className="flex-1 h-8 px-2 whitespace-nowrap"
+            className="flex-1 h-7 md:h-8 px-1.5 md:px-2 text-xs md:text-sm whitespace-nowrap"
             onClick={(e) => {
               e.stopPropagation();
               navigate(`/messages?productId=${product.id}`);
