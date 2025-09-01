@@ -2,13 +2,15 @@
 import { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Send, Smile, Paperclip, Mic } from 'lucide-react';
+import { Send, Smile, Paperclip, Mic, Image, X } from 'lucide-react';
 import { useTypingIndicator } from '@/hooks/useTypingIndicator';
 import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface MessageInputProps {
-  onSendMessage: (message: string) => Promise<void>;
+  onSendMessage: (message: string, mediaUrl?: string, mediaType?: string) => Promise<void>;
   disabled?: boolean;
   conversationId?: string;
   prefillText?: string;
@@ -18,12 +20,16 @@ interface MessageInputProps {
 export const MessageInput = ({ onSendMessage, disabled = false, conversationId, prefillText, onPrefillConsumed }: MessageInputProps) => {
   const [newMessage, setNewMessage] = useState('');
   const [sending, setSending] = useState(false);
+  const [selectedMedia, setSelectedMedia] = useState<File | null>(null);
+  const [mediaPreview, setMediaPreview] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
   const { startTyping, stopTyping } = useTypingIndicator({ conversationId });
   const inputRef = useRef<HTMLInputElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const recognitionRef = useRef<any>(null);
   const [isDictating, setIsDictating] = useState(false);
   const { toast } = useToast();
+  const { user } = useAuth();
 
   useEffect(() => {
     if (prefillText && !disabled) {
@@ -36,15 +42,30 @@ export const MessageInput = ({ onSendMessage, disabled = false, conversationId, 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!newMessage.trim() || sending) return;
+    if ((!newMessage.trim() && !selectedMedia) || sending) return;
     
     try {
       setSending(true);
       stopTyping();
-      await onSendMessage(newMessage.trim());
+      
+      let mediaUrl = '';
+      let mediaType = '';
+      
+      if (selectedMedia) {
+        const uploadResult = await uploadMedia(selectedMedia);
+        if (uploadResult) {
+          mediaUrl = uploadResult.url;
+          mediaType = uploadResult.type;
+        }
+      }
+      
+      await onSendMessage(newMessage.trim(), mediaUrl, mediaType);
       setNewMessage('');
+      setSelectedMedia(null);
+      setMediaPreview(null);
     } catch (error) {
       console.error('Error sending message:', error);
+      toast({ title: 'Error', description: 'Failed to send message. Please try again.' });
     } finally {
       setSending(false);
     }
@@ -77,6 +98,37 @@ export const MessageInput = ({ onSendMessage, disabled = false, conversationId, 
 
   const EMOJIS = ['👍','😊','😂','🙏','🎉','❤️','💯','📸','📍','✅','❓','📞','🚗','💸','📦','⏰'];
 
+  const uploadMedia = async (file: File) => {
+    if (!user || !conversationId) return null;
+    
+    try {
+      setUploading(true);
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${user.id}/${conversationId}/${Date.now()}.${fileExt}`;
+      
+      const { data, error } = await supabase.storage
+        .from('chat-media')
+        .upload(fileName, file);
+      
+      if (error) throw error;
+      
+      const { data: { publicUrl } } = supabase.storage
+        .from('chat-media')
+        .getPublicUrl(data.path);
+      
+      return {
+        url: publicUrl,
+        type: file.type
+      };
+    } catch (error) {
+      console.error('Error uploading media:', error);
+      toast({ title: 'Upload failed', description: 'Failed to upload media. Please try again.' });
+      return null;
+    } finally {
+      setUploading(false);
+    }
+  };
+
   const handleAttachClick = () => {
     fileInputRef.current?.click();
   };
@@ -84,10 +136,33 @@ export const MessageInput = ({ onSendMessage, disabled = false, conversationId, 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    insertAtCursor(` [Attachment: ${file.name}] `);
-    toast({ title: 'Attachment added', description: 'We added the file name to your message.' });
+    
+    // Check file size (max 10MB)
+    if (file.size > 10 * 1024 * 1024) {
+      toast({ title: 'File too large', description: 'Please select a file smaller than 10MB.' });
+      return;
+    }
+    
+    setSelectedMedia(file);
+    
+    // Create preview for images
+    if (file.type.startsWith('image/')) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setMediaPreview(e.target?.result as string);
+      };
+      reader.readAsDataURL(file);
+    } else {
+      setMediaPreview(null);
+    }
+    
     // Reset input so same file can be selected again
     e.currentTarget.value = '';
+  };
+
+  const removeMedia = () => {
+    setSelectedMedia(null);
+    setMediaPreview(null);
   };
 
   const handleEmojiSelect = (emoji: string) => {
@@ -143,13 +218,44 @@ export const MessageInput = ({ onSendMessage, disabled = false, conversationId, 
   return (
     <div className="sticky bottom-0 z-30 border-t border-border bg-background safe-area-pb">
       <div className="p-3">
+        {/* Media preview */}
+        {selectedMedia && (
+          <div className="mb-3 p-3 bg-muted rounded-lg">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                {mediaPreview ? (
+                  <img src={mediaPreview} alt="Preview" className="w-12 h-12 object-cover rounded" />
+                ) : (
+                  <div className="w-12 h-12 bg-primary/10 rounded flex items-center justify-center">
+                    <Paperclip className="h-6 w-6 text-primary" />
+                  </div>
+                )}
+                <div>
+                  <p className="text-sm font-medium">{selectedMedia.name}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {(selectedMedia.size / 1024 / 1024).toFixed(2)} MB
+                  </p>
+                </div>
+              </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={removeMedia}
+                className="h-8 w-8 p-0"
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+        )}
+
         <form onSubmit={handleSubmit} className="flex items-end space-x-2">
           <div className="flex-1 relative">
             <Input
               value={newMessage}
               onChange={handleInputChange}
               placeholder="Type your message..."
-              disabled={disabled || sending}
+              disabled={disabled || sending || uploading}
               className="pr-24 py-3 rounded-full"
               ref={inputRef}
               onBlur={stopTyping}
@@ -159,7 +265,7 @@ export const MessageInput = ({ onSendMessage, disabled = false, conversationId, 
             <input
               ref={fileInputRef}
               type="file"
-              accept="image/*,video/*,audio/*"
+              accept="image/*,video/*,audio/*,.pdf,.doc,.docx"
               className="hidden"
               onChange={handleFileChange}
             />
@@ -204,13 +310,13 @@ export const MessageInput = ({ onSendMessage, disabled = false, conversationId, 
             </div>
           </div>
 
-          {newMessage.trim() ? (
+          {newMessage.trim() || selectedMedia ? (
             <Button 
               type="submit" 
-              disabled={disabled || sending}
+              disabled={disabled || sending || uploading}
               className="h-12 w-12 rounded-full bg-blue-500 hover:bg-blue-600 p-0"
             >
-              {sending ? (
+              {sending || uploading ? (
                 <div className="h-4 w-4 border-t-2 border-r-2 border-white rounded-full animate-spin" />
               ) : (
                 <Send className="h-5 w-5 text-white" />

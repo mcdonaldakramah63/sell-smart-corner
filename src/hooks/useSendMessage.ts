@@ -24,7 +24,7 @@ interface UseSendMessageProps {
 export const useSendMessage = ({ conversationId, product, otherUser }: UseSendMessageProps) => {
   const { user } = useAuth();
 
-  const sendMessage = async (messageContent: string) => {
+  const sendMessage = async (messageContent: string, mediaUrl?: string, mediaType?: string) => {
     if (!conversationId || !user?.id) return;
     
     // Send message
@@ -34,6 +34,8 @@ export const useSendMessage = ({ conversationId, product, otherUser }: UseSendMe
         conversation_id: conversationId,
         sender_id: user.id,
         content: messageContent,
+        media_url: mediaUrl || null,
+        media_type: mediaType || null,
         read: false
       });
     

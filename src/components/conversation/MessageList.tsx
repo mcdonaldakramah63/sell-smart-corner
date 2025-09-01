@@ -1,7 +1,7 @@
 
 import { useRef, useEffect } from 'react';
 import { format, isToday, isYesterday } from 'date-fns';
-import { Send, Check, CheckCheck } from 'lucide-react';
+import { Send, Check, CheckCheck, Paperclip } from 'lucide-react';
 import { TypingIndicator } from '@/components/conversation/TypingIndicator';
 import { MessageReactions } from '@/components/conversation/MessageReactions';
 import { useMessageReactions } from '@/hooks/useMessageReactions';
@@ -14,6 +14,8 @@ interface Message {
   created_at: string;
   sender_id: string;
   read: boolean;
+  media_url?: string;
+  media_type?: string;
 }
 
 interface MessageListProps {
@@ -120,7 +122,46 @@ export const MessageList = ({ messages, currentUserId, conversationId }: Message
                         ? 'bg-blue-500 text-white' 
                         : 'bg-white text-slate-800 border border-slate-200'
                     }`}>
-                      <p className="text-sm leading-relaxed break-words">{message.content}</p>
+                      {/* Media content */}
+                      {message.media_url && (
+                        <div className="mb-2">
+                          {message.media_type?.startsWith('image/') ? (
+                            <img 
+                              src={message.media_url} 
+                              alt="Shared image" 
+                              className="max-w-xs rounded-lg cursor-pointer"
+                              onClick={() => window.open(message.media_url, '_blank')}
+                            />
+                          ) : message.media_type?.startsWith('video/') ? (
+                            <video 
+                              src={message.media_url} 
+                              controls 
+                              className="max-w-xs rounded-lg"
+                            />
+                          ) : message.media_type?.startsWith('audio/') ? (
+                            <audio 
+                              src={message.media_url} 
+                              controls 
+                              className="max-w-xs"
+                            />
+                          ) : (
+                            <a 
+                              href={message.media_url} 
+                              target="_blank" 
+                              rel="noopener noreferrer"
+                              className="flex items-center gap-2 p-2 bg-muted rounded text-sm hover:bg-muted/80"
+                            >
+                              <Paperclip className="h-4 w-4" />
+                              Document
+                            </a>
+                          )}
+                        </div>
+                      )}
+                      
+                      {/* Text content */}
+                      {message.content && (
+                        <p className="text-sm leading-relaxed break-words">{message.content}</p>
+                      )}
                       
                       {/* Message metadata */}
                       <div className={`flex items-center justify-between mt-2 space-x-2 ${
