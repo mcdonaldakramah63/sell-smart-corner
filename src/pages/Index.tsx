@@ -5,6 +5,7 @@ import ProductGrid from '@/components/products/ProductGrid';
 import CategoryFilter from '@/components/products/CategoryFilter';
 import { Product, Category } from '@/lib/types';
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { Eye, TrendingUp, Star } from 'lucide-react';
@@ -93,6 +94,7 @@ const fetchCategories = async (): Promise<Category[]> => {
 };
 
 const Index = () => {
+  const navigate = useNavigate();
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
   // Simplified useQuery calls
@@ -163,7 +165,11 @@ const Index = () => {
               </div>
               
               {!selectedCategory && (
-                <Button variant="outline" className="border-blue-600 text-blue-600 hover:bg-blue-50">
+                <Button 
+                  variant="outline" 
+                  className="border-blue-600 text-blue-600 hover:bg-blue-50"
+                  onClick={() => navigate('/products')}
+                >
                   View All Categories
                 </Button>
               )}
@@ -197,6 +203,7 @@ const Index = () => {
                 variant="outline" 
                 size="lg"
                 className="border-blue-600 text-blue-600 hover:bg-blue-50 px-8"
+                onClick={() => navigate('/products')}
               >
                 Load More Items
               </Button>
