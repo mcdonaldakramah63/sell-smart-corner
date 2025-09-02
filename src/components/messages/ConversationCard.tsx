@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { OnlineStatus } from '@/components/conversation/OnlineStatus';
 import { format, isToday, isYesterday } from 'date-fns';
 import { MessageSquare, CheckCheck, Star, Shield } from 'lucide-react';
 
@@ -78,15 +79,23 @@ export const ConversationCard = ({ conversation }: ConversationCardProps) => {
                   </h3>
                   <div className="flex items-center space-x-2 mt-1">
                     <div className="flex items-center space-x-2">
-                      <Avatar className="h-6 w-6">
-                        {conversation.otherUser.avatar ? (
-                          <AvatarImage src={conversation.otherUser.avatar} />
-                        ) : (
-                          <AvatarFallback className="bg-gradient-to-r from-blue-500 to-purple-500 text-white text-xs">
-                            {conversation.otherUser.name[0]}
-                          </AvatarFallback>
-                        )}
-                      </Avatar>
+                      <div className="relative">
+                        <Avatar className="h-6 w-6">
+                          {conversation.otherUser.avatar ? (
+                            <AvatarImage src={conversation.otherUser.avatar} />
+                          ) : (
+                            <AvatarFallback className="bg-gradient-to-r from-blue-500 to-purple-500 text-white text-xs">
+                              {conversation.otherUser.name[0]}
+                            </AvatarFallback>
+                          )}
+                        </Avatar>
+                        <div className="absolute -bottom-0.5 -right-0.5">
+                          <OnlineStatus 
+                            userId={conversation.otherUser.id} 
+                            conversationId={conversation.id}
+                          />
+                        </div>
+                      </div>
                       <span className="text-sm font-medium text-slate-700">
                         {conversation.otherUser.name}
                       </span>

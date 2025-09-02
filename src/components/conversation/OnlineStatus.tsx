@@ -1,43 +1,16 @@
 import { useEffect, useState } from 'react';
 import { Badge } from '@/components/ui/badge';
-import { supabase } from '@/integrations/supabase/client';
+import { usePresence } from '@/hooks/usePresence';
 
 interface OnlineStatusProps {
   userId: string;
   showText?: boolean;
+  conversationId?: string;
 }
 
-export const OnlineStatus = ({ userId, showText = false }: OnlineStatusProps) => {
-  const [isOnline, setIsOnline] = useState(false);
-  const [lastSeen, setLastSeen] = useState<string>('');
-
-  useEffect(() => {
-    if (!userId) return;
-
-    // Subscribe to user presence
-    const channel = supabase.channel(`user-${userId}`)
-      .on('presence', { event: 'sync' }, () => {
-        const presenceState = channel.presenceState();
-        const userPresence = presenceState[userId];
-        setIsOnline(!!userPresence && userPresence.length > 0);
-      })
-      .on('presence', { event: 'join' }, ({ key }) => {
-        if (key === userId) {
-          setIsOnline(true);
-        }
-      })
-      .on('presence', { event: 'leave' }, ({ key }) => {
-        if (key === userId) {
-          setIsOnline(false);
-          setLastSeen(new Date().toLocaleString());
-        }
-      })
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [userId]);
+export const OnlineStatus = ({ userId, showText = false, conversationId }: OnlineStatusProps) => {
+  const { isUserOnline } = usePresence(conversationId);
+  const isOnline = isUserOnline(userId);
 
   if (showText) {
     return (
@@ -49,7 +22,7 @@ export const OnlineStatus = ({ userId, showText = false }: OnlineStatusProps) =>
             : 'bg-slate-100 text-slate-600 border-slate-200'
         }`}
       >
-        {isOnline ? 'Online' : lastSeen ? `Last seen ${lastSeen}` : 'Offline'}
+        {isOnline ? 'Online' : 'Offline'}
       </Badge>
     );
   }

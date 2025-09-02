@@ -22,13 +22,15 @@ interface ConversationLayoutProps {
   product: ProductDetails | null;
   loading: boolean;
   children: ReactNode;
+  conversationId?: string;
 }
 
 export const ConversationLayout = ({ 
   otherUser, 
   product, 
   loading, 
-  children 
+  children,
+  conversationId
 }: ConversationLayoutProps) => {
   return (
     <div className="min-h-screen bg-slate-50">
@@ -54,7 +56,10 @@ export const ConversationLayout = ({
           {/* Chat Area */}
           <div className={`bg-white flex flex-col ${product ? 'lg:col-span-8' : 'lg:col-span-12'}`}>
             <div className="sticky top-0 z-20">
-              <ConversationHeader otherUser={otherUser} />
+              <ConversationHeader 
+                otherUser={otherUser} 
+                conversationId={conversationId}
+              />
             </div>
             
             {loading ? (

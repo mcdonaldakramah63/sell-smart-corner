@@ -38,6 +38,7 @@ export default function ConversationPage() {
       otherUser={otherUser} 
       product={null} 
       loading={loading}
+      conversationId={id}
     >
       <MessageList 
         messages={messages} 

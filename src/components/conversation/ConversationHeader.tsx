@@ -14,9 +14,10 @@ interface Participant {
 
 interface ConversationHeaderProps {
   otherUser: Participant | null;
+  conversationId?: string;
 }
 
-export const ConversationHeader = ({ otherUser }: ConversationHeaderProps) => {
+export const ConversationHeader = ({ otherUser, conversationId }: ConversationHeaderProps) => {
   return (
     <div className="border-b border-border bg-background">
       <div className="flex items-center justify-between px-3 py-1.5">
@@ -53,8 +54,8 @@ export const ConversationHeader = ({ otherUser }: ConversationHeaderProps) => {
                   </Badge>
                 </div>
                   <div className="flex items-center gap-2">
-                    <span className="md:hidden inline-flex"><OnlineStatus userId={otherUser.id} /></span>
-                    <span className="hidden md:inline-flex"><OnlineStatus userId={otherUser.id} showText /></span>
+                    <span className="md:hidden inline-flex"><OnlineStatus userId={otherUser.id} conversationId={conversationId} /></span>
+                    <span className="hidden md:inline-flex"><OnlineStatus userId={otherUser.id} conversationId={conversationId} showText /></span>
                     <span className="text-muted-foreground hidden md:inline">•</span>
                     <div className="hidden md:flex items-center gap-1">
                       <Star className="h-3 w-3 text-yellow-400 fill-current" />
