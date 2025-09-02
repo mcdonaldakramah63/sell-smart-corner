@@ -38,7 +38,7 @@ const Header: React.FC = () => {
 
           {/* Right Actions */}
           <div className="flex items-center space-x-1 sm:space-x-3">
-            {/* Language moved to main header */}
+            {/* Language switcher - hidden on mobile */}
             <div className="hidden sm:block">
               <LanguageSwitcher />
             </div>

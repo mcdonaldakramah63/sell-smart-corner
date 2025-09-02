@@ -11,7 +11,12 @@ import {
 } from '@/components/ui/dropdown-menu';
 
 export const LanguageSwitcher: React.FC = () => {
-  const { currentLanguage, supportedLanguages, changeLanguage } = useLanguage();
+  const { currentLanguage, supportedLanguages, changeLanguage, isMobile } = useLanguage();
+
+  // Don't render on mobile - English is permanent
+  if (isMobile) {
+    return null;
+  }
 
   const currentLang = supportedLanguages.find(lang => lang.code === currentLanguage);
 

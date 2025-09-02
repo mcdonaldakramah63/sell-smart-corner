@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useIsMobile } from '@/hooks/use-mobile';
 import i18n from '@/lib/i18n';
 
 export interface Language {
@@ -38,9 +39,22 @@ export const useLanguage = () => {
   const [currentLanguage, setCurrentLanguage] = useState<string>('en');
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
+  const isMobile = useIsMobile();
 
   useEffect(() => {
-    // Load saved language preference
+    // On mobile, always use English and don't allow changes
+    if (isMobile) {
+      setCurrentLanguage('en');
+      try {
+        i18n.changeLanguage('en');
+        document.documentElement.lang = 'en';
+      } catch (e) {
+        console.warn('i18n initialization issue', e);
+      }
+      return;
+    }
+
+    // Load saved language preference for desktop
     const savedLanguage = localStorage.getItem('preferred-language') || 'en';
     setCurrentLanguage(savedLanguage);
     try {
@@ -49,9 +63,14 @@ export const useLanguage = () => {
     } catch (e) {
       console.warn('i18n initialization issue', e);
     }
-  }, []);
+  }, [isMobile]);
 
   const changeLanguage = (languageCode: string) => {
+    // Don't allow language changes on mobile
+    if (isMobile) {
+      return;
+    }
+
     setCurrentLanguage(languageCode);
     localStorage.setItem('preferred-language', languageCode);
 
@@ -140,6 +159,7 @@ export const useLanguage = () => {
     changeLanguage,
     getTranslation,
     submitTranslation,
-    loading
+    loading,
+    isMobile
   };
 };
