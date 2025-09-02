@@ -129,30 +129,33 @@ export const MessageList = ({ messages, currentUserId, conversationId }: Message
                             <img 
                               src={message.media_url} 
                               alt="Shared image" 
-                              className="max-w-xs rounded-lg cursor-pointer"
+                              className="max-w-[200px] max-h-[200px] w-auto h-auto rounded-lg cursor-pointer object-cover border border-border/20"
                               onClick={() => window.open(message.media_url, '_blank')}
+                              loading="lazy"
                             />
                           ) : message.media_type?.startsWith('video/') ? (
                             <video 
                               src={message.media_url} 
                               controls 
-                              className="max-w-xs rounded-lg"
+                              className="max-w-[250px] max-h-[200px] rounded-lg"
+                              preload="metadata"
                             />
                           ) : message.media_type?.startsWith('audio/') ? (
                             <audio 
                               src={message.media_url} 
                               controls 
-                              className="max-w-xs"
+                              className="max-w-[200px]"
+                              preload="metadata"
                             />
                           ) : (
                             <a 
                               href={message.media_url} 
                               target="_blank" 
                               rel="noopener noreferrer"
-                              className="flex items-center gap-2 p-2 bg-muted rounded text-sm hover:bg-muted/80"
+                              className="flex items-center gap-2 p-3 bg-muted/50 rounded-lg text-sm hover:bg-muted/80 transition-colors max-w-[200px]"
                             >
-                              <Paperclip className="h-4 w-4" />
-                              Document
+                              <Paperclip className="h-4 w-4 flex-shrink-0" />
+                              <span className="truncate">Document</span>
                             </a>
                           )}
                         </div>
