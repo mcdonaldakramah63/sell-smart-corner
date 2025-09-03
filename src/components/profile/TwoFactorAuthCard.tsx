@@ -159,9 +159,23 @@ export default function TwoFactorAuthCard() {
             <div className="space-y-3">
               <div className="flex items-center justify-center p-8 bg-white border-2 border-dashed border-slate-200 rounded-lg">
                 <div className="text-center">
-                  <Smartphone className="h-12 w-12 text-slate-400 mx-auto mb-2" />
-                  <p className="text-sm text-slate-600">QR Code would appear here</p>
-                  <p className="text-xs text-slate-500">In a real app, use a QR code library</p>
+                  {qrCode ? (
+                    <div className="space-y-2">
+                      <div className="w-48 h-48 bg-white border p-4 mx-auto flex items-center justify-center">
+                        <img 
+                          src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(qrCode)}`}
+                          alt="2FA QR Code"
+                          className="w-full h-full"
+                        />
+                      </div>
+                      <p className="text-sm text-slate-600">Scan with your authenticator app</p>
+                    </div>
+                  ) : (
+                    <div>
+                      <Smartphone className="h-12 w-12 text-slate-400 mx-auto mb-2" />
+                      <p className="text-sm text-slate-600">Generating QR Code...</p>
+                    </div>
+                  )}
                 </div>
               </div>
 

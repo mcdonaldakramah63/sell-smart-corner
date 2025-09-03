@@ -33,23 +33,27 @@ export default function PhoneVerificationCard() {
       setIsVerifying(true);
       
       // Use the secure database function to generate and store hashed code
-      const { error } = await supabase.rpc('generate_phone_verification_code', {
+      const { data, error } = await supabase.rpc('generate_phone_verification_code', {
         user_uuid: user.id,
         phone_number: phone
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error('RPC Error:', error);
+        throw error;
+      }
       
+      console.log('Verification code generation result:', data);
       setCodeSent(true);
       toast({
         title: 'Verification code sent',
-        description: 'Please check your phone for the verification code'
+        description: 'Please check your phone for the verification code. For demo purposes, check the browser console.'
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error sending verification code:', error);
       toast({
         title: 'Error',
-        description: 'Failed to send verification code',
+        description: error.message || 'Failed to send verification code',
         variant: 'destructive'
       });
     } finally {
