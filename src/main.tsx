@@ -20,15 +20,38 @@ const queryClient = new QueryClient({
 if ((window as any).Capacitor?.isNativePlatform?.()) {
   CapacitorApp.addListener('appUrlOpen', (data: { url: string }) => {
     try {
+      console.log('Deep link received:', data.url);
       const raw = data?.url || '';
+      
       if (raw.startsWith('app.lovable.d3616aa2da414916957d8d8533d680a4://')) {
-        const hashIndex = raw.indexOf('#');
-        const hash = hashIndex !== -1 ? raw.substring(hashIndex) : '';
-        // Route to web callback with the auth hash so Supabase can finish the session
-        window.location.href = `${window.location.origin}/auth/callback${hash}`;
+        console.log('Processing OAuth deep link...');
+        
+        // Extract hash or query parameters from the deep link
+        const url = new URL(raw.replace('app.lovable.d3616aa2da414916957d8d8533d680a4://', 'https://dummy.com/'));
+        
+        // Check for hash fragment (contains access_token, etc.)
+        let hashParams = '';
+        if (url.hash) {
+          hashParams = url.hash;
+        } else if (url.search) {
+          // Convert query params to hash format for Supabase
+          hashParams = '#' + url.search.substring(1);
+        }
+        
+        console.log('Hash params:', hashParams);
+        
+        // Navigate to the auth callback page with the auth data
+        if (hashParams) {
+          window.location.href = `${window.location.origin}/auth/callback${hashParams}`;
+        } else {
+          // Fallback: just go to callback page
+          window.location.href = `${window.location.origin}/auth/callback`;
+        }
       }
     } catch (e) {
-      console.warn('appUrlOpen handler error', e);
+      console.error('appUrlOpen handler error', e);
+      // Fallback navigation
+      window.location.href = `${window.location.origin}/auth/callback`;
     }
   });
 }

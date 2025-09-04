@@ -19,10 +19,31 @@ export default function AuthCallbackPage() {
     const handleAuthCallback = async () => {
       try {
         console.log('Processing auth callback...');
+        console.log('Current URL:', window.location.href);
         console.log('Is Capacitor platform:', isCapacitor());
         setIsProcessing(true);
 
         const isCapacitorMobile = isCapacitor();
+
+        // For Capacitor, we need to handle the auth callback from the URL hash/params
+        if (isCapacitorMobile) {
+          // Check if we have auth parameters in the URL
+          const url = new URL(window.location.href);
+          const accessToken = url.searchParams.get('access_token') || 
+                              new URLSearchParams(url.hash.substring(1)).get('access_token');
+          
+          if (accessToken) {
+            console.log('Found access token in URL, setting session...');
+            // Let Supabase handle the session from the URL
+            const { data, error } = await supabase.auth.getSession();
+            
+            if (error || !data.session) {
+              console.log('Session not found, trying to get from URL...');
+              // Try to get session from the current URL
+              await supabase.auth.getSession();
+            }
+          }
+        }
 
         const { data, error } = await supabase.auth.getSession();
 
