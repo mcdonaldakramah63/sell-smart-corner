@@ -43,7 +43,7 @@ export const useSocialAuth = (
         
         // Initialize Google Auth for Capacitor
         await GoogleAuth.initialize({
-          clientId: '1234567890.apps.googleusercontent.com', // This should be replaced with actual client ID
+          clientId: '436443580127-vvl9gu1kr6mk6sqourmgneb0rvbfioci.apps.googleusercontent.com',
           scopes: ['profile', 'email'],
           grantOfflineAccess: true,
         });
