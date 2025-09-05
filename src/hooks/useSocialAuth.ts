@@ -5,7 +5,7 @@ import { cleanupAuthState } from '@/utils/authUtils';
 import { handleAuthError } from '@/utils/authErrorHandler';
 import { AuthState } from '@/types/auth';
 import { isCapacitor } from '@/lib/isCapacitor';
-import { GoogleAuth } from '@codetrix-studio/capacitor-google-auth';
+// import { GoogleAuth } from '@codetrix-studio/capacitor-google-auth';
 
 // Define the custom URL scheme for the app.
 // This should match what's configured in AndroidManifest.xml
@@ -38,38 +38,26 @@ export const useSocialAuth = (
       cleanupAuthState();
 
       if (isCapacitor()) {
-        // Use native Google Auth for mobile apps
-        console.log('Using native Google Auth for Capacitor');
+        // For Capacitor apps, we need to use web OAuth for now
+        // Native Google Auth will be available when the plugin supports Capacitor 7
+        console.log('Using web OAuth for Capacitor (fallback until native support)');
         
-        // Initialize Google Auth for Capacitor
-        await GoogleAuth.initialize({
-          clientId: '436443580127-vvl9gu1kr6mk6sqourmgneb0rvbfioci.apps.googleusercontent.com',
-          scopes: ['profile', 'email'],
-          grantOfflineAccess: true,
+        const { data, error } = await supabase.auth.signInWithOAuth({
+          provider: 'google',
+          options: {
+            redirectTo: getRedirectTo(),
+            queryParams: {
+              access_type: 'offline',
+              prompt: 'consent',
+            }
+          }
         });
 
-        const result = await GoogleAuth.signIn();
-        console.log('Google Auth result:', result);
-
-        if (result.authentication?.idToken) {
-          // Sign in to Supabase using the ID token
-          const { data, error } = await supabase.auth.signInWithIdToken({
-            provider: 'google',
-            token: result.authentication.idToken,
-          });
-
-          if (error) {
-            console.error('Supabase sign-in error:', error);
-            throw error;
-          }
-
-          console.log('Successfully signed in with Google');
-          toast({
-            title: "Login successful",
-            description: "You have been logged in with Google",
-          });
+        if (error) {
+          console.error('Google login error:', error);
+          throw error;
         } else {
-          throw new Error('No ID token received from Google');
+          console.log('Google login initiated successfully');
         }
       } else {
         // Use web OAuth flow for browsers
