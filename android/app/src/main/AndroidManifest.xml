@@ -22,12 +22,21 @@
             </intent-filter>
 
             <!-- Intent filter for OAuth redirect -->
-            <intent-filter android:autoVerify="true">
-                <action android:name="android.intent.action.VIEW" />
-                <category android:name="android.intent.category.DEFAULT" />
-                <category android:name="android.intent.category.BROWSABLE" />
-                <data android:scheme="app.lovable.d3616aa2da414916957d8d8533d680a4" />
-            </intent-filter>
+        <intent-filter android:autoVerify="true">
+            <action android:name="android.intent.action.VIEW" />
+            <category android:name="android.intent.category.DEFAULT" />
+            <category android:name="android.intent.category.BROWSABLE" />
+            <data android:scheme="app.lovable.d3616aa2da414916957d8d8533d680a4" />
+        </intent-filter>
+        
+        <!-- Google Auth Intent Filter -->
+        <intent-filter>
+            <action android:name="android.intent.action.VIEW" />
+            <category android:name="android.intent.category.DEFAULT" />
+            <category android:name="android.intent.category.BROWSABLE" />
+            <data android:scheme="app.lovable.d3616aa2da414916957d8d8533d680a4"
+                  android:host="oauth" />
+        </intent-filter>
         </activity>
 
         <provider

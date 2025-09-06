@@ -5,6 +5,7 @@ import App from './App.tsx'
 import './index.css'
 import './lib/i18n'
 import { App as CapacitorApp } from '@capacitor/app'
+import { GoogleAuth } from '@codetrix-studio/capacitor-google-auth'
 
 // Create a client
 const queryClient = new QueryClient({
@@ -15,6 +16,15 @@ const queryClient = new QueryClient({
     },
   },
 })
+
+// Initialize Google Auth for Capacitor
+if ((window as any).Capacitor?.isNativePlatform?.()) {
+  GoogleAuth.initialize({
+    clientId: '436443580127-vvl9gu1kr6mk6sqourmgneb0rvbfioci.apps.googleusercontent.com',
+    scopes: ['profile', 'email'],
+    grantOfflineAccess: true,
+  });
+}
 
 // Handle OAuth deep link back into the app (Capacitor)
 if ((window as any).Capacitor?.isNativePlatform?.()) {

@@ -41,11 +41,11 @@ const config: CapacitorConfig = {
     PushNotifications: {
       presentationOptions: ['badge', 'sound', 'alert']
     },
-    // GoogleAuth: {
-    //   scopes: ['profile', 'email'],
-    //   serverClientId: '436443580127-vvl9gu1kr6mk6sqourmgneb0rvbfioci.apps.googleusercontent.com',
-    //   forceCodeForRefreshToken: true
-    // }
+    GoogleAuth: {
+      scopes: ['profile', 'email'],
+      serverClientId: '436443580127-vvl9gu1kr6mk6sqourmgneb0rvbfioci.apps.googleusercontent.com',
+      forceCodeForRefreshToken: true
+    }
   },
   android: {
     allowMixedContent: true,
