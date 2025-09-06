@@ -35,10 +35,10 @@ import SecurityPage from "./pages/SecurityPage";
 
 const App = () => (
   <TooltipProvider>
-    <AuthProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
+    <BrowserRouter>
+      <AuthProvider>
+        <Toaster />
+        <Sonner />
         <MobileOptimizedLayout>
           <Routes>
             <Route path="/" element={<Index />} />
@@ -70,8 +70,8 @@ const App = () => (
             <Route path="*" element={<NotFound />} />
           </Routes>
         </MobileOptimizedLayout>
-      </BrowserRouter>
-    </AuthProvider>
+      </AuthProvider>
+    </BrowserRouter>
   </TooltipProvider>
 );
 
