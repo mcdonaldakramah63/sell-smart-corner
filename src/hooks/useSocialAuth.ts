@@ -43,7 +43,7 @@ export const useSocialAuth = (
         
         // Initialize Google Auth
         await GoogleAuth.initialize({
-          clientId: '436443580127-vvl9gu1kr6mk6sqourmgneb0rvbfioci.apps.googleusercontent.com',
+          clientId: '436443580127-vvl9gu1kr6mk6sqourmgneb0rvbfioci.apps.googleusercontent.com', // This should be your Android client ID
           scopes: ['profile', 'email'],
           grantOfflineAccess: true,
         });
