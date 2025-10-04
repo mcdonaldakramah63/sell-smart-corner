@@ -20,7 +20,8 @@ const fetchFeaturedProducts = async (): Promise<Product[]> => {
       .from('products')
       .select('*')
       .eq('status', 'approved')
-      .limit(20);
+      .order('created_at', { ascending: false })
+      .limit(50);
 
     if (productsError) throw productsError;
 
