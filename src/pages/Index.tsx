@@ -11,7 +11,7 @@ import { Button } from '@/components/ui/button';
 import { Eye, TrendingUp, Star } from 'lucide-react';
 
 // Simplified fetch function without complex Supabase types
-const fetchFeaturedProducts = async (): Promise<Product[]> => {
+const fetchFeaturedProducts = async (limit: number): Promise<Product[]> => {
   try {
     const { supabase } = await import('@/integrations/supabase/client');
     
@@ -21,7 +21,7 @@ const fetchFeaturedProducts = async (): Promise<Product[]> => {
       .select('*')
       .eq('status', 'approved')
       .order('created_at', { ascending: false })
-      .limit(50);
+      .limit(limit);
 
     if (productsError) throw productsError;
 
@@ -97,11 +97,12 @@ const fetchCategories = async (): Promise<Category[]> => {
 const Index = () => {
   const navigate = useNavigate();
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [itemsToShow, setItemsToShow] = useState(20);
 
   // Simplified useQuery calls
   const { data: products = [], isLoading: productsLoading } = useQuery({
-    queryKey: ['featured-products'],
-    queryFn: fetchFeaturedProducts
+    queryKey: ['featured-products', itemsToShow],
+    queryFn: () => fetchFeaturedProducts(itemsToShow)
   });
 
   const { data: categories = [], isLoading: categoriesLoading } = useQuery({
@@ -198,13 +199,13 @@ const Index = () => {
           )}
 
           {/* Load More Button */}
-          {!productsLoading && filteredProducts.length > 0 && (
+          {!productsLoading && filteredProducts.length > 0 && filteredProducts.length >= itemsToShow && (
             <div className="text-center mt-12">
               <Button 
                 variant="outline" 
                 size="lg"
                 className="border-blue-600 text-blue-600 hover:bg-blue-50 px-8"
-                onClick={() => navigate('/products')}
+                onClick={() => setItemsToShow(prev => prev + 20)}
               >
                 Load More Items
               </Button>
