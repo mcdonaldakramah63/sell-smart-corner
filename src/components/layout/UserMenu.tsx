@@ -16,11 +16,14 @@ import {
   LogOut, 
   MessageSquare, 
   Settings, 
-  User
+  User,
+  Shield
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useTranslation } from 'react-i18next';
+import { useState, useEffect } from 'react';
+import { supabase } from '@/integrations/supabase/client';
 
 interface UserMenuProps {
   unreadNotifications: number;
@@ -33,6 +36,24 @@ export const UserMenu = ({ unreadNotifications, onLogin, onRegister }: UserMenuP
   const navigate = useNavigate();
   const isMobile = useIsMobile();
   const { t } = useTranslation();
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  useEffect(() => {
+    const checkAdminStatus = async () => {
+      if (!user?.id) return;
+
+      const { data } = await supabase
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', user.id)
+        .eq('role', 'admin')
+        .maybeSingle();
+
+      setIsAdmin(!!data);
+    };
+
+    checkAdminStatus();
+  }, [user]);
 
   const getInitials = (name: string) => {
     return name
@@ -78,6 +99,15 @@ export const UserMenu = ({ unreadNotifications, onLogin, onRegister }: UserMenuP
             <Settings className="mr-2 h-4 w-4" />
             {t('settings')}
           </DropdownMenuItem>
+          {isAdmin && (
+            <>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={() => navigate('/admin/users')} className="text-sm">
+                <Shield className="mr-2 h-4 w-4" />
+                Manage Users
+              </DropdownMenuItem>
+            </>
+          )}
           <DropdownMenuSeparator />
           <DropdownMenuItem onClick={logout} className="text-sm">
             <LogOut className="mr-2 h-4 w-4" />

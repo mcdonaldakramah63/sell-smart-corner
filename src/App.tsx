@@ -32,6 +32,7 @@ import AnalyticsPage from "./pages/AnalyticsPage";
 import NotFound from "./pages/NotFound";
 import AdvancedSearchPage from "./pages/AdvancedSearchPage";
 import SecurityPage from "./pages/SecurityPage";
+import AdminUsersPage from "./pages/AdminUsersPage";
 
 const App = () => (
   <TooltipProvider>
@@ -46,6 +47,7 @@ const App = () => (
             <Route path="/auth/callback" element={<AuthCallbackPage />} />
             <Route path="/dashboard" element={<DashboardPage />} />
             <Route path="/admin" element={<AdminDashboardPage />} />
+            <Route path="/admin/users" element={<AdminUsersPage />} />
             <Route path="/business" element={<BusinessDashboardPage />} />
             <Route path="/create-product" element={<CreateProductPage />} />
             <Route path="/products" element={<ProductsPage />} />
