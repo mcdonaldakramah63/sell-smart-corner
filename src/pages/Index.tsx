@@ -97,7 +97,7 @@ const fetchCategories = async (): Promise<Category[]> => {
 const Index = () => {
   const navigate = useNavigate();
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-  const [itemsToShow, setItemsToShow] = useState(20);
+  const [itemsToShow, setItemsToShow] = useState(100);
 
   // Auto-refresh products every 30 seconds
   const { data: products = [], isLoading: productsLoading } = useQuery({
