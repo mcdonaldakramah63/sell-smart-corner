@@ -1,5 +1,6 @@
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Layout from '@/components/layout/Layout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -7,14 +8,61 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useAdminAnalytics } from '@/hooks/useAdminAnalytics';
 import { useModerationQueue } from '@/hooks/useModerationQueue';
+import { ProductReviewTab } from '@/components/admin/ProductReviewTab';
+import { CMSManagement } from '@/components/admin/CMSManagement';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line } from 'recharts';
-import { Users, ShoppingBag, DollarSign, AlertTriangle, CheckCircle, XCircle } from 'lucide-react';
+import { Users, ShoppingBag, DollarSign, AlertTriangle, CheckCircle, XCircle, ExternalLink } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
 
 const AdminDashboardPage = () => {
+  const navigate = useNavigate();
+  const { toast } = useToast();
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [checkingAdmin, setCheckingAdmin] = useState(true);
   const { data: analytics, loading: analyticsLoading } = useAdminAnalytics();
   const { items: moderationItems, loading: moderationLoading, moderateItem } = useModerationQueue();
 
-  if (analyticsLoading || moderationLoading) {
+  useEffect(() => {
+    const checkAdminStatus = async () => {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        
+        if (!user) {
+          navigate('/auth');
+          return;
+        }
+
+        const { data: roles, error } = await supabase
+          .from('user_roles')
+          .select('role')
+          .eq('user_id', user.id)
+          .eq('role', 'admin')
+          .single();
+
+        if (error || !roles) {
+          toast({
+            title: 'Access Denied',
+            description: 'You do not have permission to access the admin dashboard',
+            variant: 'destructive',
+          });
+          navigate('/');
+          return;
+        }
+
+        setIsAdmin(true);
+      } catch (error) {
+        console.error('Error checking admin status:', error);
+        navigate('/');
+      } finally {
+        setCheckingAdmin(false);
+      }
+    };
+
+    checkAdminStatus();
+  }, [navigate, toast]);
+
+  if (checkingAdmin || analyticsLoading || moderationLoading) {
     return (
       <Layout>
         <div className="container mx-auto px-4 py-8">
@@ -29,6 +77,10 @@ const AdminDashboardPage = () => {
         </div>
       </Layout>
     );
+  }
+
+  if (!isAdmin) {
+    return null;
   }
 
   return (
@@ -82,6 +134,7 @@ const AdminDashboardPage = () => {
         <Tabs defaultValue="analytics" className="space-y-4">
           <TabsList>
             <TabsTrigger value="analytics">Analytics</TabsTrigger>
+            <TabsTrigger value="products">Product Review</TabsTrigger>
             <TabsTrigger value="moderation">Moderation Queue</TabsTrigger>
             <TabsTrigger value="users">User Management</TabsTrigger>
             <TabsTrigger value="content">Content Management</TabsTrigger>
@@ -142,6 +195,10 @@ const AdminDashboardPage = () => {
                 </div>
               </CardContent>
             </Card>
+          </TabsContent>
+
+          <TabsContent value="products" className="space-y-4">
+            <ProductReviewTab />
           </TabsContent>
           
           <TabsContent value="moderation" className="space-y-4">
@@ -214,25 +271,22 @@ const AdminDashboardPage = () => {
                 <CardDescription>Manage users, roles, and permissions</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="text-center py-8 text-muted-foreground">
-                  User management interface coming soon...
-                </div>
+                <Button 
+                  onClick={() => navigate('/admin/users')}
+                  className="w-full"
+                >
+                  <ExternalLink className="w-4 h-4 mr-2" />
+                  Open User Management Dashboard
+                </Button>
+                <p className="text-sm text-muted-foreground text-center mt-4">
+                  View and manage all users, assign roles, and control permissions
+                </p>
               </CardContent>
             </Card>
           </TabsContent>
           
           <TabsContent value="content" className="space-y-4">
-            <Card>
-              <CardHeader>
-                <CardTitle>Content Management</CardTitle>
-                <CardDescription>Manage static pages and content</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="text-center py-8 text-muted-foreground">
-                  CMS interface coming soon...
-                </div>
-              </CardContent>
-            </Card>
+            <CMSManagement />
           </TabsContent>
         </Tabs>
       </div>

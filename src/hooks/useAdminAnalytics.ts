@@ -32,10 +32,11 @@ export const useAdminAnalytics = () => {
         .from('products')
         .select('*', { count: 'exact', head: true });
 
-      // Fetch total revenue
+      // Fetch total revenue from payment transactions
       const { data: revenueData } = await supabase
-        .from('revenue_tracking')
-        .select('amount');
+        .from('payment_transactions')
+        .select('amount')
+        .eq('status', 'completed');
       
       const totalRevenue = revenueData?.reduce((sum, item) => sum + Number(item.amount), 0) || 0;
 
@@ -51,31 +52,63 @@ export const useAdminAnalytics = () => {
         .select('*', { count: 'exact', head: true })
         .eq('status', 'active');
 
-      // For demo purposes, create mock monthly revenue data
-      const monthlyRevenue = [
-        { month: 'Jan', amount: 1200 },
-        { month: 'Feb', amount: 1800 },
-        { month: 'Mar', amount: 2400 },
-        { month: 'Apr', amount: 2100 },
-        { month: 'May', amount: 2800 },
-        { month: 'Jun', amount: 3200 },
-      ];
+      // Fetch real monthly revenue data (last 6 months)
+      const { data: monthlyRevenueData } = await supabase
+        .from('payment_transactions')
+        .select('amount, created_at')
+        .eq('status', 'completed')
+        .gte('created_at', new Date(new Date().setMonth(new Date().getMonth() - 6)).toISOString());
 
-      const topCategories = [
-        { name: 'Electronics', count: 45 },
-        { name: 'Fashion', count: 38 },
-        { name: 'Home & Garden', count: 32 },
-        { name: 'Vehicles', count: 28 },
-      ];
+      const monthlyRevenue = Array.from({ length: 6 }, (_, i) => {
+        const date = new Date();
+        date.setMonth(date.getMonth() - (5 - i));
+        const monthName = date.toLocaleString('default', { month: 'short' });
+        const monthStart = new Date(date.getFullYear(), date.getMonth(), 1);
+        const monthEnd = new Date(date.getFullYear(), date.getMonth() + 1, 0);
+        
+        const amount = monthlyRevenueData
+          ?.filter(item => {
+            const itemDate = new Date(item.created_at);
+            return itemDate >= monthStart && itemDate <= monthEnd;
+          })
+          .reduce((sum, item) => sum + Number(item.amount), 0) || 0;
+        
+        return { month: monthName, amount };
+      });
 
-      const userGrowth = [
-        { date: '2024-01', users: 100 },
-        { date: '2024-02', users: 150 },
-        { date: '2024-03', users: 200 },
-        { date: '2024-04', users: 280 },
-        { date: '2024-05', users: 350 },
-        { date: '2024-06', users: 420 },
-      ];
+      // Fetch real top categories
+      const { data: categoryData } = await supabase
+        .from('products')
+        .select('category_id, categories(name)')
+        .eq('status', 'approved');
+
+      const categoryCounts = categoryData?.reduce((acc: any, item) => {
+        const categoryName = (item.categories as any)?.name || 'Uncategorized';
+        acc[categoryName] = (acc[categoryName] || 0) + 1;
+        return acc;
+      }, {});
+
+      const topCategories = Object.entries(categoryCounts || {})
+        .map(([name, count]) => ({ name, count: count as number }))
+        .sort((a, b) => b.count - a.count)
+        .slice(0, 5);
+
+      // Fetch real user growth data (last 6 months)
+      const { data: userGrowthData } = await supabase
+        .from('profiles')
+        .select('created_at');
+
+      const userGrowth = Array.from({ length: 6 }, (_, i) => {
+        const date = new Date();
+        date.setMonth(date.getMonth() - (5 - i));
+        const monthStr = date.toISOString().slice(0, 7);
+        
+        const users = userGrowthData?.filter(item => 
+          item.created_at.startsWith(monthStr)
+        ).length || 0;
+        
+        return { date: monthStr, users };
+      });
 
       setData({
         totalUsers: totalUsers || 0,
