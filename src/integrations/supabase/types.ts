@@ -23,7 +23,7 @@ export type Database = {
           device_type: string | null
           event_type: string
           id: string
-          ip_address: unknown | null
+          ip_address: unknown
           location_data: Json | null
           product_id: string
           referrer: string | null
@@ -39,7 +39,7 @@ export type Database = {
           device_type?: string | null
           event_type: string
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           location_data?: Json | null
           product_id: string
           referrer?: string | null
@@ -55,7 +55,7 @@ export type Database = {
           device_type?: string | null
           event_type?: string
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           location_data?: Json | null
           product_id?: string
           referrer?: string | null
@@ -76,7 +76,7 @@ export type Database = {
       ad_geographic_targeting: {
         Row: {
           city: string | null
-          coordinates: unknown | null
+          coordinates: unknown
           created_at: string
           id: string
           premium_ad_id: string | null
@@ -85,7 +85,7 @@ export type Database = {
         }
         Insert: {
           city?: string | null
-          coordinates?: unknown | null
+          coordinates?: unknown
           created_at?: string
           id?: string
           premium_ad_id?: string | null
@@ -94,7 +94,7 @@ export type Database = {
         }
         Update: {
           city?: string | null
-          coordinates?: unknown | null
+          coordinates?: unknown
           created_at?: string
           id?: string
           premium_ad_id?: string | null
@@ -697,7 +697,7 @@ export type Database = {
       }
       locations: {
         Row: {
-          coordinates: unknown | null
+          coordinates: unknown
           created_at: string
           id: string
           is_active: boolean | null
@@ -708,7 +708,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
-          coordinates?: unknown | null
+          coordinates?: unknown
           created_at?: string
           id?: string
           is_active?: boolean | null
@@ -719,7 +719,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
-          coordinates?: unknown | null
+          coordinates?: unknown
           created_at?: string
           id?: string
           is_active?: boolean | null
@@ -1791,7 +1791,7 @@ export type Database = {
         Row: {
           blog_post_id: string | null
           id: string
-          ip_address: unknown | null
+          ip_address: unknown
           platform: string
           product_id: string | null
           shared_at: string | null
@@ -1801,7 +1801,7 @@ export type Database = {
         Insert: {
           blog_post_id?: string | null
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           platform: string
           product_id?: string | null
           shared_at?: string | null
@@ -1811,7 +1811,7 @@ export type Database = {
         Update: {
           blog_post_id?: string | null
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           platform?: string
           product_id?: string | null
           shared_at?: string | null
@@ -2050,7 +2050,7 @@ export type Database = {
           device_info: Json | null
           expires_at: string
           id: string
-          ip_address: unknown | null
+          ip_address: unknown
           is_trusted: boolean | null
           session_token: string
           user_id: string
@@ -2060,7 +2060,7 @@ export type Database = {
           device_info?: Json | null
           expires_at: string
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           is_trusted?: boolean | null
           session_token: string
           user_id: string
@@ -2070,7 +2070,7 @@ export type Database = {
           device_info?: Json | null
           expires_at?: string
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           is_trusted?: boolean | null
           session_token?: string
           user_id?: string
@@ -2242,10 +2242,7 @@ export type Database = {
         }
         Returns: boolean
       }
-      is_admin: {
-        Args: Record<PropertyKey, never>
-        Returns: boolean
-      }
+      is_admin: { Args: never; Returns: boolean }
       is_conversation_participant: {
         Args: { conversation_uuid: string; user_uuid: string }
         Returns: boolean
@@ -2254,18 +2251,12 @@ export type Database = {
         Args: { p_user_id: string }
         Returns: boolean
       }
-      is_user_banned: {
-        Args: { user_uuid: string }
-        Returns: boolean
-      }
+      is_user_banned: { Args: { user_uuid: string }; Returns: boolean }
       is_user_blocked: {
         Args: { blocked_uuid: string; blocker_uuid: string }
         Returns: boolean
       }
-      make_user_admin: {
-        Args: { _user_id: string }
-        Returns: undefined
-      }
+      make_user_admin: { Args: { _user_id: string }; Returns: undefined }
       verify_phone_code: {
         Args: { input_code: string; user_uuid: string }
         Returns: boolean
