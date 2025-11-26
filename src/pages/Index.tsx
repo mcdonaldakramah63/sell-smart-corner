@@ -99,10 +99,12 @@ const Index = () => {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [itemsToShow, setItemsToShow] = useState(20);
 
-  // Simplified useQuery calls
+  // Auto-refresh products every 30 seconds
   const { data: products = [], isLoading: productsLoading } = useQuery({
     queryKey: ['featured-products', itemsToShow],
-    queryFn: () => fetchFeaturedProducts(itemsToShow)
+    queryFn: () => fetchFeaturedProducts(itemsToShow),
+    refetchInterval: 30000, // Refresh every 30 seconds
+    refetchIntervalInBackground: true // Continue refreshing even when tab is not active
   });
 
   const { data: categories = [], isLoading: categoriesLoading } = useQuery({
