@@ -1,9 +1,10 @@
 import { useState, useEffect, useRef } from 'react';
-import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Phone, PhoneOff, Video, VideoOff, Mic, MicOff, X } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { VisuallyHidden } from '@radix-ui/react-visually-hidden';
 
 interface CallModalProps {
   isOpen: boolean;
@@ -23,13 +24,14 @@ export const CallModal = ({ isOpen, onClose, otherUser, callType }: CallModalPro
   const [isMuted, setIsMuted] = useState(false);
   const [isVideoOff, setIsVideoOff] = useState(false);
   const [callDuration, setCallDuration] = useState(0);
+  const [permissionError, setPermissionError] = useState(false);
   const localVideoRef = useRef<HTMLVideoElement>(null);
   const remoteVideoRef = useRef<HTMLVideoElement>(null);
   const localStreamRef = useRef<MediaStream | null>(null);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
-    if (isOpen && callStatus === 'calling') {
+    if (isOpen && callStatus === 'calling' && !permissionError) {
       initializeCall();
     }
     
@@ -54,6 +56,11 @@ export const CallModal = ({ isOpen, onClose, otherUser, callType }: CallModalPro
 
   const initializeCall = async () => {
     try {
+      // Check if mediaDevices is available
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        throw new Error('Media devices not supported in this browser');
+      }
+
       const constraints = {
         audio: true,
         video: callType === 'video'
@@ -75,11 +82,23 @@ export const CallModal = ({ isOpen, onClose, otherUser, callType }: CallModalPro
         });
       }, 2000);
       
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error accessing media devices:', error);
+      setPermissionError(true);
+      
+      let errorMessage = `Please allow ${callType === 'video' ? 'camera and microphone' : 'microphone'} access to make calls.`;
+      
+      if (error.name === 'NotFoundError' || error.name === 'DevicesNotFoundError') {
+        errorMessage = `No ${callType === 'video' ? 'camera or microphone' : 'microphone'} found. Please connect a device and try again.`;
+      } else if (error.name === 'NotAllowedError' || error.name === 'PermissionDeniedError') {
+        errorMessage = `Permission denied. Please allow ${callType === 'video' ? 'camera and microphone' : 'microphone'} access in your browser settings.`;
+      } else if (error.name === 'NotSupportedError') {
+        errorMessage = 'Your browser does not support media devices. Please use a modern browser.';
+      }
+      
       toast({
-        title: 'Permission Denied',
-        description: `Please allow ${callType === 'video' ? 'camera and microphone' : 'microphone'} access to make calls.`,
+        title: 'Cannot Start Call',
+        description: errorMessage,
         variant: 'destructive'
       });
       onClose();
@@ -142,7 +161,10 @@ export const CallModal = ({ isOpen, onClose, otherUser, callType }: CallModalPro
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && handleEndCall()}>
-      <DialogContent className="sm:max-w-lg p-0 overflow-hidden bg-gradient-to-b from-slate-900 to-slate-800 border-none">
+      <DialogContent className="sm:max-w-lg p-0 overflow-hidden bg-gradient-to-b from-slate-900 to-slate-800 border-none" aria-describedby={undefined}>
+        <VisuallyHidden>
+          <DialogTitle>{callType === 'video' ? 'Video' : 'Voice'} Call with {otherUser.name}</DialogTitle>
+        </VisuallyHidden>
         <div className="relative min-h-[500px] flex flex-col">
           {/* Close button */}
           <Button 
