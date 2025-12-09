@@ -12,25 +12,21 @@ interface CommunicationActionsProps {
     phone?: string;
     email?: string;
     location?: string;
+    avatar?: string;
   } | null;
   productTitle: string;
+  onVoiceCall?: () => void;
+  onVideoCall?: () => void;
 }
 
-export const CommunicationActions = ({ otherUser, productTitle }: CommunicationActionsProps) => {
+export const CommunicationActions = ({ 
+  otherUser, 
+  productTitle,
+  onVoiceCall,
+  onVideoCall
+}: CommunicationActionsProps) => {
   const { toast } = useToast();
   const [showContact, setShowContact] = useState(false);
-
-  const handleCall = () => {
-    if (otherUser?.phone) {
-      window.location.href = `tel:${otherUser.phone}`;
-    } else {
-      toast({
-        title: 'Phone number not available',
-        description: 'The seller has not provided their phone number.',
-        variant: 'destructive'
-      });
-    }
-  };
 
   const handleSMS = () => {
     if (otherUser?.phone) {
@@ -59,13 +55,6 @@ export const CommunicationActions = ({ otherUser, productTitle }: CommunicationA
     }
   };
 
-  const handleVideoCall = () => {
-    toast({
-      title: 'Video Call',
-      description: 'Video calling feature will be available soon. Use the chat for now!',
-    });
-  };
-
   if (!otherUser) return null;
 
   return (
@@ -84,8 +73,8 @@ export const CommunicationActions = ({ otherUser, productTitle }: CommunicationA
         <Button
           variant="outline"
           size="sm"
-          onClick={handleCall}
-          className="flex items-center gap-2 hover:bg-green-50 hover:border-green-300"
+          onClick={onVoiceCall}
+          className="flex items-center gap-2 hover:bg-green-50 hover:border-green-300 hover:text-green-700"
         >
           <Phone className="h-4 w-4 text-green-600" />
           Call
@@ -94,10 +83,20 @@ export const CommunicationActions = ({ otherUser, productTitle }: CommunicationA
         <Button
           variant="outline"
           size="sm"
-          onClick={handleSMS}
-          className="flex items-center gap-2 hover:bg-blue-50 hover:border-blue-300"
+          onClick={onVideoCall}
+          className="flex items-center gap-2 hover:bg-blue-50 hover:border-blue-300 hover:text-blue-700"
         >
-          <MessageCircle className="h-4 w-4 text-blue-600" />
+          <Video className="h-4 w-4 text-blue-600" />
+          Video
+        </Button>
+        
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={handleSMS}
+          className="flex items-center gap-2 hover:bg-orange-50 hover:border-orange-300 hover:text-orange-700"
+        >
+          <MessageCircle className="h-4 w-4 text-orange-600" />
           SMS
         </Button>
         
@@ -105,20 +104,10 @@ export const CommunicationActions = ({ otherUser, productTitle }: CommunicationA
           variant="outline"
           size="sm"
           onClick={handleEmail}
-          className="flex items-center gap-2 hover:bg-purple-50 hover:border-purple-300"
+          className="flex items-center gap-2 hover:bg-purple-50 hover:border-purple-300 hover:text-purple-700"
         >
           <Mail className="h-4 w-4 text-purple-600" />
           Email
-        </Button>
-        
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={handleVideoCall}
-          className="flex items-center gap-2 hover:bg-orange-50 hover:border-orange-300"
-        >
-          <Video className="h-4 w-4 text-orange-600" />
-          Video
         </Button>
       </div>
 

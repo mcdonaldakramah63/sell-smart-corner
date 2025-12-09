@@ -15,6 +15,9 @@ interface Participant {
   id: string;
   name: string;
   avatar?: string;
+  phone?: string;
+  email?: string;
+  location?: string;
 }
 
 interface ConversationLayoutProps {
@@ -23,6 +26,8 @@ interface ConversationLayoutProps {
   loading: boolean;
   children: ReactNode;
   conversationId?: string;
+  onVoiceCall?: () => void;
+  onVideoCall?: () => void;
 }
 
 export const ConversationLayout = ({ 
@@ -30,7 +35,9 @@ export const ConversationLayout = ({
   product, 
   loading, 
   children,
-  conversationId
+  conversationId,
+  onVoiceCall,
+  onVideoCall
 }: ConversationLayoutProps) => {
   return (
     <div className="min-h-screen bg-slate-50">
@@ -45,7 +52,9 @@ export const ConversationLayout = ({
                   {otherUser && (
                     <CommunicationActions 
                       otherUser={otherUser} 
-                      productTitle={product.title} 
+                      productTitle={product.title}
+                      onVoiceCall={onVoiceCall}
+                      onVideoCall={onVideoCall}
                     />
                   )}
                 </div>
@@ -59,6 +68,8 @@ export const ConversationLayout = ({
               <ConversationHeader 
                 otherUser={otherUser} 
                 conversationId={conversationId}
+                onVoiceCall={onVoiceCall}
+                onVideoCall={onVideoCall}
               />
             </div>
             

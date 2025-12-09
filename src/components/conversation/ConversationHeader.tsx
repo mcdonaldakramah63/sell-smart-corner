@@ -10,14 +10,22 @@ interface Participant {
   id: string;
   name: string;
   avatar?: string;
+  phone?: string;
 }
 
 interface ConversationHeaderProps {
   otherUser: Participant | null;
   conversationId?: string;
+  onVoiceCall?: () => void;
+  onVideoCall?: () => void;
 }
 
-export const ConversationHeader = ({ otherUser, conversationId }: ConversationHeaderProps) => {
+export const ConversationHeader = ({ 
+  otherUser, 
+  conversationId,
+  onVoiceCall,
+  onVideoCall
+}: ConversationHeaderProps) => {
   return (
     <div className="border-b border-border bg-background">
       <div className="flex items-center justify-between px-3 py-1.5">
@@ -68,14 +76,26 @@ export const ConversationHeader = ({ otherUser, conversationId }: ConversationHe
         </div>
         
         {otherUser && (
-          <div className="hidden sm:flex items-center space-x-2">
-            <Button variant="ghost" size="sm" className="hover:bg-muted">
+          <div className="flex items-center space-x-2">
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="hover:bg-green-50 hover:text-green-600"
+              onClick={onVoiceCall}
+              title="Voice Call"
+            >
               <Phone className="h-4 w-4" />
             </Button>
-            <Button variant="ghost" size="sm" className="hover:bg-muted">
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="hover:bg-blue-50 hover:text-blue-600"
+              onClick={onVideoCall}
+              title="Video Call"
+            >
               <Video className="h-4 w-4" />
             </Button>
-            <Button variant="ghost" size="sm" className="hover:bg-muted">
+            <Button variant="ghost" size="sm" className="hidden sm:flex hover:bg-muted">
               <MoreVertical className="h-4 w-4" />
             </Button>
           </div>
