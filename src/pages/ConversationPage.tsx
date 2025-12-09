@@ -5,10 +5,12 @@ import { useConversationData } from '@/hooks/useConversationData';
 import { useRealtimeMessages } from '@/hooks/useRealtimeMessages';
 import { useSendMessage } from '@/hooks/useSendMessage';
 import { useCall } from '@/hooks/useCall';
+import { useIncomingCall } from '@/hooks/useIncomingCall';
 import { ConversationLayout } from '@/components/conversation/ConversationLayout';
 import { MessageList } from '@/components/conversation/MessageList';
 import { MessageInput } from '@/components/conversation/MessageInput';
 import { CallModal } from '@/components/conversation/CallModal';
+import { IncomingCallModal } from '@/components/conversation/IncomingCallModal';
 import QuickReplies from '@/components/conversation/QuickReplies';
 
 export default function ConversationPage() {
@@ -39,6 +41,8 @@ export default function ConversationPage() {
     endCall
   } = useCall();
 
+  const { incomingCall, answerCall } = useIncomingCall();
+
   useRealtimeMessages({ 
     conversationId: id, 
     setMessages 
@@ -54,6 +58,30 @@ export default function ConversationPage() {
     if (otherUser) {
       startVideoCall(otherUser);
     }
+  };
+
+  const handleAcceptIncomingCall = async () => {
+    const callData = await answerCall(true);
+    if (callData) {
+      // Start the call modal with the incoming call data
+      if (callData.callType === 'video') {
+        startVideoCall({
+          id: callData.callerId,
+          name: callData.callerName,
+          avatar: callData.callerAvatar
+        });
+      } else {
+        startVoiceCall({
+          id: callData.callerId,
+          name: callData.callerName,
+          avatar: callData.callerAvatar
+        });
+      }
+    }
+  };
+
+  const handleRejectIncomingCall = async () => {
+    await answerCall(false);
   };
 
   return (
@@ -85,7 +113,19 @@ export default function ConversationPage() {
         onClose={endCall}
         otherUser={callUser}
         callType={callType}
+        conversationId={id}
       />
+
+      {incomingCall && (
+        <IncomingCallModal
+          isOpen={true}
+          callerName={incomingCall.callerName}
+          callerAvatar={incomingCall.callerAvatar}
+          callType={incomingCall.callType}
+          onAccept={handleAcceptIncomingCall}
+          onReject={handleRejectIncomingCall}
+        />
+      )}
     </>
   );
 }

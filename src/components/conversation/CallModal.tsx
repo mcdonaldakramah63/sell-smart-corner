@@ -1,10 +1,12 @@
 import { useState, useEffect, useRef } from 'react';
-import { Dialog, DialogContent, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Phone, PhoneOff, Video, VideoOff, Mic, MicOff, X } from 'lucide-react';
+import { PhoneOff, Video, VideoOff, Mic, MicOff, X } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { VisuallyHidden } from '@radix-ui/react-visually-hidden';
+import { useWebRTC } from '@/hooks/useWebRTC';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface CallModalProps {
   isOpen: boolean;
@@ -16,29 +18,71 @@ interface CallModalProps {
     phone?: string;
   } | null;
   callType: 'voice' | 'video';
+  conversationId?: string;
 }
 
-export const CallModal = ({ isOpen, onClose, otherUser, callType }: CallModalProps) => {
+export const CallModal = ({ isOpen, onClose, otherUser, callType, conversationId }: CallModalProps) => {
   const { toast } = useToast();
+  const { user } = useAuth();
   const [callStatus, setCallStatus] = useState<'calling' | 'connected' | 'ended'>('calling');
   const [isMuted, setIsMuted] = useState(false);
   const [isVideoOff, setIsVideoOff] = useState(false);
   const [callDuration, setCallDuration] = useState(0);
-  const [permissionError, setPermissionError] = useState(false);
   const localVideoRef = useRef<HTMLVideoElement>(null);
   const remoteVideoRef = useRef<HTMLVideoElement>(null);
-  const localStreamRef = useRef<MediaStream | null>(null);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const initRef = useRef(false);
+
+  const handleRemoteStream = (stream: MediaStream) => {
+    console.log('[CallModal] Received remote stream');
+    if (remoteVideoRef.current) {
+      remoteVideoRef.current.srcObject = stream;
+    }
+  };
+
+  const handleCallEnded = () => {
+    console.log('[CallModal] Call ended');
+    setCallStatus('ended');
+    toast({
+      title: 'Call Ended',
+      description: `Call with ${otherUser?.name} has ended.`,
+    });
+    setTimeout(() => {
+      cleanupAndClose();
+    }, 500);
+  };
+
+  const handleCallConnected = () => {
+    console.log('[CallModal] Call connected');
+    setCallStatus('connected');
+    toast({
+      title: 'Connected',
+      description: `${callType === 'video' ? 'Video' : 'Voice'} call connected with ${otherUser?.name}`,
+    });
+  };
+
+  const webrtc = useWebRTC({
+    conversationId: conversationId || '',
+    callerId: user?.id || '',
+    calleeId: otherUser?.id || '',
+    callType,
+    onRemoteStream: handleRemoteStream,
+    onCallEnded: handleCallEnded,
+    onCallConnected: handleCallConnected
+  });
 
   useEffect(() => {
-    if (isOpen && callStatus === 'calling' && !permissionError) {
+    if (isOpen && callStatus === 'calling' && !initRef.current && conversationId && user && otherUser) {
+      initRef.current = true;
       initializeCall();
     }
     
     return () => {
-      cleanupCall();
+      if (!isOpen) {
+        initRef.current = false;
+      }
     };
-  }, [isOpen]);
+  }, [isOpen, conversationId, user, otherUser]);
 
   useEffect(() => {
     if (callStatus === 'connected') {
@@ -56,35 +100,24 @@ export const CallModal = ({ isOpen, onClose, otherUser, callType }: CallModalPro
 
   const initializeCall = async () => {
     try {
-      // Check if mediaDevices is available
+      console.log('[CallModal] Initializing call');
+      
       if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
         throw new Error('Media devices not supported in this browser');
       }
 
-      const constraints = {
-        audio: true,
-        video: callType === 'video'
-      };
+      // Subscribe to signals first
+      webrtc.subscribeToSignals();
+
+      // Start the call (get media and send offer)
+      const localStream = await webrtc.startCall();
       
-      const stream = await navigator.mediaDevices.getUserMedia(constraints);
-      localStreamRef.current = stream;
-      
-      if (localVideoRef.current && callType === 'video') {
-        localVideoRef.current.srcObject = stream;
+      if (localVideoRef.current && callType === 'video' && localStream) {
+        localVideoRef.current.srcObject = localStream;
       }
       
-      // Simulate call connection after 2 seconds
-      setTimeout(() => {
-        setCallStatus('connected');
-        toast({
-          title: 'Connected',
-          description: `${callType === 'video' ? 'Video' : 'Voice'} call connected with ${otherUser?.name}`,
-        });
-      }, 2000);
-      
     } catch (error: any) {
-      console.error('Error accessing media devices:', error);
-      setPermissionError(true);
+      console.error('[CallModal] Error initializing call:', error);
       
       let errorMessage = `Please allow ${callType === 'video' ? 'camera and microphone' : 'microphone'} access to make calls.`;
       
@@ -105,11 +138,7 @@ export const CallModal = ({ isOpen, onClose, otherUser, callType }: CallModalPro
     }
   };
 
-  const cleanupCall = () => {
-    if (localStreamRef.current) {
-      localStreamRef.current.getTracks().forEach(track => track.stop());
-      localStreamRef.current = null;
-    }
+  const cleanupAndClose = () => {
     if (timerRef.current) {
       clearInterval(timerRef.current);
     }
@@ -117,38 +146,30 @@ export const CallModal = ({ isOpen, onClose, otherUser, callType }: CallModalPro
     setCallDuration(0);
     setIsMuted(false);
     setIsVideoOff(false);
+    initRef.current = false;
+    onClose();
   };
 
-  const handleEndCall = () => {
+  const handleEndCall = async () => {
     setCallStatus('ended');
+    await webrtc.endCall();
     toast({
       title: 'Call Ended',
       description: `Call with ${otherUser?.name} has ended.`,
     });
     setTimeout(() => {
-      cleanupCall();
-      onClose();
+      cleanupAndClose();
     }, 500);
   };
 
   const toggleMute = () => {
-    if (localStreamRef.current) {
-      const audioTrack = localStreamRef.current.getAudioTracks()[0];
-      if (audioTrack) {
-        audioTrack.enabled = !audioTrack.enabled;
-        setIsMuted(!isMuted);
-      }
-    }
+    const newMutedState = webrtc.toggleMute();
+    setIsMuted(newMutedState);
   };
 
   const toggleVideo = () => {
-    if (localStreamRef.current) {
-      const videoTrack = localStreamRef.current.getVideoTracks()[0];
-      if (videoTrack) {
-        videoTrack.enabled = !videoTrack.enabled;
-        setIsVideoOff(!isVideoOff);
-      }
-    }
+    const newVideoOffState = webrtc.toggleVideo();
+    setIsVideoOff(newVideoOffState);
   };
 
   const formatDuration = (seconds: number) => {
@@ -208,7 +229,7 @@ export const CallModal = ({ isOpen, onClose, otherUser, callType }: CallModalPro
               </div>
               
               {/* Local video (picture-in-picture) */}
-              {callStatus === 'connected' && !isVideoOff && (
+              {!isVideoOff && (
                 <div className="absolute bottom-24 right-4 w-32 h-44 rounded-xl overflow-hidden shadow-lg ring-2 ring-white/20">
                   <video 
                     ref={localVideoRef} 

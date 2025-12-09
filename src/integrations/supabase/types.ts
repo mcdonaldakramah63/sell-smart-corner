@@ -475,6 +475,53 @@ export type Database = {
           },
         ]
       }
+      call_signals: {
+        Row: {
+          call_type: string
+          callee_id: string
+          caller_id: string
+          conversation_id: string
+          created_at: string
+          id: string
+          signal_data: Json
+          signal_type: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          call_type: string
+          callee_id: string
+          caller_id: string
+          conversation_id: string
+          created_at?: string
+          id?: string
+          signal_data: Json
+          signal_type: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          call_type?: string
+          callee_id?: string
+          caller_id?: string
+          conversation_id?: string
+          created_at?: string
+          id?: string
+          signal_data?: Json
+          signal_type?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "call_signals_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "conversations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       categories: {
         Row: {
           created_at: string
