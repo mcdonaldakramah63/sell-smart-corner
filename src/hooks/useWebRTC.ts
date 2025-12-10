@@ -4,9 +4,11 @@ import { useToast } from '@/hooks/use-toast';
 
 interface WebRTCConfig {
   conversationId: string;
-  callerId: string;
-  calleeId: string;
+  localUserId: string;
+  remoteUserId: string;
   callType: 'voice' | 'video';
+  isAnswering: boolean;
+  incomingOffer?: RTCSessionDescriptionInit;
   onRemoteStream: (stream: MediaStream) => void;
   onCallEnded: () => void;
   onCallConnected: () => void;
@@ -20,9 +22,11 @@ const ICE_SERVERS = [
 
 export const useWebRTC = ({
   conversationId,
-  callerId,
-  calleeId,
+  localUserId,
+  remoteUserId,
   callType,
+  isAnswering,
+  incomingOffer,
   onRemoteStream,
   onCallEnded,
   onCallConnected
@@ -52,15 +56,18 @@ export const useWebRTC = ({
       channelRef.current = null;
     }
 
-    // Clean up call signals
-    await supabase
-      .from('call_signals' as any)
-      .delete()
-      .eq('conversation_id', conversationId)
-      .or(`caller_id.eq.${callerId},callee_id.eq.${callerId}`);
+    // Clean up call signals for this conversation
+    try {
+      await supabase
+        .from('call_signals' as any)
+        .delete()
+        .eq('conversation_id', conversationId);
+    } catch (e) {
+      console.log('[WebRTC] Cleanup signals error:', e);
+    }
 
     setConnectionState('closed');
-  }, [conversationId, callerId]);
+  }, [conversationId]);
 
   const createPeerConnection = useCallback(() => {
     console.log('[WebRTC] Creating peer connection');
@@ -70,15 +77,19 @@ export const useWebRTC = ({
     pc.onicecandidate = async (event) => {
       if (event.candidate) {
         console.log('[WebRTC] Sending ICE candidate');
-        await supabase.from('call_signals' as any).insert({
-          conversation_id: conversationId,
-          caller_id: callerId,
-          callee_id: calleeId,
-          call_type: callType,
-          signal_type: 'ice-candidate',
-          signal_data: { candidate: event.candidate.toJSON() },
-          status: 'pending'
-        } as any);
+        try {
+          await supabase.from('call_signals' as any).insert({
+            conversation_id: conversationId,
+            caller_id: localUserId,
+            callee_id: remoteUserId,
+            call_type: callType,
+            signal_type: 'ice-candidate',
+            signal_data: { candidate: event.candidate.toJSON() },
+            status: 'pending'
+          } as any);
+        } catch (e) {
+          console.error('[WebRTC] Error sending ICE candidate:', e);
+        }
       }
     };
 
@@ -105,9 +116,13 @@ export const useWebRTC = ({
       }
     };
 
+    pc.oniceconnectionstatechange = () => {
+      console.log('[WebRTC] ICE connection state:', pc.iceConnectionState);
+    };
+
     peerConnectionRef.current = pc;
     return pc;
-  }, [conversationId, callerId, calleeId, callType, onRemoteStream, onCallConnected, onCallEnded, toast]);
+  }, [conversationId, localUserId, remoteUserId, callType, onRemoteStream, onCallConnected, onCallEnded, toast]);
 
   const startCall = useCallback(async () => {
     try {
@@ -133,11 +148,11 @@ export const useWebRTC = ({
       const offer = await pc.createOffer();
       await pc.setLocalDescription(offer);
       
-      console.log('[WebRTC] Sending offer');
+      console.log('[WebRTC] Sending offer to:', remoteUserId);
       await supabase.from('call_signals' as any).insert({
         conversation_id: conversationId,
-        caller_id: callerId,
-        callee_id: calleeId,
+        caller_id: localUserId,
+        callee_id: remoteUserId,
         call_type: callType,
         signal_type: 'offer',
         signal_data: { sdp: offer.sdp, type: offer.type },
@@ -151,11 +166,11 @@ export const useWebRTC = ({
       console.error('[WebRTC] Error starting call:', error);
       throw error;
     }
-  }, [callType, conversationId, callerId, calleeId, createPeerConnection]);
+  }, [callType, conversationId, localUserId, remoteUserId, createPeerConnection]);
 
   const answerCall = useCallback(async (offer: RTCSessionDescriptionInit) => {
     try {
-      console.log('[WebRTC] Answering call');
+      console.log('[WebRTC] Answering call from:', remoteUserId);
       
       // Get local media
       const constraints = {
@@ -174,6 +189,7 @@ export const useWebRTC = ({
       });
 
       // Set remote description (the offer)
+      console.log('[WebRTC] Setting remote description (offer)');
       await pc.setRemoteDescription(new RTCSessionDescription(offer));
       
       // Add any pending ICE candidates
@@ -186,11 +202,11 @@ export const useWebRTC = ({
       const answer = await pc.createAnswer();
       await pc.setLocalDescription(answer);
       
-      console.log('[WebRTC] Sending answer');
+      console.log('[WebRTC] Sending answer to:', remoteUserId);
       await supabase.from('call_signals' as any).insert({
         conversation_id: conversationId,
-        caller_id: callerId,
-        callee_id: calleeId,
+        caller_id: localUserId,
+        callee_id: remoteUserId,
         call_type: callType,
         signal_type: 'answer',
         signal_data: { sdp: answer.sdp, type: answer.type },
@@ -204,29 +220,38 @@ export const useWebRTC = ({
       console.error('[WebRTC] Error answering call:', error);
       throw error;
     }
-  }, [callType, conversationId, callerId, calleeId, createPeerConnection]);
+  }, [callType, conversationId, localUserId, remoteUserId, createPeerConnection]);
 
   const handleSignal = useCallback(async (signal: any) => {
     const pc = peerConnectionRef.current;
     
-    console.log('[WebRTC] Handling signal:', signal.signal_type);
+    console.log('[WebRTC] Handling signal:', signal.signal_type, 'from:', signal.caller_id);
 
     if (signal.signal_type === 'answer' && pc) {
-      console.log('[WebRTC] Received answer');
-      await pc.setRemoteDescription(new RTCSessionDescription(signal.signal_data));
-      
-      // Add any pending ICE candidates
-      for (const candidate of pendingCandidatesRef.current) {
-        await pc.addIceCandidate(new RTCIceCandidate(candidate));
+      console.log('[WebRTC] Received answer, setting remote description');
+      try {
+        await pc.setRemoteDescription(new RTCSessionDescription(signal.signal_data));
+        
+        // Add any pending ICE candidates
+        for (const candidate of pendingCandidatesRef.current) {
+          await pc.addIceCandidate(new RTCIceCandidate(candidate));
+        }
+        pendingCandidatesRef.current = [];
+      } catch (e) {
+        console.error('[WebRTC] Error setting answer:', e);
       }
-      pendingCandidatesRef.current = [];
     }
     
     if (signal.signal_type === 'ice-candidate' && signal.signal_data.candidate) {
       console.log('[WebRTC] Received ICE candidate');
       if (pc && pc.remoteDescription) {
-        await pc.addIceCandidate(new RTCIceCandidate(signal.signal_data.candidate));
+        try {
+          await pc.addIceCandidate(new RTCIceCandidate(signal.signal_data.candidate));
+        } catch (e) {
+          console.error('[WebRTC] Error adding ICE candidate:', e);
+        }
       } else {
+        console.log('[WebRTC] Queuing ICE candidate (no remote description yet)');
         pendingCandidatesRef.current.push(signal.signal_data.candidate);
       }
     }
@@ -238,10 +263,10 @@ export const useWebRTC = ({
   }, [onCallEnded]);
 
   const subscribeToSignals = useCallback(() => {
-    console.log('[WebRTC] Subscribing to signals');
+    console.log('[WebRTC] Subscribing to signals for conversation:', conversationId, 'localUser:', localUserId);
     
     const channel = supabase
-      .channel(`call-signals-${conversationId}`)
+      .channel(`call-signals-${conversationId}-${localUserId}`)
       .on(
         'postgres_changes',
         {
@@ -252,32 +277,40 @@ export const useWebRTC = ({
         },
         (payload) => {
           const signal = payload.new as any;
-          // Only process signals meant for us (not our own signals)
-          if (signal.callee_id === callerId || (signal.caller_id !== callerId && signal.signal_type === 'ice-candidate')) {
+          console.log('[WebRTC] Received signal:', signal.signal_type, 'caller_id:', signal.caller_id, 'callee_id:', signal.callee_id);
+          
+          // Process signals from the remote user (not our own signals)
+          if (signal.caller_id === remoteUserId) {
             handleSignal(signal);
           }
         }
       )
-      .subscribe();
+      .subscribe((status) => {
+        console.log('[WebRTC] Subscription status:', status);
+      });
 
     channelRef.current = channel;
-  }, [conversationId, callerId, handleSignal]);
+  }, [conversationId, localUserId, remoteUserId, handleSignal]);
 
   const endCall = useCallback(async () => {
     console.log('[WebRTC] Ending call');
     
-    await supabase.from('call_signals' as any).insert({
-      conversation_id: conversationId,
-      caller_id: callerId,
-      callee_id: calleeId,
-      call_type: callType,
-      signal_type: 'end',
-      signal_data: {},
-      status: 'ended'
-    } as any);
+    try {
+      await supabase.from('call_signals' as any).insert({
+        conversation_id: conversationId,
+        caller_id: localUserId,
+        callee_id: remoteUserId,
+        call_type: callType,
+        signal_type: 'end',
+        signal_data: {},
+        status: 'ended'
+      } as any);
+    } catch (e) {
+      console.error('[WebRTC] Error sending end signal:', e);
+    }
 
     await cleanup();
-  }, [conversationId, callerId, calleeId, callType, cleanup]);
+  }, [conversationId, localUserId, remoteUserId, callType, cleanup]);
 
   const toggleMute = useCallback(() => {
     if (localStreamRef.current) {
