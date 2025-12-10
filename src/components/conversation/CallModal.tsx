@@ -36,17 +36,29 @@ export const CallModal = ({
   const [isMuted, setIsMuted] = useState(false);
   const [isVideoOff, setIsVideoOff] = useState(false);
   const [callDuration, setCallDuration] = useState(0);
+  const [hasRemoteStream, setHasRemoteStream] = useState(false);
   const localVideoRef = useRef<HTMLVideoElement>(null);
   const remoteVideoRef = useRef<HTMLVideoElement>(null);
+  const remoteAudioRef = useRef<HTMLAudioElement>(null);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const initRef = useRef(false);
 
   const isAnswering = !!incomingOffer;
 
   const handleRemoteStream = (stream: MediaStream) => {
-    console.log('[CallModal] Received remote stream');
+    console.log('[CallModal] Received remote stream with tracks:', stream.getTracks().map(t => t.kind));
+    setHasRemoteStream(true);
+    
+    // For video calls, set both video and audio
     if (remoteVideoRef.current) {
       remoteVideoRef.current.srcObject = stream;
+      remoteVideoRef.current.play().catch(e => console.log('[CallModal] Video play error:', e));
+    }
+    
+    // For voice calls (or as backup for video), use audio element
+    if (remoteAudioRef.current) {
+      remoteAudioRef.current.srcObject = stream;
+      remoteAudioRef.current.play().catch(e => console.log('[CallModal] Audio play error:', e));
     }
   };
 
@@ -92,6 +104,7 @@ export const CallModal = ({
     return () => {
       if (!isOpen) {
         initRef.current = false;
+        setHasRemoteStream(false);
       }
     };
   }, [isOpen, conversationId, user, otherUser]);
@@ -163,10 +176,21 @@ export const CallModal = ({
     if (timerRef.current) {
       clearInterval(timerRef.current);
     }
+    // Clear media elements
+    if (remoteVideoRef.current) {
+      remoteVideoRef.current.srcObject = null;
+    }
+    if (remoteAudioRef.current) {
+      remoteAudioRef.current.srcObject = null;
+    }
+    if (localVideoRef.current) {
+      localVideoRef.current.srcObject = null;
+    }
     setCallStatus('calling');
     setCallDuration(0);
     setIsMuted(false);
     setIsVideoOff(false);
+    setHasRemoteStream(false);
     initRef.current = false;
     onClose();
   };
@@ -207,6 +231,10 @@ export const CallModal = ({
         <VisuallyHidden>
           <DialogTitle>{callType === 'video' ? 'Video' : 'Voice'} Call with {otherUser.name}</DialogTitle>
         </VisuallyHidden>
+        
+        {/* Hidden audio element for remote audio (works for both voice and video calls) */}
+        <audio ref={remoteAudioRef} autoPlay playsInline />
+        
         <div className="relative min-h-[500px] flex flex-col">
           {/* Close button */}
           <Button 
@@ -221,16 +249,15 @@ export const CallModal = ({
           {/* Video area */}
           {callType === 'video' ? (
             <div className="flex-1 relative">
-              {/* Remote video (full screen) */}
+              {/* Remote video (full screen) - always rendered but may be hidden */}
               <div className="absolute inset-0 bg-slate-800 flex items-center justify-center">
-                {callStatus === 'connected' ? (
-                  <video 
-                    ref={remoteVideoRef} 
-                    autoPlay 
-                    playsInline
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
+                <video 
+                  ref={remoteVideoRef} 
+                  autoPlay 
+                  playsInline
+                  className={`w-full h-full object-cover ${hasRemoteStream ? 'block' : 'hidden'}`}
+                />
+                {!hasRemoteStream && (
                   <div className="flex flex-col items-center space-y-4">
                     <Avatar className="h-24 w-24 ring-4 ring-white/20">
                       {otherUser.avatar ? (
