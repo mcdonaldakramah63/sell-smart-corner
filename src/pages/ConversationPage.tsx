@@ -36,8 +36,10 @@ export default function ConversationPage() {
     isCallModalOpen,
     callType,
     callUser,
+    incomingCallData,
     startVoiceCall,
     startVideoCall,
+    answerIncomingCall,
     endCall
   } = useCall();
 
@@ -63,26 +65,26 @@ export default function ConversationPage() {
   const handleAcceptIncomingCall = async () => {
     const callData = await answerCall(true);
     if (callData) {
-      // Start the call modal with the incoming call data
-      if (callData.callType === 'video') {
-        startVideoCall({
+      // Answer the call with the offer data
+      answerIncomingCall(
+        {
           id: callData.callerId,
           name: callData.callerName,
           avatar: callData.callerAvatar
-        });
-      } else {
-        startVoiceCall({
-          id: callData.callerId,
-          name: callData.callerName,
-          avatar: callData.callerAvatar
-        });
-      }
+        },
+        callData.callType,
+        callData.conversationId,
+        callData.offer
+      );
     }
   };
 
   const handleRejectIncomingCall = async () => {
     await answerCall(false);
   };
+
+  // Use incomingCallData's conversationId if answering, otherwise use current conversation id
+  const activeConversationId = incomingCallData?.conversationId || id;
 
   return (
     <>
@@ -113,7 +115,8 @@ export default function ConversationPage() {
         onClose={endCall}
         otherUser={callUser}
         callType={callType}
-        conversationId={id}
+        conversationId={activeConversationId}
+        incomingOffer={incomingCallData?.offer}
       />
 
       {incomingCall && (

@@ -19,9 +19,17 @@ interface CallModalProps {
   } | null;
   callType: 'voice' | 'video';
   conversationId?: string;
+  incomingOffer?: RTCSessionDescriptionInit;
 }
 
-export const CallModal = ({ isOpen, onClose, otherUser, callType, conversationId }: CallModalProps) => {
+export const CallModal = ({ 
+  isOpen, 
+  onClose, 
+  otherUser, 
+  callType, 
+  conversationId,
+  incomingOffer
+}: CallModalProps) => {
   const { toast } = useToast();
   const { user } = useAuth();
   const [callStatus, setCallStatus] = useState<'calling' | 'connected' | 'ended'>('calling');
@@ -32,6 +40,8 @@ export const CallModal = ({ isOpen, onClose, otherUser, callType, conversationId
   const remoteVideoRef = useRef<HTMLVideoElement>(null);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const initRef = useRef(false);
+
+  const isAnswering = !!incomingOffer;
 
   const handleRemoteStream = (stream: MediaStream) => {
     console.log('[CallModal] Received remote stream');
@@ -63,9 +73,11 @@ export const CallModal = ({ isOpen, onClose, otherUser, callType, conversationId
 
   const webrtc = useWebRTC({
     conversationId: conversationId || '',
-    callerId: user?.id || '',
-    calleeId: otherUser?.id || '',
+    localUserId: user?.id || '',
+    remoteUserId: otherUser?.id || '',
     callType,
+    isAnswering,
+    incomingOffer,
     onRemoteStream: handleRemoteStream,
     onCallEnded: handleCallEnded,
     onCallConnected: handleCallConnected
@@ -100,7 +112,7 @@ export const CallModal = ({ isOpen, onClose, otherUser, callType, conversationId
 
   const initializeCall = async () => {
     try {
-      console.log('[CallModal] Initializing call');
+      console.log('[CallModal] Initializing call, isAnswering:', isAnswering);
       
       if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
         throw new Error('Media devices not supported in this browser');
@@ -109,8 +121,17 @@ export const CallModal = ({ isOpen, onClose, otherUser, callType, conversationId
       // Subscribe to signals first
       webrtc.subscribeToSignals();
 
-      // Start the call (get media and send offer)
-      const localStream = await webrtc.startCall();
+      let localStream: MediaStream | undefined;
+
+      if (isAnswering && incomingOffer) {
+        // Answer the incoming call with the offer
+        console.log('[CallModal] Answering incoming call');
+        localStream = await webrtc.answerCall(incomingOffer);
+      } else {
+        // Start a new call (send offer)
+        console.log('[CallModal] Starting new call');
+        localStream = await webrtc.startCall();
+      }
       
       if (localVideoRef.current && callType === 'video' && localStream) {
         localVideoRef.current.srcObject = localStream;
@@ -222,7 +243,7 @@ export const CallModal = ({ isOpen, onClose, otherUser, callType, conversationId
                     </Avatar>
                     <h3 className="text-xl font-semibold text-white">{otherUser.name}</h3>
                     <p className="text-slate-400 animate-pulse">
-                      {callStatus === 'calling' ? 'Calling...' : 'Connected'}
+                      {callStatus === 'calling' ? (isAnswering ? 'Connecting...' : 'Calling...') : 'Connected'}
                     </p>
                   </div>
                 )}
@@ -262,7 +283,7 @@ export const CallModal = ({ isOpen, onClose, otherUser, callType, conversationId
               <h3 className="mt-6 text-2xl font-semibold text-white">{otherUser.name}</h3>
               
               <p className="mt-2 text-slate-400">
-                {callStatus === 'calling' ? 'Calling...' : 
+                {callStatus === 'calling' ? (isAnswering ? 'Connecting...' : 'Calling...') : 
                  callStatus === 'connected' ? formatDuration(callDuration) : 'Call ended'}
               </p>
               
