@@ -94,6 +94,46 @@ const fetchCategories = async (): Promise<Category[]> => {
   }
 };
 
+const fetchStats = async () => {
+  try {
+    const { supabase } = await import('@/integrations/supabase/client');
+    
+    // Fetch active listings count
+    const { count: activeListings } = await supabase
+      .from('products')
+      .select('*', { count: 'exact', head: true })
+      .eq('status', 'approved')
+      .eq('is_sold', false);
+
+    // Fetch total users count
+    const { count: totalUsers } = await supabase
+      .from('profiles')
+      .select('*', { count: 'exact', head: true });
+
+    // Fetch total product views as daily visits proxy
+    const { data: viewsData } = await supabase
+      .from('products')
+      .select('view_count');
+    
+    const totalViews = viewsData?.reduce((sum, p) => sum + (p.view_count || 0), 0) || 0;
+
+    return {
+      activeListings: activeListings || 0,
+      happyUsers: totalUsers || 0,
+      dailyVisits: totalViews
+    };
+  } catch (error) {
+    console.error('Error fetching stats:', error);
+    return { activeListings: 0, happyUsers: 0, dailyVisits: 0 };
+  }
+};
+
+const formatNumber = (num: number): string => {
+  if (num >= 1000000) return `${(num / 1000000).toFixed(1)}M+`;
+  if (num >= 1000) return `${(num / 1000).toFixed(1)}K+`;
+  return num.toString();
+};
+
 const Index = () => {
   const navigate = useNavigate();
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
@@ -103,8 +143,8 @@ const Index = () => {
   const { data: products = [], isLoading: productsLoading } = useQuery({
     queryKey: ['featured-products', itemsToShow],
     queryFn: () => fetchFeaturedProducts(itemsToShow),
-    refetchInterval: 30000, // Refresh every 30 seconds
-    refetchIntervalInBackground: true // Continue refreshing even when tab is not active
+    refetchInterval: 30000,
+    refetchIntervalInBackground: true
   });
 
   const { data: categories = [], isLoading: categoriesLoading } = useQuery({
@@ -112,14 +152,20 @@ const Index = () => {
     queryFn: fetchCategories
   });
 
+  const { data: statsData } = useQuery({
+    queryKey: ['homepage-stats'],
+    queryFn: fetchStats,
+    refetchInterval: 60000 // Refresh stats every minute
+  });
+
   const filteredProducts = products.filter((product: Product) => 
     !selectedCategory || product.category === categories.find((c: Category) => c.id === selectedCategory)?.name
   );
 
   const stats = [
-    { label: 'Active Listings', value: '50,000+', icon: Eye },
-    { label: 'Happy Users', value: '2M+', icon: Star },
-    { label: 'Daily Visits', value: '100K+', icon: TrendingUp },
+    { label: 'Active Listings', value: formatNumber(statsData?.activeListings || 0), icon: Eye },
+    { label: 'Happy Users', value: formatNumber(statsData?.happyUsers || 0), icon: Star },
+    { label: 'Total Views', value: formatNumber(statsData?.dailyVisits || 0), icon: TrendingUp },
   ];
 
   return (
