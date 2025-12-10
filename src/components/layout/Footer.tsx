@@ -17,7 +17,7 @@ const Footer = () => {
                 <span className="font-bold text-2xl text-blue-600">MarketHub</span>
               </div>
               <p className="text-gray-500 mb-6 text-sm leading-relaxed">
-                Nigeria's leading marketplace for buying and selling. Connect with millions of users across the country.
+                Ghana's leading marketplace for buying and selling. Connect with millions of users across the country.
               </p>
               
               {/* Contact Info */}
@@ -32,7 +32,7 @@ const Footer = () => {
                 </div>
                 <div className="flex items-center space-x-2 text-sm">
                   <MapPin className="h-4 w-4 text-blue-600" />
-                  <span>Lagos, Nigeria</span>
+                  <span>Accra, Ghana</span>
                 </div>
               </div>
             </div>

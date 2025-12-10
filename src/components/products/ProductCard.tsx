@@ -108,7 +108,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
         <div className="flex items-center justify-between text-xs md:text-sm text-muted-foreground gap-2 min-w-0">
           <div className="flex items-center min-w-0 max-w-[65%]">
             <MapPin className="h-3 w-3 mr-1 shrink-0" />
-            <span className="truncate">{product.location || 'Lagos'}</span>
+            <span className="truncate">{product.location || 'Accra'}</span>
           </div>
           <div className="flex items-center shrink-0">
             <Clock className="h-3 w-3 mr-1" />
