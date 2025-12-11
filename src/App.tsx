@@ -1,10 +1,11 @@
-
+import { useEffect } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useNavigate } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { MobileOptimizedLayout } from "@/components/mobile/MobileOptimizedLayout";
+import { GlobalNotificationProvider } from "@/components/notifications/GlobalNotificationProvider";
 import Index from "./pages/Index";
 import AuthPage from "./pages/AuthPage";
 import AuthCallbackPage from "./pages/AuthCallbackPage";
@@ -34,44 +35,67 @@ import AdvancedSearchPage from "./pages/AdvancedSearchPage";
 import SecurityPage from "./pages/SecurityPage";
 import AdminUsersPage from "./pages/AdminUsersPage";
 
+// Component to handle service worker navigation messages
+const ServiceWorkerNavigator = () => {
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const handleMessage = (event: MessageEvent) => {
+      if (event.data?.type === 'NOTIFICATION_CLICK' && event.data?.url) {
+        navigate(event.data.url);
+      }
+    };
+
+    navigator.serviceWorker?.addEventListener('message', handleMessage);
+    return () => {
+      navigator.serviceWorker?.removeEventListener('message', handleMessage);
+    };
+  }, [navigate]);
+
+  return null;
+};
+
 const App = () => (
   <TooltipProvider>
     <BrowserRouter>
       <AuthProvider>
-        <Toaster />
-        <Sonner />
-        <MobileOptimizedLayout>
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/auth/*" element={<AuthPage />} />
-            <Route path="/auth/callback" element={<AuthCallbackPage />} />
-            <Route path="/dashboard" element={<DashboardPage />} />
-            <Route path="/admin" element={<AdminDashboardPage />} />
-            <Route path="/admin/users" element={<AdminUsersPage />} />
-            <Route path="/business" element={<BusinessDashboardPage />} />
-            <Route path="/create-product" element={<CreateProductPage />} />
-            <Route path="/products" element={<ProductsPage />} />
-            <Route path="/products/:id" element={<ProductDetailPage />} />
-            <Route path="/profile" element={<ProfilePage />} />
-            <Route path="/messages" element={<MessagesPage />} />
-            <Route path="/conversation/:id" element={<ConversationPage />} />
-            <Route path="/notifications" element={<NotificationsPage />} />
-            <Route path="/settings" element={<SettingsPage />} />
-            <Route path="/help" element={<HelpPage />} />
-            <Route path="/contact" element={<ContactPage />} />
-            <Route path="/privacy" element={<PrivacyPage />} />
-            <Route path="/terms" element={<TermsPage />} />
-            <Route path="/cookies" element={<CookiePage />} />
-            <Route path="/safety" element={<SafetyPage />} />
-            <Route path="/reset-password" element={<ResetPasswordPage />} />
-            <Route path="/update-password" element={<UpdatePasswordPage />} />
-            <Route path="/saved-searches" element={<SavedSearchesPage />} />
-            <Route path="/analytics" element={<AnalyticsPage />} />
-            <Route path="/search" element={<AdvancedSearchPage />} />
-            <Route path="/security" element={<SecurityPage />} />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </MobileOptimizedLayout>
+        <GlobalNotificationProvider>
+          <Toaster />
+          <Sonner />
+          <ServiceWorkerNavigator />
+          <MobileOptimizedLayout>
+            <Routes>
+              <Route path="/" element={<Index />} />
+              <Route path="/auth/*" element={<AuthPage />} />
+              <Route path="/auth/callback" element={<AuthCallbackPage />} />
+              <Route path="/dashboard" element={<DashboardPage />} />
+              <Route path="/admin" element={<AdminDashboardPage />} />
+              <Route path="/admin/users" element={<AdminUsersPage />} />
+              <Route path="/business" element={<BusinessDashboardPage />} />
+              <Route path="/create-product" element={<CreateProductPage />} />
+              <Route path="/products" element={<ProductsPage />} />
+              <Route path="/products/:id" element={<ProductDetailPage />} />
+              <Route path="/profile" element={<ProfilePage />} />
+              <Route path="/messages" element={<MessagesPage />} />
+              <Route path="/conversation/:id" element={<ConversationPage />} />
+              <Route path="/notifications" element={<NotificationsPage />} />
+              <Route path="/settings" element={<SettingsPage />} />
+              <Route path="/help" element={<HelpPage />} />
+              <Route path="/contact" element={<ContactPage />} />
+              <Route path="/privacy" element={<PrivacyPage />} />
+              <Route path="/terms" element={<TermsPage />} />
+              <Route path="/cookies" element={<CookiePage />} />
+              <Route path="/safety" element={<SafetyPage />} />
+              <Route path="/reset-password" element={<ResetPasswordPage />} />
+              <Route path="/update-password" element={<UpdatePasswordPage />} />
+              <Route path="/saved-searches" element={<SavedSearchesPage />} />
+              <Route path="/analytics" element={<AnalyticsPage />} />
+              <Route path="/search" element={<AdvancedSearchPage />} />
+              <Route path="/security" element={<SecurityPage />} />
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </MobileOptimizedLayout>
+        </GlobalNotificationProvider>
       </AuthProvider>
     </BrowserRouter>
   </TooltipProvider>
