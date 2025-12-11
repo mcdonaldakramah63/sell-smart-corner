@@ -174,14 +174,14 @@ const Index = () => {
         <HeroSection />
         
         {/* Stats Section - Jiji Style */}
-        <div className="bg-white py-12 border-b border-gray-200">
+        <div className="bg-white py-6 md:py-12 border-b border-gray-200">
           <div className="container mx-auto px-4">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
+            <div className="grid grid-cols-3 gap-2 md:gap-8 text-center">
               {stats.map((stat, index) => (
                 <div key={index} className="flex flex-col items-center">
-                  <stat.icon className="h-8 w-8 text-blue-600 mb-3" />
-                  <div className="text-3xl font-bold text-gray-800 mb-1">{stat.value}</div>
-                  <div className="text-gray-600">{stat.label}</div>
+                  <stat.icon className="h-5 w-5 md:h-8 md:w-8 text-blue-600 mb-1 md:mb-3" />
+                  <div className="text-lg md:text-3xl font-bold text-gray-800 mb-0.5 md:mb-1">{stat.value}</div>
+                  <div className="text-xs md:text-base text-gray-600">{stat.label}</div>
                 </div>
               ))}
             </div>
