@@ -127,12 +127,15 @@ export function AdvancedSearchModal({
           {/* Category */}
           <div className="space-y-2">
             <Label>Category</Label>
-            <Select value={selectedCategory || ""} onValueChange={(value) => setSelectedCategory(value || null)}>
+            <Select 
+              value={selectedCategory || "all"} 
+              onValueChange={(value) => setSelectedCategory(value === "all" ? null : value)}
+            >
               <SelectTrigger>
                 <SelectValue placeholder="Select a category" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All Categories</SelectItem>
+                <SelectItem value="all">All Categories</SelectItem>
                 {categories.map((category) => (
                   <SelectItem key={category.id} value={category.id}>
                     {category.name}
@@ -173,12 +176,15 @@ export function AdvancedSearchModal({
           {/* Condition */}
           <div className="space-y-2">
             <Label>Condition</Label>
-            <Select value={condition || ""} onValueChange={(value) => setCondition(value || null)}>
+            <Select 
+              value={condition || "all"} 
+              onValueChange={(value) => setCondition(value === "all" ? null : value)}
+            >
               <SelectTrigger>
                 <SelectValue placeholder="Any condition" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Any Condition</SelectItem>
+                <SelectItem value="all">Any Condition</SelectItem>
                 {conditions.map((cond) => (
                   <SelectItem key={cond.value} value={cond.value}>
                     {cond.label}
