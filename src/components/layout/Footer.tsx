@@ -1,10 +1,40 @@
 
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Facebook, Twitter, Instagram, Youtube, Mail, Phone, MapPin } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 
 const Footer = () => {
+  const { toast } = useToast();
+  const [email, setEmail] = useState('');
+  const [isSubscribing, setIsSubscribing] = useState(false);
+
+  const handleSubscribe = async () => {
+    if (!email || !email.includes('@')) {
+      toast({
+        title: 'Invalid Email',
+        description: 'Please enter a valid email address.',
+        variant: 'destructive'
+      });
+      return;
+    }
+
+    setIsSubscribing(true);
+    
+    // Simulate subscription (in a real app, this would call an API)
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    
+    toast({
+      title: 'Subscribed!',
+      description: 'Thank you for subscribing to our newsletter.',
+    });
+    
+    setEmail('');
+    setIsSubscribing(false);
+  };
+
   return (
     <footer className="bg-gray-50 text-gray-600 border-t border-gray-200">
       {/* Main Footer Content */}
@@ -101,9 +131,16 @@ const Footer = () => {
                 <Input 
                   placeholder="Your email" 
                   className="rounded-r-none h-10 text-sm"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && handleSubscribe()}
                 />
-                <Button className="rounded-l-none bg-blue-600 hover:bg-blue-700 text-white px-4 h-10">
-                  Subscribe
+                <Button 
+                  className="rounded-l-none bg-blue-600 hover:bg-blue-700 text-white px-4 h-10"
+                  onClick={handleSubscribe}
+                  disabled={isSubscribing}
+                >
+                  {isSubscribing ? 'Subscribing...' : 'Subscribe'}
                 </Button>
               </div>
               

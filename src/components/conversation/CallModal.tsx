@@ -226,8 +226,8 @@ export const CallModal = ({
   if (!otherUser) return null;
 
   return (
-    <Dialog open={isOpen} onOpenChange={(open) => !open && handleEndCall()}>
-      <DialogContent className="sm:max-w-lg p-0 overflow-hidden bg-gradient-to-b from-slate-900 to-slate-800 border-none" aria-describedby={undefined}>
+    <Dialog open={isOpen} onOpenChange={(open) => !open && handleEndCall()} modal={false}>
+      <DialogContent className="sm:max-w-lg p-0 overflow-hidden bg-gradient-to-b from-slate-900 to-slate-800 border-none fixed bottom-4 right-4 top-auto left-auto translate-x-0 translate-y-0 z-50" aria-describedby={undefined}>
         <VisuallyHidden>
           <DialogTitle>{callType === 'video' ? 'Video' : 'Voice'} Call with {otherUser.name}</DialogTitle>
         </VisuallyHidden>
