@@ -6,7 +6,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { UserMenu } from './UserMenu';
 import { LanguageSwitcher } from '../shared/LanguageSwitcher';
 import { useTranslation } from 'react-i18next';
-
+import DesktopNavigation from './DesktopNavigation';
 const Header: React.FC = () => {
   const { isAuthenticated } = useAuth();
   const navigate = useNavigate();
@@ -33,8 +33,10 @@ const Header: React.FC = () => {
             <div className="text-lg sm:text-2xl font-bold text-marketplace-secondary hidden xs:block">MarketHub</div>
           </Link>
 
-          {/* Spacer */}
-          <div className="flex-1" />
+          {/* Desktop Navigation */}
+          <div className="hidden lg:flex flex-1 justify-center">
+            <DesktopNavigation />
+          </div>
 
           {/* Right Actions */}
           <div className="flex items-center space-x-1 sm:space-x-3">
