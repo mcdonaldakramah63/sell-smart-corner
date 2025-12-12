@@ -13,6 +13,7 @@ import DashboardPage from "./pages/DashboardPage";
 import AdminDashboardPage from "./pages/AdminDashboardPage";
 import BusinessDashboardPage from "./pages/BusinessDashboardPage";
 import CreateProductPage from "./pages/CreateProductPage";
+import EditProductPage from "./pages/EditProductPage";
 import ProductsPage from "./pages/ProductsPage";
 import ProductDetailPage from "./pages/ProductDetailPage";
 import ProfilePage from "./pages/ProfilePage";
@@ -73,6 +74,7 @@ const App = () => (
               <Route path="/admin/users" element={<AdminUsersPage />} />
               <Route path="/business" element={<BusinessDashboardPage />} />
               <Route path="/create-product" element={<CreateProductPage />} />
+              <Route path="/edit-product/:id" element={<EditProductPage />} />
               <Route path="/products" element={<ProductsPage />} />
               <Route path="/products/:id" element={<ProductDetailPage />} />
               <Route path="/profile" element={<ProfilePage />} />
