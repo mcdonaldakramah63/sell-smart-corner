@@ -88,12 +88,12 @@ export const AdvancedSearchModal = ({ onSearch, initialFilters = {} }: AdvancedS
           {/* Category */}
           <div>
             <Label>Category</Label>
-            <Select value={filters.categoryId} onValueChange={(value) => handleFilterChange('categoryId', value)}>
+            <Select value={filters.categoryId || 'all'} onValueChange={(value) => handleFilterChange('categoryId', value === 'all' ? undefined : value)}>
               <SelectTrigger>
                 <SelectValue placeholder="Select category" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All Categories</SelectItem>
+                <SelectItem value="all">All Categories</SelectItem>
                 {categories.map(category => (
                   <SelectItem key={category.id} value={category.id}>
                     {category.name}
@@ -106,12 +106,12 @@ export const AdvancedSearchModal = ({ onSearch, initialFilters = {} }: AdvancedS
           {/* Condition */}
           <div>
             <Label>Condition</Label>
-            <Select value={filters.condition} onValueChange={(value) => handleFilterChange('condition', value)}>
+            <Select value={filters.condition || 'all'} onValueChange={(value) => handleFilterChange('condition', value === 'all' ? undefined : value)}>
               <SelectTrigger>
                 <SelectValue placeholder="Any condition" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Any Condition</SelectItem>
+                <SelectItem value="all">Any Condition</SelectItem>
                 <SelectItem value="new">New</SelectItem>
                 <SelectItem value="like_new">Like New</SelectItem>
                 <SelectItem value="good">Good</SelectItem>
