@@ -1,15 +1,13 @@
-
 import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
+import { useCallContext } from '@/contexts/CallContext';
 import { useConversationData } from '@/hooks/useConversationData';
 import { useRealtimeMessages } from '@/hooks/useRealtimeMessages';
 import { useSendMessage } from '@/hooks/useSendMessage';
-import { useCall } from '@/hooks/useCall';
 import { useIncomingCall } from '@/hooks/useIncomingCall';
 import { ConversationLayout } from '@/components/conversation/ConversationLayout';
 import { MessageList } from '@/components/conversation/MessageList';
 import { MessageInput } from '@/components/conversation/MessageInput';
-import { CallModal } from '@/components/conversation/CallModal';
 import { IncomingCallModal } from '@/components/conversation/IncomingCallModal';
 import QuickReplies from '@/components/conversation/QuickReplies';
 
@@ -33,15 +31,10 @@ export default function ConversationPage() {
   });
 
   const {
-    isCallModalOpen,
-    callType,
-    callUser,
-    incomingCallData,
     startVoiceCall,
     startVideoCall,
-    answerIncomingCall,
-    endCall
-  } = useCall();
+    answerIncomingCall
+  } = useCallContext();
 
   const { incomingCall, answerCall } = useIncomingCall();
 
@@ -51,21 +44,20 @@ export default function ConversationPage() {
   });
 
   const handleVoiceCall = () => {
-    if (otherUser) {
-      startVoiceCall(otherUser);
+    if (otherUser && id) {
+      startVoiceCall(otherUser, id);
     }
   };
 
   const handleVideoCall = () => {
-    if (otherUser) {
-      startVideoCall(otherUser);
+    if (otherUser && id) {
+      startVideoCall(otherUser, id);
     }
   };
 
   const handleAcceptIncomingCall = async () => {
     const callData = await answerCall(true);
     if (callData) {
-      // Answer the call with the offer data
       answerIncomingCall(
         {
           id: callData.callerId,
@@ -82,9 +74,6 @@ export default function ConversationPage() {
   const handleRejectIncomingCall = async () => {
     await answerCall(false);
   };
-
-  // Use incomingCallData's conversationId if answering, otherwise use current conversation id
-  const activeConversationId = incomingCallData?.conversationId || id;
 
   return (
     <>
@@ -109,15 +98,6 @@ export default function ConversationPage() {
           onPrefillConsumed={() => setPrefillText(undefined)}
         />
       </ConversationLayout>
-
-      <CallModal
-        isOpen={isCallModalOpen}
-        onClose={endCall}
-        otherUser={callUser}
-        callType={callType}
-        conversationId={activeConversationId}
-        incomingOffer={incomingCallData?.offer}
-      />
 
       {incomingCall && (
         <IncomingCallModal
