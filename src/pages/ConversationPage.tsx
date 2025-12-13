@@ -44,20 +44,20 @@ export default function ConversationPage() {
   });
 
   const handleVoiceCall = () => {
-    if (otherUser && id) {
-      startVoiceCall(otherUser, id);
+    if (otherUser && id && user?.id) {
+      startVoiceCall(otherUser, id, user.id);
     }
   };
 
   const handleVideoCall = () => {
-    if (otherUser && id) {
-      startVideoCall(otherUser, id);
+    if (otherUser && id && user?.id) {
+      startVideoCall(otherUser, id, user.id);
     }
   };
 
   const handleAcceptIncomingCall = async () => {
     const callData = await answerCall(true);
-    if (callData) {
+    if (callData && user?.id) {
       answerIncomingCall(
         {
           id: callData.callerId,
@@ -66,7 +66,8 @@ export default function ConversationPage() {
         },
         callData.callType,
         callData.conversationId,
-        callData.offer
+        callData.offer,
+        user.id
       );
     }
   };
