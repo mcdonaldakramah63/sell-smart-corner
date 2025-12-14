@@ -173,10 +173,16 @@ export const CallProvider = ({ children }: { children: ReactNode }) => {
   }, [cleanup, toast]);
 
   const subscribeToSignals = useCallback((convId: string, localUserId: string, remoteUserId: string) => {
+    // Avoid duplicate subscriptions
+    if (channelRef.current) {
+      console.log('[CallContext] Already subscribed, skipping...');
+      return;
+    }
+    
     console.log('[CallContext] Subscribing to signals for conversation:', convId, 'localUser:', localUserId);
     
     const channel = supabase
-      .channel(`call-signals-${convId}-${localUserId}`)
+      .channel(`call-signals-${convId}-${localUserId}-${Date.now()}`)
       .on(
         'postgres_changes',
         {
@@ -235,19 +241,30 @@ export const CallProvider = ({ children }: { children: ReactNode }) => {
 
     pc.onconnectionstatechange = () => {
       console.log('[CallContext] Connection state:', pc.connectionState);
-      setConnectionState(pc.connectionState as any);
       
-      if (pc.connectionState === 'connected') {
+      // Map WebRTC states to our simplified states
+      const state = pc.connectionState;
+      if (state === 'connected') {
+        setConnectionState('connected');
         toast({
           title: 'Connected',
           description: `Call connected successfully`,
         });
-      } else if (pc.connectionState === 'failed' || pc.connectionState === 'disconnected') {
+      } else if (state === 'connecting' || state === 'new') {
+        setConnectionState('connecting');
+      } else if (state === 'failed') {
+        // Only show error and cleanup on actual failure, not on temporary disconnection
+        setConnectionState('failed');
         toast({
-          title: 'Connection Lost',
-          description: 'The call connection was lost.',
+          title: 'Connection Failed',
+          description: 'The call connection failed.',
           variant: 'destructive'
         });
+      } else if (state === 'disconnected') {
+        // Don't immediately end call on disconnection - WebRTC may reconnect
+        console.log('[CallContext] Connection temporarily disconnected, waiting for reconnect...');
+      } else if (state === 'closed') {
+        setConnectionState('closed');
       }
     };
 
