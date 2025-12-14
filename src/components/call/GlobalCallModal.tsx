@@ -3,6 +3,7 @@ import { useCallContext } from '@/contexts/CallContext';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { PhoneOff, Video, VideoOff, Mic, MicOff, X, Maximize2, Minimize2 } from 'lucide-react';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 export const GlobalCallModal = () => {
   const {
@@ -20,7 +21,15 @@ export const GlobalCallModal = () => {
     toggleVideo
   } = useCallContext();
 
+  const isMobile = useIsMobile();
   const [isMinimized, setIsMinimized] = useState(false);
+
+  // Auto-minimize on mobile
+  useEffect(() => {
+    if (isMobile && isCallModalOpen) {
+      setIsMinimized(true);
+    }
+  }, [isMobile, isCallModalOpen]);
   const localVideoRef = useRef<HTMLVideoElement>(null);
   const remoteVideoRef = useRef<HTMLVideoElement>(null);
   const remoteAudioRef = useRef<HTMLAudioElement>(null);
