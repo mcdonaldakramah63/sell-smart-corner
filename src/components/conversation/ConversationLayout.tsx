@@ -40,30 +40,28 @@ export const ConversationLayout = ({
   onVideoCall
 }: ConversationLayoutProps) => {
   return (
-    <div className="min-h-screen bg-slate-50">
-      <div className="max-w-6xl mx-auto">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-0 min-h-screen">
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/30">
+      <div className="max-w-6xl mx-auto h-screen">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-0 h-full">
           {/* Sidebar - Product Info (hidden when no product) */}
           {product && (
-            <div className="lg:col-span-4 bg-white border-r border-slate-200">
-              <div className="sticky top-0 p-4 space-y-4">
-                <div className="space-y-4">
-                  <ProductInfoCard product={product} />
-                  {otherUser && (
-                    <CommunicationActions 
-                      otherUser={otherUser} 
-                      productTitle={product.title}
-                      onVoiceCall={onVoiceCall}
-                      onVideoCall={onVideoCall}
-                    />
-                  )}
-                </div>
+            <div className="hidden lg:block lg:col-span-4 bg-card/50 backdrop-blur-sm border-r border-border/50">
+              <div className="sticky top-0 p-6 space-y-6">
+                <ProductInfoCard product={product} />
+                {otherUser && (
+                  <CommunicationActions 
+                    otherUser={otherUser} 
+                    productTitle={product.title}
+                    onVoiceCall={onVoiceCall}
+                    onVideoCall={onVideoCall}
+                  />
+                )}
               </div>
             </div>
           )}
 
           {/* Chat Area */}
-          <div className={`bg-white flex flex-col ${product ? 'lg:col-span-8' : 'lg:col-span-12'}`}>
+          <div className={`flex flex-col h-full overflow-hidden ${product ? 'lg:col-span-8' : 'lg:col-span-12'}`}>
             <div className="sticky top-0 z-20">
               <ConversationHeader 
                 otherUser={otherUser} 
@@ -74,14 +72,16 @@ export const ConversationLayout = ({
             </div>
             
             {loading ? (
-              <div className="flex-1 flex justify-center items-center">
-                <div className="flex flex-col items-center space-y-3">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
-                  <p className="text-slate-500">Loading conversation...</p>
+              <div className="flex-1 flex justify-center items-center bg-gradient-to-b from-muted/20 to-muted/40">
+                <div className="flex flex-col items-center space-y-4">
+                  <div className="relative">
+                    <div className="w-12 h-12 rounded-full border-4 border-primary/20 border-t-primary animate-spin" />
+                  </div>
+                  <p className="text-muted-foreground font-medium">Loading conversation...</p>
                 </div>
               </div>
             ) : (
-              <div className="flex-1 flex flex-col min-h-0 bg-slate-50 pb-24">
+              <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
                 {children}
               </div>
             )}
