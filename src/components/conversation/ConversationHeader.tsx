@@ -27,76 +27,91 @@ export const ConversationHeader = ({
   onVideoCall
 }: ConversationHeaderProps) => {
   return (
-    <div className="border-b border-border bg-background">
-      <div className="flex items-center justify-between px-3 py-1.5">
+    <div className="bg-card/80 backdrop-blur-xl border-b border-border/50 shadow-sm">
+      <div className="flex items-center justify-between px-3 md:px-4 py-2 md:py-3">
         <div className="flex items-center space-x-3">
-          <Button variant="ghost" size="sm" className="hover:bg-slate-100" asChild>
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            className="h-9 w-9 rounded-full hover:bg-muted/80 transition-colors"
+            asChild
+          >
             <Link to="/messages">
-              <ArrowLeft className="h-4 w-4" />
+              <ArrowLeft className="h-5 w-5" />
             </Link>
           </Button>
           
           {otherUser && (
-            <>
+            <div className="flex items-center space-x-3">
               <div className="relative">
-                <Avatar className="h-9 w-9 ring-2 ring-slate-100">
+                <Avatar className="h-10 w-10 md:h-11 md:w-11 ring-2 ring-primary/10 shadow-md">
                   {otherUser.avatar ? (
-                    <AvatarImage src={otherUser.avatar} />
+                    <AvatarImage src={otherUser.avatar} className="object-cover" />
                   ) : (
-                    <AvatarFallback className="bg-gradient-to-r from-blue-500 to-purple-500 text-white font-semibold">
+                    <AvatarFallback className="bg-gradient-to-br from-primary to-primary/60 text-primary-foreground font-bold text-base">
                       {otherUser.name[0]}
                     </AvatarFallback>
                   )}
                 </Avatar>
-                <div className="absolute -bottom-1 -right-1">
+                <div className="absolute -bottom-0.5 -right-0.5">
                   <OnlineStatus userId={otherUser.id} />
                 </div>
               </div>
               
               <div className="flex-1 min-w-0">
-                <div className="flex items-center space-x-2">
-                  <h2 className="font-semibold text-foreground truncate text-sm md:text-base" title={otherUser.name}>{otherUser.name}</h2>
-                  <Badge variant="secondary" className="hidden md:inline-flex text-[10px] md:text-xs">
-                    <Shield className="h-3 w-3 mr-1" />
+                <div className="flex items-center gap-2">
+                  <h2 className="font-semibold text-foreground truncate text-sm md:text-base" title={otherUser.name}>
+                    {otherUser.name}
+                  </h2>
+                  <Badge variant="secondary" className="hidden md:inline-flex text-[10px] px-1.5 py-0 h-5 bg-emerald-500/10 text-emerald-600 border-0">
+                    <Shield className="h-2.5 w-2.5 mr-1" />
                     Verified
                   </Badge>
                 </div>
-                  <div className="flex items-center gap-2">
-                    <span className="md:hidden inline-flex"><OnlineStatus userId={otherUser.id} conversationId={conversationId} /></span>
-                    <span className="hidden md:inline-flex"><OnlineStatus userId={otherUser.id} conversationId={conversationId} showText /></span>
-                    <span className="text-muted-foreground hidden md:inline">•</span>
-                    <div className="hidden md:flex items-center gap-1">
-                      <Star className="h-3 w-3 text-yellow-400 fill-current" />
-                      <span className="text-xs text-muted-foreground">4.8</span>
-                    </div>
+                <div className="flex items-center gap-2 text-xs">
+                  <span className="md:hidden">
+                    <OnlineStatus userId={otherUser.id} conversationId={conversationId} />
+                  </span>
+                  <span className="hidden md:flex items-center">
+                    <OnlineStatus userId={otherUser.id} conversationId={conversationId} showText />
+                  </span>
+                  <span className="hidden md:inline text-muted-foreground/50">•</span>
+                  <div className="hidden md:flex items-center gap-1">
+                    <Star className="h-3 w-3 text-amber-400 fill-amber-400" />
+                    <span className="text-muted-foreground">4.8</span>
                   </div>
+                </div>
               </div>
-            </>
+            </div>
           )}
         </div>
         
         {otherUser && (
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center gap-1 md:gap-2">
             <Button 
               variant="ghost" 
-              size="sm" 
-              className="hover:bg-green-50 hover:text-green-600"
+              size="icon"
+              className="h-9 w-9 md:h-10 md:w-10 rounded-full hover:bg-emerald-500/10 hover:text-emerald-600 transition-all"
               onClick={onVoiceCall}
               title="Voice Call"
             >
-              <Phone className="h-4 w-4" />
+              <Phone className="h-4 w-4 md:h-5 md:w-5" />
             </Button>
             <Button 
               variant="ghost" 
-              size="sm" 
-              className="hover:bg-blue-50 hover:text-blue-600"
+              size="icon"
+              className="h-9 w-9 md:h-10 md:w-10 rounded-full hover:bg-primary/10 hover:text-primary transition-all"
               onClick={onVideoCall}
               title="Video Call"
             >
-              <Video className="h-4 w-4" />
+              <Video className="h-4 w-4 md:h-5 md:w-5" />
             </Button>
-            <Button variant="ghost" size="sm" className="hidden sm:flex hover:bg-muted">
-              <MoreVertical className="h-4 w-4" />
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className="hidden sm:flex h-9 w-9 md:h-10 md:w-10 rounded-full hover:bg-muted/80 transition-all"
+            >
+              <MoreVertical className="h-4 w-4 md:h-5 md:w-5" />
             </Button>
           </div>
         )}
