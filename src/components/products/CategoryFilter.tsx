@@ -1,8 +1,6 @@
-
 import { useState } from 'react';
 import { Category } from '@/lib/types';
 import { cn } from '@/lib/utils';
-import { Badge } from "@/components/ui/badge";
 import {
   Car,
   Home,
@@ -12,6 +10,8 @@ import {
   Star,
   Gamepad2,
   Tag,
+  ChevronDown,
+  ChevronUp,
   LucideIcon
 } from 'lucide-react';
 
@@ -32,7 +32,7 @@ const iconMap: Record<string, LucideIcon> = {
 
 function getIconForCategory(iconName: string | undefined) {
   const LucideIcon = (iconName && iconMap[iconName]) ? iconMap[iconName] : iconMap["default"] || Tag;
-  return <LucideIcon size={16} className="inline-block" />;
+  return <LucideIcon size={16} className="shrink-0" />;
 }
 
 interface CategoryFilterProps {
@@ -53,53 +53,64 @@ const CategoryFilter: React.FC<CategoryFilterProps> = ({
   const displayedCategories = showAllCategories ? categories : categories.slice(0, 8);
 
   return (
-    <div className="bg-white border-b border-gray-200 sticky top-16 z-40">
-      <div className="container mx-auto px-4 py-4">
-        <div className="flex flex-wrap gap-2">
-          <Badge
-            variant={selectedCategory === null ? "default" : "outline"}
-            className={cn(
-              "cursor-pointer px-4 py-2 text-sm font-medium transition-colors",
-              selectedCategory === null
-                ? "bg-blue-600 text-white hover:bg-blue-700"
-                : "text-gray-600 hover:bg-blue-50 hover:text-blue-600 border-gray-300"
-            )}
+    <div className="bg-background/80 backdrop-blur-xl border-b border-border/50 sticky top-16 z-40">
+      <div className="container mx-auto px-4 py-4 md:py-5">
+        <div className="flex flex-wrap gap-2 md:gap-3">
+          {/* All Categories Button */}
+          <button
             onClick={() => onSelectCategory(null)}
+            className={cn(
+              "category-chip inline-flex items-center gap-2 text-sm",
+              selectedCategory === null
+                ? "category-chip-active"
+                : "category-chip-inactive"
+            )}
           >
-            All Categories
-          </Badge>
+            <Tag size={16} />
+            <span>All</span>
+          </button>
           
           {loading ? (
-            <div className="flex items-center text-gray-500 ml-2 text-sm">
-              Loading categories...
+            <div className="flex items-center gap-2 text-muted-foreground text-sm px-4">
+              <div className="w-4 h-4 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
+              Loading...
             </div>
           ) : (
             displayedCategories.map((category) => (
-              <Badge
+              <button
                 key={category.id}
-                variant={selectedCategory === category.id ? "default" : "outline"}
-                className={cn(
-                  "cursor-pointer px-4 py-2 text-sm font-medium flex items-center gap-2 transition-colors",
-                  selectedCategory === category.id
-                    ? "bg-blue-600 text-white hover:bg-blue-700"
-                    : "text-gray-600 hover:bg-blue-50 hover:text-blue-600 border-gray-300"
-                )}
                 onClick={() => onSelectCategory(category.id)}
+                className={cn(
+                  "category-chip inline-flex items-center gap-2 text-sm",
+                  selectedCategory === category.id
+                    ? "category-chip-active"
+                    : "category-chip-inactive"
+                )}
               >
                 {getIconForCategory(category.icon)}
-                {category.name}
-              </Badge>
+                <span className="truncate max-w-[120px]">{category.name}</span>
+              </button>
             ))
           )}
           
+          {/* Show More/Less Button */}
           {categories.length > 8 && !loading && (
-            <Badge
-              variant="outline"
-              className="cursor-pointer px-4 py-2 text-sm font-medium text-gray-600 hover:bg-blue-50 hover:text-blue-600 border-gray-300"
+            <button
               onClick={() => setShowAllCategories(!showAllCategories)}
+              className="category-chip category-chip-inactive inline-flex items-center gap-1.5 text-sm text-primary"
             >
-              {showAllCategories ? 'Show Less' : 'More Categories'}
-            </Badge>
+              {showAllCategories ? (
+                <>
+                  <span>Less</span>
+                  <ChevronUp size={16} />
+                </>
+              ) : (
+                <>
+                  <span>More</span>
+                  <ChevronDown size={16} />
+                </>
+              )}
+            </button>
           )}
         </div>
       </div>
