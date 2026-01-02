@@ -8,14 +8,12 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
-import { Eye, TrendingUp, Star } from 'lucide-react';
+import { Eye, TrendingUp, Star, ArrowRight, Loader2 } from 'lucide-react';
 
-// Simplified fetch function without complex Supabase types
 const fetchFeaturedProducts = async (limit: number): Promise<Product[]> => {
   try {
     const { supabase } = await import('@/integrations/supabase/client');
     
-    // Simple query without joins to avoid type issues
     const { data: productsData, error: productsError } = await supabase
       .from('products')
       .select('*')
@@ -25,21 +23,18 @@ const fetchFeaturedProducts = async (limit: number): Promise<Product[]> => {
 
     if (productsError) throw productsError;
 
-    // Fetch images separately to avoid complex joins
     const productIds = productsData?.map(p => p.id) || [];
     const { data: imagesData } = await supabase
       .from('product_images')
       .select('*')
       .in('product_id', productIds);
 
-    // Fetch categories separately
     const categoryIds = productsData?.map(p => p.category_id).filter(Boolean) || [];
     const { data: categoriesData } = await supabase
       .from('categories')
       .select('*')
       .in('id', categoryIds);
 
-    // Map the data manually
     const products: Product[] = productsData?.map((product: any) => {
       const productImages = imagesData?.filter(img => img.product_id === product.id) || [];
       const category = categoriesData?.find(cat => cat.id === product.category_id);
@@ -98,19 +93,16 @@ const fetchStats = async () => {
   try {
     const { supabase } = await import('@/integrations/supabase/client');
     
-    // Fetch active listings count
     const { count: activeListings } = await supabase
       .from('products')
       .select('*', { count: 'exact', head: true })
       .eq('status', 'approved')
       .eq('is_sold', false);
 
-    // Fetch total users count
     const { count: totalUsers } = await supabase
       .from('profiles')
       .select('*', { count: 'exact', head: true });
 
-    // Fetch total product views as daily visits proxy
     const { data: viewsData } = await supabase
       .from('products')
       .select('view_count');
@@ -139,7 +131,6 @@ const Index = () => {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [itemsToShow, setItemsToShow] = useState(100);
 
-  // Auto-refresh products every 30 seconds
   const { data: products = [], isLoading: productsLoading } = useQuery({
     queryKey: ['featured-products', itemsToShow],
     queryFn: () => fetchFeaturedProducts(itemsToShow),
@@ -155,7 +146,7 @@ const Index = () => {
   const { data: statsData } = useQuery({
     queryKey: ['homepage-stats'],
     queryFn: fetchStats,
-    refetchInterval: 60000 // Refresh stats every minute
+    refetchInterval: 60000
   });
 
   const filteredProducts = products.filter((product: Product) => 
@@ -163,25 +154,31 @@ const Index = () => {
   );
 
   const stats = [
-    { label: 'Active Listings', value: formatNumber(statsData?.activeListings || 0), icon: Eye },
-    { label: 'Happy Users', value: formatNumber(statsData?.happyUsers || 0), icon: Star },
-    { label: 'Total Views', value: formatNumber(statsData?.dailyVisits || 0), icon: TrendingUp },
+    { label: 'Active Listings', value: formatNumber(statsData?.activeListings || 0), icon: Eye, color: 'from-blue-500 to-cyan-500' },
+    { label: 'Happy Users', value: formatNumber(statsData?.happyUsers || 0), icon: Star, color: 'from-amber-500 to-orange-500' },
+    { label: 'Total Views', value: formatNumber(statsData?.dailyVisits || 0), icon: TrendingUp, color: 'from-emerald-500 to-teal-500' },
   ];
 
   return (
     <Layout>
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-background">
         <HeroSection />
         
-        {/* Stats Section - Jiji Style */}
-        <div className="bg-white py-6 md:py-12 border-b border-gray-200">
+        {/* Stats Section */}
+        <div className="py-8 md:py-16 bg-gradient-to-b from-background to-secondary/20">
           <div className="container mx-auto px-4">
-            <div className="grid grid-cols-3 gap-2 md:gap-8 text-center">
+            <div className="grid grid-cols-3 gap-3 md:gap-6 max-w-4xl mx-auto">
               {stats.map((stat, index) => (
-                <div key={index} className="flex flex-col items-center">
-                  <stat.icon className="h-5 w-5 md:h-8 md:w-8 text-blue-600 mb-1 md:mb-3" />
-                  <div className="text-lg md:text-3xl font-bold text-gray-800 mb-0.5 md:mb-1">{stat.value}</div>
-                  <div className="text-xs md:text-base text-gray-600">{stat.label}</div>
+                <div 
+                  key={index} 
+                  className="stat-card group animate-fade-in-up"
+                  style={{ animationDelay: `${index * 0.1}s` }}
+                >
+                  <div className={`w-10 h-10 md:w-14 md:h-14 rounded-xl bg-gradient-to-br ${stat.color} flex items-center justify-center mb-3 md:mb-4 shadow-lg group-hover:scale-110 transition-transform duration-300`}>
+                    <stat.icon className="h-5 w-5 md:h-7 md:w-7 text-white" />
+                  </div>
+                  <div className="text-2xl md:text-4xl font-bold text-foreground mb-1">{stat.value}</div>
+                  <div className="text-xs md:text-sm text-muted-foreground font-medium">{stat.label}</div>
                 </div>
               ))}
             </div>
@@ -197,30 +194,31 @@ const Index = () => {
         />
 
         {/* Products Section */}
-        <div className="container mx-auto px-4 py-8">
+        <div className="container mx-auto px-4 py-8 md:py-12">
           {/* Section Header */}
-          <div className="mb-8">
-            <div className="flex items-center justify-between">
+          <div className="mb-8 md:mb-10">
+            <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
               <div>
-                <h2 className="text-2xl font-bold text-gray-800 mb-2">
+                <h2 className="section-title">
                   {selectedCategory 
-                    ? `${categories.find((c: Category) => c.id === selectedCategory)?.name} Items` 
-                    : 'Latest Items'}
+                    ? `${categories.find((c: Category) => c.id === selectedCategory)?.name}` 
+                    : 'Latest Listings'}
                 </h2>
-                <p className="text-gray-600">
+                <p className="section-subtitle">
                   {productsLoading
-                    ? "Loading..."
-                    : `${filteredProducts.length} items found`}
+                    ? "Loading items..."
+                    : `${filteredProducts.length} items available`}
                 </p>
               </div>
               
               {!selectedCategory && (
                 <Button 
                   variant="outline" 
-                  className="border-blue-600 text-blue-600 hover:bg-blue-50"
+                  className="border-primary/30 text-primary hover:bg-primary/5 font-medium group self-start sm:self-auto"
                   onClick={() => navigate('/products')}
                 >
-                  View All Categories
+                  View All
+                  <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
                 </Button>
               )}
             </div>
@@ -228,16 +226,20 @@ const Index = () => {
 
           {/* Products Grid */}
           {productsLoading ? (
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6">
               {Array.from({ length: 15 }).map((_, i) => (
-                <div key={i} className="bg-white rounded-lg p-4 border border-gray-200">
-                  <Skeleton className="w-full aspect-square mb-4" />
-                  <Skeleton className="h-4 w-3/4 mb-2" />
+                <div 
+                  key={i} 
+                  className="marketplace-card p-3 md:p-4 animate-pulse"
+                  style={{ animationDelay: `${i * 0.05}s` }}
+                >
+                  <Skeleton className="w-full aspect-square rounded-xl mb-3 md:mb-4" />
+                  <Skeleton className="h-5 w-3/4 mb-2" />
                   <Skeleton className="h-6 w-1/2 mb-2" />
                   <Skeleton className="h-4 w-full mb-3" />
                   <div className="flex gap-2">
-                    <Skeleton className="h-8 flex-1" />
-                    <Skeleton className="h-8 flex-1" />
+                    <Skeleton className="h-9 flex-1 rounded-lg" />
+                    <Skeleton className="h-9 flex-1 rounded-lg" />
                   </div>
                 </div>
               ))}
@@ -248,14 +250,15 @@ const Index = () => {
 
           {/* Load More Button */}
           {!productsLoading && filteredProducts.length > 0 && filteredProducts.length >= itemsToShow && (
-            <div className="text-center mt-12">
+            <div className="text-center mt-12 md:mt-16">
               <Button 
-                variant="outline" 
                 size="lg"
-                className="border-blue-600 text-blue-600 hover:bg-blue-50 px-8"
+                className="gradient-primary text-primary-foreground font-semibold px-8 py-6 rounded-xl shadow-elegant hover:shadow-glow transition-all duration-300 hover:scale-[1.02]"
                 onClick={() => setItemsToShow(prev => prev + 20)}
               >
+                <Loader2 className="mr-2 h-5 w-5 animate-spin hidden" />
                 Load More Items
+                <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
             </div>
           )}

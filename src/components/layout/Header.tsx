@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -7,6 +6,8 @@ import { UserMenu } from './UserMenu';
 import { LanguageSwitcher } from '../shared/LanguageSwitcher';
 import { useTranslation } from 'react-i18next';
 import DesktopNavigation from './DesktopNavigation';
+import { Sparkles } from 'lucide-react';
+
 const Header: React.FC = () => {
   const { isAuthenticated } = useAuth();
   const navigate = useNavigate();
@@ -21,25 +22,35 @@ const Header: React.FC = () => {
   };
 
   return (
-    <header className="bg-white/95 backdrop-blur-md shadow-elegant border-b border-border sticky top-0 z-50 safe-area-pt">
-      {/* Main Header (top bar removed) */}
-      <div className="container mx-auto px-2 sm:px-4">
-        <div className="flex h-16 items-center justify-between">
+    <header className="bg-background/80 backdrop-blur-xl border-b border-border/50 sticky top-0 z-50 safe-area-pt">
+      <div className="container mx-auto px-3 sm:px-4 lg:px-6">
+        <div className="flex h-16 lg:h-18 items-center justify-between gap-4">
           {/* Logo */}
-          <Link to="/" className="flex items-center space-x-2 hover:scale-105 transition-transform duration-300 shrink-0">
-            <div className="w-10 h-10 sm:w-12 sm:h-12 gradient-primary rounded-xl flex items-center justify-center shadow-soft">
-              <span className="text-white font-bold text-lg sm:text-xl">M</span>
+          <Link 
+            to="/" 
+            className="flex items-center gap-2.5 hover:opacity-90 transition-all duration-300 shrink-0 group"
+          >
+            <div className="relative w-10 h-10 sm:w-11 sm:h-11 gradient-primary rounded-xl flex items-center justify-center shadow-elegant group-hover:shadow-glow transition-shadow duration-300">
+              <Sparkles className="w-5 h-5 sm:w-6 sm:h-6 text-primary-foreground" />
+              <div className="absolute inset-0 rounded-xl bg-primary-foreground/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
             </div>
-            <div className="text-lg sm:text-2xl font-bold text-marketplace-secondary hidden xs:block">MarketHub</div>
+            <div className="hidden xs:flex flex-col">
+              <span className="text-lg sm:text-xl font-bold bg-gradient-to-r from-primary to-primary-glow bg-clip-text text-transparent">
+                MarketHub
+              </span>
+              <span className="text-[10px] text-muted-foreground -mt-0.5 hidden sm:block">
+                Buy & Sell Easily
+              </span>
+            </div>
           </Link>
 
           {/* Desktop Navigation */}
-          <div className="hidden lg:flex flex-1 justify-center">
+          <div className="hidden lg:flex flex-1 justify-center max-w-2xl">
             <DesktopNavigation />
           </div>
 
           {/* Right Actions */}
-          <div className="flex items-center space-x-1 sm:space-x-3">
+          <div className="flex items-center gap-2 sm:gap-3">
             {/* Language switcher - hidden on mobile */}
             <div className="hidden sm:block">
               <LanguageSwitcher />
@@ -52,12 +63,21 @@ const Header: React.FC = () => {
                 onRegister={handleRegister}
               />
             ) : (
-              <div className="flex items-center space-x-1 sm:space-x-3">
-                <Button variant="ghost" size="sm" className="text-xs sm:text-sm px-2 sm:px-3" asChild>
-                  <Link to="/auth">Login</Link>
+              <div className="flex items-center gap-2 sm:gap-3">
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-accent/50 px-3 py-2 h-9"
+                  asChild
+                >
+                  <Link to="/auth">Sign In</Link>
                 </Button>
-                <Button size="sm" variant="marketplace" className="text-xs sm:text-sm px-2 sm:px-3" asChild>
-                  <Link to="/auth?tab=register">Register</Link>
+                <Button 
+                  size="sm" 
+                  className="gradient-primary text-primary-foreground font-medium px-4 py-2 h-9 shadow-elegant hover:shadow-glow transition-all duration-300 hover:scale-[1.02]"
+                  asChild
+                >
+                  <Link to="/auth?tab=register">Get Started</Link>
                 </Button>
               </div>
             )}
