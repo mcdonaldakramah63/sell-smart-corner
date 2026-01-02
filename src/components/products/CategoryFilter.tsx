@@ -53,20 +53,20 @@ const CategoryFilter: React.FC<CategoryFilterProps> = ({
   const displayedCategories = showAllCategories ? categories : categories.slice(0, 8);
 
   return (
-    <div className="bg-background/80 backdrop-blur-xl border-b border-border/50 sticky top-16 z-40">
+    <div className="bg-background/80 backdrop-blur-xl border-b border-border/50 sticky top-16 z-40 animate-fade-in">
       <div className="container mx-auto px-4 py-4 md:py-5">
         <div className="flex flex-wrap gap-2 md:gap-3">
           {/* All Categories Button */}
           <button
             onClick={() => onSelectCategory(null)}
             className={cn(
-              "category-chip inline-flex items-center gap-2 text-sm",
+              "category-chip inline-flex items-center gap-2 text-sm transition-all duration-300 hover:scale-105",
               selectedCategory === null
-                ? "category-chip-active"
+                ? "category-chip-active animate-pulse-glow"
                 : "category-chip-inactive"
             )}
           >
-            <Tag size={16} />
+            <Tag size={16} className="transition-transform duration-300" />
             <span>All</span>
           </button>
           
@@ -76,18 +76,21 @@ const CategoryFilter: React.FC<CategoryFilterProps> = ({
               Loading...
             </div>
           ) : (
-            displayedCategories.map((category) => (
+            displayedCategories.map((category, index) => (
               <button
                 key={category.id}
                 onClick={() => onSelectCategory(category.id)}
                 className={cn(
-                  "category-chip inline-flex items-center gap-2 text-sm",
+                  "category-chip inline-flex items-center gap-2 text-sm transition-all duration-300 hover:scale-105 animate-fade-in",
                   selectedCategory === category.id
                     ? "category-chip-active"
                     : "category-chip-inactive"
                 )}
+                style={{ animationDelay: `${index * 0.05}s` }}
               >
-                {getIconForCategory(category.icon)}
+                <span className="transition-transform duration-300 group-hover:rotate-12">
+                  {getIconForCategory(category.icon)}
+                </span>
                 <span className="truncate max-w-[120px]">{category.name}</span>
               </button>
             ))
@@ -97,17 +100,17 @@ const CategoryFilter: React.FC<CategoryFilterProps> = ({
           {categories.length > 8 && !loading && (
             <button
               onClick={() => setShowAllCategories(!showAllCategories)}
-              className="category-chip category-chip-inactive inline-flex items-center gap-1.5 text-sm text-primary"
+              className="category-chip category-chip-inactive inline-flex items-center gap-1.5 text-sm text-primary transition-all duration-300 hover:scale-105 group"
             >
               {showAllCategories ? (
                 <>
                   <span>Less</span>
-                  <ChevronUp size={16} />
+                  <ChevronUp size={16} className="transition-transform duration-300 group-hover:-translate-y-0.5" />
                 </>
               ) : (
                 <>
                   <span>More</span>
-                  <ChevronDown size={16} />
+                  <ChevronDown size={16} className="transition-transform duration-300 group-hover:translate-y-0.5" />
                 </>
               )}
             </button>

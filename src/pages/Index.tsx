@@ -165,19 +165,25 @@ const Index = () => {
         <HeroSection />
         
         {/* Stats Section */}
-        <div className="py-8 md:py-16 bg-gradient-to-b from-background to-secondary/20">
-          <div className="container mx-auto px-4">
-            <div className="grid grid-cols-3 gap-3 md:gap-6 max-w-4xl mx-auto">
+        <div className="py-12 md:py-20 bg-gradient-to-b from-background via-secondary/10 to-background relative overflow-hidden">
+          {/* Decorative elements */}
+          <div className="absolute inset-0 overflow-hidden pointer-events-none">
+            <div className="absolute top-0 left-1/4 w-64 h-64 bg-primary/5 rounded-full blur-3xl animate-float" />
+            <div className="absolute bottom-0 right-1/4 w-48 h-48 bg-primary-glow/5 rounded-full blur-3xl animate-float" style={{ animationDelay: '-3s' }} />
+          </div>
+
+          <div className="container mx-auto px-4 relative z-10">
+            <div className="grid grid-cols-3 gap-4 md:gap-8 max-w-4xl mx-auto">
               {stats.map((stat, index) => (
                 <div 
                   key={index} 
-                  className="stat-card group animate-fade-in-up"
-                  style={{ animationDelay: `${index * 0.1}s` }}
+                  className="stat-card group animate-slide-up-fade hover:shadow-elegant"
+                  style={{ animationDelay: `${index * 0.15}s` }}
                 >
-                  <div className={`w-10 h-10 md:w-14 md:h-14 rounded-xl bg-gradient-to-br ${stat.color} flex items-center justify-center mb-3 md:mb-4 shadow-lg group-hover:scale-110 transition-transform duration-300`}>
-                    <stat.icon className="h-5 w-5 md:h-7 md:w-7 text-white" />
+                  <div className={`w-12 h-12 md:w-16 md:h-16 rounded-2xl bg-gradient-to-br ${stat.color} flex items-center justify-center mb-4 md:mb-5 shadow-lg group-hover:scale-110 group-hover:rotate-3 transition-all duration-500`}>
+                    <stat.icon className="h-6 w-6 md:h-8 md:w-8 text-white" />
                   </div>
-                  <div className="text-2xl md:text-4xl font-bold text-foreground mb-1">{stat.value}</div>
+                  <div className="text-2xl md:text-4xl lg:text-5xl font-bold text-foreground mb-1.5 group-hover:scale-105 transition-transform duration-300">{stat.value}</div>
                   <div className="text-xs md:text-sm text-muted-foreground font-medium">{stat.label}</div>
                 </div>
               ))}
@@ -194,19 +200,20 @@ const Index = () => {
         />
 
         {/* Products Section */}
-        <div className="container mx-auto px-4 py-8 md:py-12">
+        <div className="container mx-auto px-4 py-10 md:py-16">
           {/* Section Header */}
-          <div className="mb-8 md:mb-10">
+          <div className="mb-10 md:mb-12 animate-fade-in">
             <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
               <div>
-                <h2 className="section-title">
+                <h2 className="section-title relative inline-block">
                   {selectedCategory 
                     ? `${categories.find((c: Category) => c.id === selectedCategory)?.name}` 
                     : 'Latest Listings'}
+                  <span className="absolute -bottom-2 left-0 w-1/3 h-1 bg-gradient-to-r from-primary to-primary-glow rounded-full" />
                 </h2>
-                <p className="section-subtitle">
+                <p className="section-subtitle mt-4">
                   {productsLoading
-                    ? "Loading items..."
+                    ? "Loading amazing items..."
                     : `${filteredProducts.length} items available`}
                 </p>
               </div>
@@ -214,11 +221,11 @@ const Index = () => {
               {!selectedCategory && (
                 <Button 
                   variant="outline" 
-                  className="border-primary/30 text-primary hover:bg-primary/5 font-medium group self-start sm:self-auto"
+                  className="border-primary/30 text-primary hover:bg-primary/5 hover:border-primary/50 font-medium group self-start sm:self-auto transition-all duration-300 hover:scale-105"
                   onClick={() => navigate('/products')}
                 >
                   View All
-                  <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                  <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform duration-300" />
                 </Button>
               )}
             </div>
@@ -238,27 +245,29 @@ const Index = () => {
                   <Skeleton className="h-6 w-1/2 mb-2" />
                   <Skeleton className="h-4 w-full mb-3" />
                   <div className="flex gap-2">
-                    <Skeleton className="h-9 flex-1 rounded-lg" />
-                    <Skeleton className="h-9 flex-1 rounded-lg" />
+                    <Skeleton className="h-10 flex-1 rounded-lg" />
+                    <Skeleton className="h-10 flex-1 rounded-lg" />
                   </div>
                 </div>
               ))}
             </div>
           ) : (
-            <ProductGrid products={filteredProducts} />
+            <div className="animate-fade-in">
+              <ProductGrid products={filteredProducts} />
+            </div>
           )}
 
           {/* Load More Button */}
           {!productsLoading && filteredProducts.length > 0 && filteredProducts.length >= itemsToShow && (
-            <div className="text-center mt-12 md:mt-16">
+            <div className="text-center mt-14 md:mt-20 animate-fade-in">
               <Button 
                 size="lg"
-                className="gradient-primary text-primary-foreground font-semibold px-8 py-6 rounded-xl shadow-elegant hover:shadow-glow transition-all duration-300 hover:scale-[1.02]"
+                className="gradient-primary text-primary-foreground font-semibold px-10 py-7 rounded-2xl shadow-elegant hover:shadow-glow transition-all duration-500 hover:scale-105 group hover-shine"
                 onClick={() => setItemsToShow(prev => prev + 20)}
               >
                 <Loader2 className="mr-2 h-5 w-5 animate-spin hidden" />
                 Load More Items
-                <ArrowRight className="ml-2 h-5 w-5" />
+                <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-2 transition-transform duration-300" />
               </Button>
             </div>
           )}
