@@ -8,6 +8,7 @@ import { CallProvider } from "@/contexts/CallContext";
 import { MobileOptimizedLayout } from "@/components/mobile/MobileOptimizedLayout";
 import { GlobalNotificationProvider } from "@/components/notifications/GlobalNotificationProvider";
 import { GlobalCallModal } from "@/components/call/GlobalCallModal";
+import { OneSignalProvider } from "@/components/notifications/OneSignalProvider";
 import Index from "./pages/Index";
 import AuthPage from "./pages/AuthPage";
 import AuthCallbackPage from "./pages/AuthCallbackPage";
@@ -63,45 +64,47 @@ const App = () => (
     <BrowserRouter>
       <AuthProvider>
         <CallProvider>
-          <GlobalNotificationProvider>
-            <Toaster />
-            <Sonner />
-            <ServiceWorkerNavigator />
-            <GlobalCallModal />
-            <MobileOptimizedLayout>
-              <Routes>
-                <Route path="/" element={<Index />} />
-                <Route path="/auth/*" element={<AuthPage />} />
-                <Route path="/auth/callback" element={<AuthCallbackPage />} />
-                <Route path="/dashboard" element={<DashboardPage />} />
-                <Route path="/admin" element={<AdminDashboardPage />} />
-                <Route path="/admin/users" element={<AdminUsersPage />} />
-                <Route path="/business" element={<BusinessDashboardPage />} />
-                <Route path="/create-product" element={<CreateProductPage />} />
-                <Route path="/edit-product/:id" element={<EditProductPage />} />
-                <Route path="/products" element={<ProductsPage />} />
-                <Route path="/products/:id" element={<ProductDetailPage />} />
-                <Route path="/profile" element={<ProfilePage />} />
-                <Route path="/messages" element={<MessagesPage />} />
-                <Route path="/conversation/:id" element={<ConversationPage />} />
-                <Route path="/notifications" element={<NotificationsPage />} />
-                <Route path="/settings" element={<SettingsPage />} />
-                <Route path="/help" element={<HelpPage />} />
-                <Route path="/contact" element={<ContactPage />} />
-                <Route path="/privacy" element={<PrivacyPage />} />
-                <Route path="/terms" element={<TermsPage />} />
-                <Route path="/cookies" element={<CookiePage />} />
-                <Route path="/safety" element={<SafetyPage />} />
-                <Route path="/reset-password" element={<ResetPasswordPage />} />
-                <Route path="/update-password" element={<UpdatePasswordPage />} />
-                <Route path="/saved-searches" element={<SavedSearchesPage />} />
-                <Route path="/analytics" element={<AnalyticsPage />} />
-                <Route path="/search" element={<AdvancedSearchPage />} />
-                <Route path="/security" element={<SecurityPage />} />
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-            </MobileOptimizedLayout>
-          </GlobalNotificationProvider>
+          <OneSignalProvider userType="customer">
+            <GlobalNotificationProvider>
+              <Toaster />
+              <Sonner />
+              <ServiceWorkerNavigator />
+              <GlobalCallModal />
+              <MobileOptimizedLayout>
+                <Routes>
+                  <Route path="/" element={<Index />} />
+                  <Route path="/auth/*" element={<AuthPage />} />
+                  <Route path="/auth/callback" element={<AuthCallbackPage />} />
+                  <Route path="/dashboard" element={<DashboardPage />} />
+                  <Route path="/admin" element={<AdminDashboardPage />} />
+                  <Route path="/admin/users" element={<AdminUsersPage />} />
+                  <Route path="/business" element={<BusinessDashboardPage />} />
+                  <Route path="/create-product" element={<CreateProductPage />} />
+                  <Route path="/edit-product/:id" element={<EditProductPage />} />
+                  <Route path="/products" element={<ProductsPage />} />
+                  <Route path="/products/:id" element={<ProductDetailPage />} />
+                  <Route path="/profile" element={<ProfilePage />} />
+                  <Route path="/messages" element={<MessagesPage />} />
+                  <Route path="/conversation/:id" element={<ConversationPage />} />
+                  <Route path="/notifications" element={<NotificationsPage />} />
+                  <Route path="/settings" element={<SettingsPage />} />
+                  <Route path="/help" element={<HelpPage />} />
+                  <Route path="/contact" element={<ContactPage />} />
+                  <Route path="/privacy" element={<PrivacyPage />} />
+                  <Route path="/terms" element={<TermsPage />} />
+                  <Route path="/cookies" element={<CookiePage />} />
+                  <Route path="/safety" element={<SafetyPage />} />
+                  <Route path="/reset-password" element={<ResetPasswordPage />} />
+                  <Route path="/update-password" element={<UpdatePasswordPage />} />
+                  <Route path="/saved-searches" element={<SavedSearchesPage />} />
+                  <Route path="/analytics" element={<AnalyticsPage />} />
+                  <Route path="/search" element={<AdvancedSearchPage />} />
+                  <Route path="/security" element={<SecurityPage />} />
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+              </MobileOptimizedLayout>
+            </GlobalNotificationProvider>
+          </OneSignalProvider>
         </CallProvider>
       </AuthProvider>
     </BrowserRouter>

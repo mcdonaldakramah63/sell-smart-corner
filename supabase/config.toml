@@ -1,1 +1,13 @@
 project_id = "fksknsaxzmnajlsrrmyg"
+
+[functions.delete-user-account]
+verify_jwt = true
+
+[functions.send-sms]
+verify_jwt = false
+
+[functions.send-push-notification]
+verify_jwt = false
+
+[functions.get-onesignal-config]
+verify_jwt = false
