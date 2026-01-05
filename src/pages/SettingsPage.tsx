@@ -10,6 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { Settings, User, Shield, HelpCircle, LogOut } from 'lucide-react';
 import { NotificationSettings } from '@/components/notifications/NotificationSettings';
+import { OneSignalSettings } from '@/components/notifications/OneSignalSettings';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -174,7 +175,10 @@ export default function SettingsPage() {
               </CardContent>
             </Card>
 
-            {/* Notification Settings */}
+            {/* Push Notification Settings - OneSignal */}
+            <OneSignalSettings userType="customer" />
+
+            {/* Email Notification Settings */}
             <NotificationSettings
               emailNotifications={emailNotifications}
               pushNotifications={pushNotifications}

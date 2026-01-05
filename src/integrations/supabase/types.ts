@@ -2067,6 +2067,39 @@ export type Database = {
           },
         ]
       }
+      user_push_tokens: {
+        Row: {
+          created_at: string
+          device_type: string | null
+          id: string
+          is_active: boolean | null
+          player_id: string
+          updated_at: string
+          user_id: string
+          user_type: string
+        }
+        Insert: {
+          created_at?: string
+          device_type?: string | null
+          id?: string
+          is_active?: boolean | null
+          player_id: string
+          updated_at?: string
+          user_id: string
+          user_type?: string
+        }
+        Update: {
+          created_at?: string
+          device_type?: string | null
+          id?: string
+          is_active?: boolean | null
+          player_id?: string
+          updated_at?: string
+          user_id?: string
+          user_type?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string
