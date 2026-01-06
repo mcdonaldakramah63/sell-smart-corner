@@ -212,7 +212,7 @@ export const MessageInput = ({ onSendMessage, disabled = false, conversationId, 
   };
 
   return (
-    <div className="z-30 bg-card/95 backdrop-blur-xl border-t border-border/50 mt-auto safe-area-pb">
+    <div className="flex-shrink-0 z-30 bg-card/95 backdrop-blur-xl border-t border-border/50 safe-area-pb">
       <div className="p-3 md:p-4">
         {/* Media preview */}
         {selectedMedia && (

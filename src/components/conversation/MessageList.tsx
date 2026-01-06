@@ -78,7 +78,7 @@ export const MessageList = ({ messages, currentUserId, conversationId }: Message
   }, {} as Record<string, Message[]>);
 
   return (
-    <div className="flex-1 overflow-y-auto bg-gradient-to-b from-muted/20 via-muted/30 to-muted/40">
+    <div className="flex-1 overflow-y-auto min-h-0 bg-gradient-to-b from-muted/20 via-muted/30 to-muted/40">
       <div className="p-3 md:p-6 space-y-6 pb-4">
         {Object.entries(groupedMessages).map(([date, dateMessages]) => (
           <div key={date} className="space-y-3 md:space-y-4">
