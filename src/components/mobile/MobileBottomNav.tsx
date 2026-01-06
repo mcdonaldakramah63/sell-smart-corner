@@ -13,7 +13,10 @@ export const MobileBottomNav = () => {
   const { unreadCount } = useRealTimeNotifications();
   const isMobile = useIsMobile();
 
-  if (!isMobile) return null;
+  // Hide on conversation pages to avoid covering the message input
+  const isConversationPage = location.pathname.startsWith('/conversation');
+
+  if (!isMobile || isConversationPage) return null;
 
   const navigationItems = [
     {
