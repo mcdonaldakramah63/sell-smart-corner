@@ -78,26 +78,26 @@ export const ProductCard: React.FC<ProductCardProps> = ({
         <Button
           variant="ghost"
           size="sm"
-          className={`absolute top-2 right-2 rounded-full w-9 h-9 md:w-10 md:h-10 p-0 bg-background/90 hover:bg-background shadow-lg backdrop-blur-sm transition-all duration-300 hover:scale-110 ${
+          className={`absolute top-1.5 right-1.5 rounded-full w-7 h-7 md:w-9 md:h-9 p-0 bg-background/90 hover:bg-background shadow-md backdrop-blur-sm transition-all duration-300 hover:scale-110 ${
             isSaved ? 'text-destructive' : 'text-muted-foreground hover:text-destructive'
           }`}
           aria-label={isSaved ? 'Remove from saved' : 'Save product'}
           onClick={() => onSave?.(product.id)}
         >
-          <Heart className={`h-4 w-4 transition-all duration-300 ${isSaved ? 'fill-current scale-110' : 'group-hover:scale-110'}`} />
+          <Heart className={`h-3.5 w-3.5 md:h-4 md:w-4 transition-all duration-300 ${isSaved ? 'fill-current scale-110' : 'group-hover:scale-110'}`} />
         </Button>
 
         {/* Condition Badge */}
         {product.condition && (
-          <Badge className="absolute top-2 left-2 bg-primary/90 text-primary-foreground text-xs px-2.5 py-1 backdrop-blur-sm shadow-lg capitalize animate-fade-in">
+          <Badge className="absolute top-1.5 left-1.5 bg-primary/90 text-primary-foreground text-[10px] md:text-xs px-1.5 md:px-2.5 py-0.5 md:py-1 backdrop-blur-sm shadow-lg capitalize animate-fade-in">
             {product.condition}
           </Badge>
         )}
       </div>
 
-      <CardContent className="p-3 md:p-4 space-y-2.5">
+      <CardContent className="p-2.5 md:p-4 space-y-2">
         {/* Price with animation */}
-        <div className="text-lg md:text-xl font-bold text-primary group-hover:scale-105 origin-left transition-transform duration-300">
+        <div className="text-base md:text-xl font-bold text-primary group-hover:scale-105 origin-left transition-transform duration-300">
           {formatPrice(product.price)}
         </div>
         
@@ -106,46 +106,46 @@ export const ProductCard: React.FC<ProductCardProps> = ({
           to={`/products/${product.id}`}
           className="block hover:text-primary transition-colors duration-300 link-underline"
         >
-          <h3 className="font-medium text-foreground line-clamp-2 leading-snug text-sm md:text-base">
+          <h3 className="font-medium text-foreground line-clamp-1 leading-snug text-xs md:text-base">
             {product.title}
           </h3>
         </Link>
         
         {/* Location and Time */}
-        <div className="flex items-center justify-between text-xs text-muted-foreground gap-2">
-          <div className="flex items-center gap-1.5 min-w-0 max-w-[60%] group/loc">
-            <MapPin className="h-3.5 w-3.5 shrink-0 text-primary/60 group-hover/loc:text-primary transition-colors duration-300" />
+        <div className="flex items-center justify-between text-[10px] md:text-xs text-muted-foreground gap-1">
+          <div className="flex items-center gap-1 min-w-0 max-w-[55%] group/loc">
+            <MapPin className="h-3 w-3 shrink-0 text-primary/60 group-hover/loc:text-primary transition-colors duration-300" />
             <span className="truncate">{product.location || 'Accra'}</span>
           </div>
-          <div className="flex items-center gap-1.5 shrink-0 group/time">
-            <Clock className="h-3.5 w-3.5 text-primary/60 group-hover/time:text-primary transition-colors duration-300" />
+          <div className="flex items-center gap-1 shrink-0 group/time">
+            <Clock className="h-3 w-3 text-primary/60 group-hover/time:text-primary transition-colors duration-300" />
             <span>{timeAgo(product.created_at)}</span>
           </div>
         </div>
 
         {/* Action Buttons */}
-        <div className="flex gap-2 pt-2">
+        <div className="flex gap-1.5 pt-1">
           <Button 
             size="sm" 
-            className="flex-1 h-10 text-xs md:text-sm font-medium gradient-primary text-primary-foreground shadow-sm hover:shadow-elegant transition-all duration-300 hover:scale-[1.02] group/call"
+            className="flex-1 h-8 md:h-9 text-[10px] md:text-sm font-medium gradient-primary text-primary-foreground shadow-sm hover:shadow-elegant transition-all duration-300 hover:scale-[1.02] group/call px-2"
             onClick={(e) => {
               e.stopPropagation();
               navigate(`/products/${product.id}`);
             }}
           >
-            <Phone className="h-3.5 w-3.5 mr-1.5 group-hover/call:animate-bounce-subtle" />
+            <Phone className="h-3 w-3 md:h-3.5 md:w-3.5 mr-1 group-hover/call:animate-bounce-subtle" />
             Call
           </Button>
           <Button 
             size="sm" 
             variant="outline" 
-            className="flex-1 h-10 text-xs md:text-sm font-medium border-primary/30 text-primary hover:bg-primary/5 hover:border-primary/50 transition-all duration-300 hover:scale-[1.02] group/chat"
+            className="flex-1 h-8 md:h-9 text-[10px] md:text-sm font-medium border-primary/30 text-primary hover:bg-primary/5 hover:border-primary/50 transition-all duration-300 hover:scale-[1.02] group/chat px-2"
             onClick={(e) => {
               e.stopPropagation();
               navigate(`/messages?productId=${product.id}`);
             }}
           >
-            <MessageCircle className="h-3.5 w-3.5 mr-1.5 group-hover/chat:animate-bounce-subtle" />
+            <MessageCircle className="h-3 w-3 md:h-3.5 md:w-3.5 mr-1 group-hover/chat:animate-bounce-subtle" />
             Chat
           </Button>
         </div>
