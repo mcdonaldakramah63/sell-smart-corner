@@ -16,7 +16,7 @@ export function QuickReplies({ onSelect, suggestions = [
   if (!isMobile) return null;
 
   return (
-    <div className="bg-background border-t border-border px-3 py-2 overflow-x-auto no-scrollbar safe-area-pb">
+    <div className="bg-muted/50 border-t border-border/50 px-3 py-2 overflow-x-auto no-scrollbar">
       <div className="flex flex-nowrap gap-2 items-center w-max">
         {suggestions.map((text) => (
           <Button
