@@ -40,12 +40,12 @@ export const ConversationLayout = ({
   onVideoCall
 }: ConversationLayoutProps) => {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/30 flex flex-col">
-      <div className="max-w-6xl mx-auto flex-1 flex flex-col w-full">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-0 flex-1">
+    <div className="h-[100dvh] bg-gradient-to-br from-background via-background to-muted/30 flex flex-col overflow-hidden">
+      <div className="max-w-6xl mx-auto flex-1 flex flex-col w-full min-h-0">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-0 flex-1 min-h-0">
           {/* Sidebar - Product Info (hidden when no product) */}
           {product && (
-            <div className="hidden lg:block lg:col-span-4 bg-card/50 backdrop-blur-sm border-r border-border/50">
+            <div className="hidden lg:block lg:col-span-4 bg-card/50 backdrop-blur-sm border-r border-border/50 overflow-y-auto">
               <div className="sticky top-0 p-6 space-y-6">
                 <ProductInfoCard product={product} />
                 {otherUser && (
@@ -61,8 +61,8 @@ export const ConversationLayout = ({
           )}
 
           {/* Chat Area */}
-          <div className={`flex flex-col ${product ? 'lg:col-span-8' : 'lg:col-span-12'}`}>
-            <div className="sticky top-0 z-20">
+          <div className={`flex flex-col min-h-0 ${product ? 'lg:col-span-8' : 'lg:col-span-12'}`}>
+            <div className="flex-shrink-0 z-20">
               <ConversationHeader 
                 otherUser={otherUser} 
                 conversationId={conversationId}
@@ -72,7 +72,7 @@ export const ConversationLayout = ({
             </div>
             
             {loading ? (
-              <div className="flex-1 flex justify-center items-center bg-gradient-to-b from-muted/20 to-muted/40 min-h-[50vh]">
+              <div className="flex-1 flex justify-center items-center bg-gradient-to-b from-muted/20 to-muted/40">
                 <div className="flex flex-col items-center space-y-4">
                   <div className="relative">
                     <div className="w-12 h-12 rounded-full border-4 border-primary/20 border-t-primary animate-spin" />
@@ -81,7 +81,7 @@ export const ConversationLayout = ({
                 </div>
               </div>
             ) : (
-              <div className="flex-1 flex flex-col">
+              <div className="flex-1 flex flex-col min-h-0">
                 {children}
               </div>
             )}
