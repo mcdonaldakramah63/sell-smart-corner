@@ -197,8 +197,8 @@ const Footer = () => {
         </div>
       </div>
       
-      {/* Bottom Bar */}
-      <div className="border-t border-border py-6">
+      {/* Bottom Bar - Added pb-20 for mobile bottom nav spacing */}
+      <div className="border-t border-border py-6 pb-20 md:pb-6">
         <div className="container mx-auto px-4">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4 text-sm">
             <p className="text-muted-foreground text-center md:text-left">
